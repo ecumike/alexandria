@@ -1,0 +1,15 @@
+{% extends "page_template.html" %}
+{% load static %}
+
+
+{% block browserTitle %}{{ block.super }} Signed out {% endblock  %}
+
+{% block pageTitle %} Signed out {% endblock  %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4" style="height:60vh;">
+    	<p>You have been signed out successfully.</p>
+    </div>
+
+{% endblock %}

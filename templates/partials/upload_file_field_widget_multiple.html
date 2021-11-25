@@ -1,0 +1,43 @@
+{% comment %}
+	VARS needed:
+		fieldName (ex: 'worksheet') - This is used to create hidden input for form submission. 
+		selected attachment objects (ex: myObject.worksheets.all - This is to determine what to show and provide delete capabilities.
+		
+	Usage example:
+		Ovelay and controls:
+			include 'partials/upload_file_overlay.html'
+		
+		Then for each m2m attachment field:
+			include 'partials/upload_file_field_widget_multiple.html' with fieldName='source_files' attachments=finding.source_files.all
+{% endcomment %}
+
+
+{% for attachment in attachments %}
+	<div data-widget="filefield" data-multiple="true" data-fieldname="{{ fieldName }}" class="custom-file-attachment-con mw7 mb2 flex-ns items-center {% if attachment %}custom-hasfile{% endif %}">	
+		<input type="hidden" name="{{ fieldName }}" value="{{ attachment.id }}">
+		<a data-filename="{{ attachment.name }}" href="#" class="custom-deletefile mb2 mr3 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }} ">
+			<div class="flex items-center">
+				<div class="b relative dynamic-fields-add mr2">❌</div>
+				<div>Delete attachment</div>
+			</div>
+		</a>
+		<a class="custom-filelink {{ templateHelpers.classes.link }} mb2" target="_blank" href="{% url 'research:get_file' %}?filename={{ attachment.name }}">{{ attachment.getFileName }}</a>
+	</div>
+{% endfor %}
+
+	<div data-widget="filefield" data-multiple="true" data-fieldname="{{ fieldName }}" class="custom-file-attachment-con mw7 mb2 flex-ns items-center {% if attachment %}custom-hasfile{% endif %}">	
+		<input type="hidden" name="{{ fieldName }}_itemTemplate" value="{{ attachment.id }}">
+		<a data-filename="{{ attachment.name }}" href="#" class="custom-deletefile mb2 mr3 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }} ">
+			<div class="flex items-center">
+				<div class="b relative dynamic-fields-add mr2">❌</div>
+				<div>Delete attachment</div>
+			</div>
+		</a>
+		<a class="custom-filelink {{ templateHelpers.classes.link }} mb2" target="_blank" href="{% url 'research:get_file' %}?filename={{ attachment.name }}">{{ attachment.getFileName }}</a>
+		<a data-filename="" href="#" class="custom-addfile {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">
+			<div class="flex items-center">
+				<div class="b dynamic-fields-add mr2">＋</div>
+				<div>Attach file</div>
+			</div>
+		</a>
+	</div>

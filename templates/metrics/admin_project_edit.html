@@ -1,0 +1,21 @@
+{% extends "metrics/admin_project_add.html" %}
+
+{% block browserTitle %}Admin - Edit: {{ project.name }}{% endblock %}
+
+{% block pageTitle %} Edit: <span class="{{ templateHelpers.classes.pageTitleSecondary }}">{{ project.name }}</span> {% endblock %}
+
+{% block deleteButton %}
+	<form class="w-100 pa4 mb4 bg-white" action="{% url 'metrics:admin_project_delete' %}" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="id" value="{{ project.id }}">
+		<div class="mb2 red">CAUTION, this is <strong>IRREVERSIBLE</strong> and will <strong>permanently</strong>:</div>
+		<ul class="mt2 lh-copy">
+			<li>Delete all campaigns for this project</li>
+			<li>Delete all responses for all campaigns for this project</li>
+			<li>Delete all snapshots for this project</li>
+			<li>Remove the project from the domain and cause the domain metrics to be recalculated</li>
+		</ul>
+		
+		<button class="mt3 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.redSecButton }} ">Delete</button>
+	</form>
+{% endblock %}

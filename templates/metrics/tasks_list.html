@@ -1,0 +1,109 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Tasks {% endblock %}
+
+{% block pageTitle %}Tasks {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+
+	<script>
+	
+		(function ($) {
+			
+			function setupInstantSubmit () {
+				$('#custom-filters').on('change', 'select', function (evt) {
+					$('#custom-filters').submit();
+				});
+			}
+			
+			$(setupInstantSubmit);
+		})(jQuery);
+			
+	</script>
+	
+{% endblock %}
+
+
+{% block leadspace %}
+<div class="{{ templateHelpers.classes.grid }} mt4">
+	<div class="flex flex-wrap justify-between">
+		<div class="f4 fw6 mb4 mr4">Tasks</div>
+		<div class="mb3"><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
+	</div>
+</div>
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mb4">
+
+		<form aria-label="Form will automatically submit and reload the page when selecting a filter value" id="custom-filters" action="" method="get">
+			<div class="flex-ns flex-row-ns flex-column flex-wrap items-center">
+				<div class="mr3 mb3">
+					<select aria-label="Grade" name="score" data-placeholder="Grade">
+						<option value=""></option>
+						<option value="all" {% if selectedScore == 'all' %}selected{% endif %}>All</option>
+						{% for item in scores %}
+							<option value="{{ item.id }}"{% if item.id|stringformat:'i' == selectedScore  %}selected="selected"{% endif %}>{{ item.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="mr3 mb3">
+					<select aria-label="Role" name="role" data-width="resolve" data-placeholder="Role">
+						<option value=""></option>
+						<option value="all" {% if selectedRole == 'all' %}selected{% endif %}>All</option>
+						{% for item in roles %}
+							<option value="{{ item.id }}"{% if item.id|stringformat:'i' == selectedRole  %}selected="selected"{% endif %}>{{ item.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+							
+				<button style="width:0;height:0;opacity:0;" class="pa0 ma0">Show them</button>
+			</div>
+		</form>
+		
+	
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[2,"desc"]]'>
+			<thead>
+				<th class="">Score</th>
+				<th class="">Task</th>
+				<th class="">Ease</th>
+				<th class="">Current friction</th>
+				<th class="">Target friction</th>
+				<th class="">Tools/<br>services</th>
+				<th class="">Role</th>
+				<th class="">Updated</th>
+			</thead>
+			
+			<tbody>
+				{% for task in tasks %}
+					<tr>
+						<td class="">{% if task.score %}
+							<div class="flex items-center"><div class="dib flex flex-inline items-center justify-center br-100 w2 h2 mr2" style="color:{{ task.score_category.text_color_code }};background-color:{{ task.score_category.color_code }};">{{ task.score_category.name }}</div><div>{{ task.score|floatformat:0 }}<div></div>
+							{% endif %}
+						</td>
+						<td data-order="{{ task.name }}">{% if task.numSubtasks > 0 %}<a href="{% url 'metrics:tasks_detail' id=task.id %}">{{ task.name }}</a>{% else %}{{ task.name }}{% endif %}</td>
+						<td class="">{% if task.ease %}{{ task.ease|floatformat:0 }}%{% else %}{% endif %}</td>
+						<td class="">{% if task.current_friction %}{{ task.current_friction|floatformat:0 }}{% else %}<div class="bg-light-gray {{ templateHelpers.classes.textTag }}">in progress</div>{% endif %}</td>
+						<td class="">{% if task.target_friction %}{{ task.target_friction|floatformat:0 }}{% else %}<div class="bg-light-gray {{ templateHelpers.classes.textTag }}">in progress</div>{% endif %}</td>
+						<td class="">{{ task.projects.count }}</td>
+						<td class="">{{ task.role.name }}</td>
+						<td data-order="{{ task.updated_at|date:'U' }}" class="">{{ task.updated_at }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		
+	</div>
+
+	{% include 'metrics/partials/project_jumplinks_overlay.html' %}
+	
+{% endblock %}
+

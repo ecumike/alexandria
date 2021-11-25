@@ -1,0 +1,149 @@
+{% load static %}
+{% load common_templatetags %}
+{% load hijack_tags %}
+{% getTemplateHelpers as templateHelpers %}
+
+{% load request_tag %}
+{% active_users as user_list %}
+
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<link href="{% static 'shared/img/favicon.ico' %}" rel="icon"/>
+		<meta name="owner" content="REPLACE Me">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="index,nofollow">
+		<meta name="description" content="{% block metaDescription %}Research & Metrics Dashboard - user research library{% endblock %}">
+		<meta name="keywords" content="{% block metaKeywords %}Research & Metrics Dashboard, reporting, tools, system, user research, library, python, django, postgres{% endblock %}">
+		<meta name="geo.country" content="zz">
+		<meta name="dcterms.date" content="{% block metaDate %}2021-11-20{% endblock %}">
+
+		<title>{% block browserTitle %}User Research and Analytics - {% endblock %}</title>
+
+		<link rel="apple-touch-icon" href="{% static 'shared/img/apple-touch-icon.png' %}">
+		
+		<script>document.documentElement.classList.add('js');</script>
+		
+		<link href="{% static 'hijack/hijack-styles.css' %}" rel="stylesheet">
+		
+		{% include 'partials/base_design_css_files.inc' %}
+		
+		{% include 'partials/base_design_js_files.inc' %}
+		
+		<script>
+			
+			(function ($) {
+				$(function () {
+					
+					$('.sitenav-help').on('click',function (evt) {
+						evt.preventDefault();
+						MicroModal.show('research-help-modal');
+					});
+					
+				});
+				
+			})(jQuery);
+			
+		</script>
+		
+		{% block extraFiles %} {% endblock %}
+		
+	</head>
+
+	<body class="{% block contentClasses %}bg-white{% endblock %} {% if request.GET.font == 'comicsans' %}comicsans{% else %}plex{% endif %}">
+		{% hijack_notification %}
+		{% bannerNotification %}
+		
+		{% if debug and DATABASE_HOST != 'localhost' %}
+			<div class="bg-dark-red white b h3 flex items-center justify-center">You are using the PRODUCTION database!</div>
+		{% endif %}
+		
+		<main role="main" aria-label="Research & Metrics Dashboard library content">
+			{# header #}
+			<div class="bg-white relative z-1">
+				<nav class="shadow-2 flex flex-wrap justify-between bg-white custom-header pl3 pr4">
+					<div class="flex flex-wrap items-baseline">
+						<div><a class="fw8 underline-hover pa3 link f6 f5-ns fw5 dib relative hover-dark-blue textcolor" href="{% url 'info:home' %}">UXRA home</a></div>
+						<div class="flex flex-wrap custom-headerlinks">
+							<a class="{{ templateHelpers.classes.navItem }} {% block headerMetricsClass %}{% endblock %}" href="{% url 'metrics:home' %}">Metrics</a>
+							<a class="{{ templateHelpers.classes.navItem }} {% block headerResearchClass %}{% endblock %}" href="{% url 'research:home' %}">Research library</a> 
+							<a class="sitenav-help {{ templateHelpers.classes.navItem }} smallicon" href="#" style="padding-top:.7rem;"><span class="hint--bottom" style="transform:translate3d(0,4px,0);" aria-label="Get help">{{ templateHelpers.html.icons.help|safe }}</span></a>
+							{% if request.user.isAnyProjectEditor %}
+								<a class="{{ templateHelpers.classes.navItem }} {% block headerAdminClass %}{% endblock %}" href="{% url 'metrics:admin_home' %}">Admin</a>
+							{% endif %}
+							{% if request.user.is_superuser %}
+								<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'admin:index' %}">DJ</a>
+							{% endif %}
+							 
+						</div>
+					</div>
+				</nav>
+			</div>
+		
+			{# site-specific menunav #}
+			{% block menunav %}{% endblock %}
+
+			{% block leadspace %}
+				<div class="{{ templateHelpers.classes.grid }} pt4">
+					{% block breadcrumbs %}
+						{% if breadcrumbs %}
+							<div class="f6 mb3">
+								{% for link in breadcrumbs %}<a class="{{ templateHelpers.classes.link }} mr2" href="{{ link.url }}">{{ link.text|safe }}</a><span class="mr2">/</span>{% endfor %}
+							</div>
+						{% endif %}
+					{% endblock %}
+					<h1 class="lh-title f4 fw6 mv0 pv0 mw7">{% block pageTitle %}Missing page title{% endblock %}</h1>
+					{% block pageSubtitle %}{% endblock %}
+				</div>
+			{% endblock %}
+
+			{% if request.session.pageMessage %}
+				<div class="mt4 mb3 fw5 {{ templateHelpers.classes.grid }} {{ request.session.pageMessage.class }}">{{ request.session.pageMessage.text|safe }}</div>
+			{% endif %}
+
+			<div style="min-height:calc(100vh - 255px);">
+				{% block content %} {% endblock %}
+			</div>
+
+		</main>
+		
+		<footer>
+			<div class="ph3 {% block footerClasses %}bg-white{% endblock %} flex flex-wrap items-center">
+				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:whatsnew_list' %}">What's new</a>
+				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:faqs_list' %}">FAQs</a> 
+				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:release_notes' %}">Release notes</a>
+				<a class="sitenav-help smallicon {{ templateHelpers.classes.navItem }}" href="#" style="transform:translate3d(0,2px,0);"><span class="hint--top-left" aria-label="Get help">{{ templateHelpers.html.icons.help|safe }}</span></a>
+			</div>
+		</footer>
+
+		<div class="common-modal" id="research-help-modal" aria-hidden="true">
+			<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+				<div class="w-90 mw6 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+					<header class="mb3 flex items-center justify-between">
+						<div class="b f4">What would you like help with?</div>
+						<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+					</header>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'research:home' %}?method=2&showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the research list page to me</a></div>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'research:artifacts_add' %}?showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the research entry template to me</a></div>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:home' %}?showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the metrics dashboard to me</a></div>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'info:faqs_list' %}">{{ templateHelpers.html.icons.chevronForward|safe }}FAQs</a></div>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="https://github.com/ibm/omnia/issues/new" target="_blank">{{ templateHelpers.html.icons.chevronForward|safe }}I've got a bug / feature request / feedback for you</a></div>
+					
+				</div>
+			</div>
+		</div>
+		
+		{% if not request.user.profile.whats_new_seen and request.user.profile.whats_new_count > 0 %}
+			{% include 'partials/whats_new_toaster_overlay.html' %}
+		{% endif %}
+		
+		<script>jQuery.ajax({url:'{% url 'research:api_page_view_tracker' %}'});</script>
+	</body>
+</html>

@@ -1,0 +1,128 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %} {{ block.super}} Project and domain alerts {% endblock %}
+
+{% block metaDescription %} Project and domain alerts {% endblock %}
+
+{% block pageTitle %} Notable NPS changes and events {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	
+{% endblock %}
+
+{% block content %}
+
+	<style>
+		.hasiconNoTop .close,
+		.hasiconNoTop .star,
+		.hasiconNoTop .info,
+		.hasiconNoTop .checkmark {
+			top: 2px;
+		}
+		
+	</style>
+	
+		
+	<script>
+	
+	(function () {
+		
+		function setupFilters () {
+			var formEl = document.querySelector('#custom-filters-form');
+			formEl.addEventListener('change', (evt) => {
+				formEl.submit();
+			});
+		}
+		
+		function setupFilterTags () {
+			for (const tag of document.querySelectorAll('#custom-filter-tags a')) {
+				tag.addEventListener('click', (evt) => {
+					evt.preventDefault();
+					var thisValue = tag.dataset.id
+					tag.remove();
+					document.querySelector("[value='" + thisValue + "']").checked = false;
+					document.querySelector('#custom-filters-form').submit();
+				});				
+			}
+		}
+		
+		
+		document.addEventListener("DOMContentLoaded", function() {
+			setupFilters();
+			setupFilterTags();
+		});
+		
+	})();
+	
+	</script>
+
+	<div class="{{ templateHelpers.classes.grid }} pt4 lh-copy mb4">
+		<div class="mb4">A running history of recent NPS changes and events from the past 90 days</div>
+			
+		<div class="flex-ns">
+			
+			<div id="custom-checkbox-filters" class="w-100 mr4-ns pb5 lh-copy bg-white pa3" style="flex: 0 0 288px;">
+				<form id="custom-filters-form" action="" method="get">
+					<div class="b mb3">Tool/Service</div>
+					
+					<div id="custom-filters-projects" class="mb4 overflow-auto h5">
+						{% for project in projects %}
+							<div class="mb1 f6 bo-checkboxradio"><input id="id_project_{{ project.id }}" type="checkbox" name="project" value="{{ project.id }}" {% if project.id in selectedProjectIds %}checked{% endif %}><label for="id_project_{{ project.id }}" class="pointer db">{{ project.name }}<span class="gray ml2">({{ project.numAlerts }})</span></label></div>
+						{% endfor %}
+					</div>
+					
+					
+					<div class="b mb3">Type</div>
+					<div id="custom-filters-types" class="mb4">
+						{% for type in types %}
+						<div class="f6 bo-checkboxradio dib">
+							<input id="id_type_{{ type }}" type="checkbox" name="type" value="{{ type }}" {% if type in selectedTypes %}checked{% endif %}>
+							<label for="id_type_{{ type }}" class="pointer db smallicon">{{ type|alertTypeIcon|safe }}</label>
+						</div>
+						<br>
+						{% endfor %}
+					</div>
+				</form>
+			</div>
+			
+			<div class="w-100">
+				{% if not alerts %}
+					<div class="b">{{ displayMsg }}
+				{% else %}
+					<div class="mb3">Showing <code class="b plex">{{ alerts.count|intcomma }}</code> alert{{ alerts.count|pluralize }}</div>
+					
+					<div id="custom-filter-tags" class="flex lh-title mb3">
+						{% for project in selectedProjects %}
+							<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="project" data-id="{{ project.id }}" title="Remove project filter">{{ project.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+						{% endfor %}
+						
+						{% for type in selectedTypes %}
+							<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="type" data-id="{{ type }}" title="Remove type filter"><span class="tinyicon">{{ type|alertTypeIcon|safe }}</span><span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+						{% endfor %}
+					</div>
+					
+					<div class="pa4 pb0 bg-white">					
+						{% for item in alerts %}
+							<div class="custom-alert-item">
+								<div class="b mb1" style="padding-left:26px;">{{ item.date|date:'M d, Y' }}</div>
+								<div class="mb1" style="padding-left:26px;">{% if item.project %}<a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:projects_detail' %}?project={{ item.project.id }}&reportperiod=last90" target="_blank">{{ item.project.name }}</a>{% elif item.project.domain %}{{ item.domain.name }}{% endif %}</div>
+								<div class="custom-link-underline pb4 hasicon smallicon" style="">{{item.type|alertTypeIcon|safe }}{{ item.comments }}</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+				
+			</div>
+		</div>
+			
+	</div>
+
+{% endblock %}
+

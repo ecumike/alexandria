@@ -1,0 +1,48 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Broken links {% endblock %}
+
+{% block pageTitle %} Broken links {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+</script>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+			
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[1, "asc"]]'>
+			<thead>
+				<tr>
+					<th class="w3 tl pl2">&nbsp;</th>
+					<th class="w-40 tl">Artifact</th>
+					<th class="w-40 tl pl2">Broken URL</th>
+					<th class="tl pl2">Times reported</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr tabindex="0" class="">
+						<td class="w3"><form action="{% url 'research:admin_brokenlink_delete' %}" method="post">{% csrf_token %}<input type="hidden" name="id" value="{{ item.id }}"><a class="{{ templateHelpers.classes.link }} f6" href="#" onclick="jQuery(this).closest('form').submit();return false;">Delete</a></form></a></td>
+						<td class=""><a class="{{ templateHelpers.classes.link }}" href="{% url 'research:artifacts_detail' id=item.artifact.id %}" title="View detail page in new window" target="_blank">{{ item.artifact.name }}</a></td>
+						<td class=""><a class="{{ templateHelpers.classes.link }}" href="{{ item.link_url }}" target="_blank" title="View in new window">{{ item.link_url }}</a></td>
+						<td class="w3">{{ item.report_count }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+			
+	</div>
+	
+
+{% endblock %}

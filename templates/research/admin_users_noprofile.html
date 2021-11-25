@@ -1,0 +1,71 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Users without a profile {% endblock %}
+
+{% block pageTitle %} Users without a profile {% endblock %}
+
+{% block extraFiles %}
+
+	<script>
+
+		(function ($) {
+			var $newUserForm;
+			
+			function fetchUserInfo (email) {
+				
+				$.ajax({
+					url: '{% url 'research:api_users_add' %}',
+					type: 'post',
+					dataType: 'json',
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'email': email
+					},
+					success: function (data) {
+						window.location.href = '?n=' + new Date().getMilliseconds();
+					},
+					error: function (data) {
+						console.log('There was a problem');
+					},
+				});
+			}
+			
+			
+			$(function () {
+				$('#custom-userlist').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					
+					fetchUserInfo($(this).data('email'));
+				})
+			});
+			
+		})(jQuery);
+		
+	</script>
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="mb2">Click any user to try and pull info from Bluepages and create their local profile.</div>
+		<div class="mb2">May take up to five seconds to complete. Page will automatically reload after profile is created.</div>
+		<div class="mb4">Users that no longer exist in bluepages will not be able to have a profile created for them and will remain in this list.</div>
+		
+		<div id="custom-userlist">
+			{% for user in users %}
+				{% if '@' in user.username %}
+					<div class="mb2"><a href="#" data-email="{{ user.username }}">{{ user.username }}</a></div>
+				{% endif %}
+			{% endfor %}
+		</div>
+	</div>
+	
+
+{% endblock %}

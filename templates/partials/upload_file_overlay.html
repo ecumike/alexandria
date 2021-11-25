@@ -1,0 +1,239 @@
+{% comment %}
+
+	Usage: Simply include this partial with your field name and instance's field (for edit mode)
+	All JS and CSS for the buttons, as well as the overlay are in here.
+
+{% endcomment %}
+
+
+<style>
+	
+	.custom-deletefile,
+	.custom-file-attachment-con .custom-filelink,
+	.custom-hasfile .custom-addfile {
+		display: none;
+	}
+	
+	.custom-hasfile .custom-deletefile,
+	.custom-file-attachment-con.custom-hasfile .custom-filelink {
+		display: block;
+	}
+
+
+	#custom-fileupload-overlay .uploading-msg,
+	#custom-fileupload-overlay .uploading-msg + div,
+	#custom-fileupload-overlay-upload + button {
+		display: none;
+	}
+
+	#custom-fileupload-overlay.uploading .uploading-msg,
+	#custom-fileupload-overlay.uploading .uploading-msg + div,
+	#custom-fileupload-overlay.uploading #custom-fileupload-overlay-upload + button {
+		display: block;
+	}
+	#custom-fileupload-overlay.uploading #custom-fileupload-overlay-upload {
+		display: none;
+	}
+	
+</style>
+
+<script>
+	
+	(function ($) {
+		
+		function relateAttachment (data) {
+			if (data.hasFile) {
+				$.ajax({
+					url: "{% url 'research:api_relate_file' %}",
+					type: 'post',
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'attachmentId': data.id,
+						'artifactId': {{ artifact.id}},
+						'fieldName': data.fieldName,
+					},
+					success: function (data) {
+						// Nada
+					},
+					error: function (data) {
+						console.log(data);
+					}
+				});
+			}
+		}
+		
+		
+		function setupFileAttachmentButtons ($scope) {
+			$scope.find('.custom-addfile').on('click', function (evt) {
+				evt.preventDefault();
+				
+				var thisAttachmentInstance = $(evt.target).closest("[data-widget='filefield']"),
+					thisFieldName = thisAttachmentInstance.data('fieldname');
+				
+				function callbackFunction (data) {
+					data.hasFile = true;
+					data.fieldName = thisFieldName;
+					updateFileAttachmentDisplay(thisAttachmentInstance, data);
+					MicroModal.close('custom-fileupload-overlay');
+					relateAttachment(data);
+				}
+				
+				showUploadFileOverlay(callbackFunction);
+			});
+	
+			$scope.find('.custom-deletefile').on('click', function (evt) {
+				evt.preventDefault();
+				var filename = $(this).data('filename'),
+					thisAttachmentInstance = $(evt.target).closest("[data-widget='filefield']"),
+					thisFieldName = thisAttachmentInstance.data('fieldname');
+	
+				function callbackFunction (data) {
+					data.hasFile = false;
+					updateFileAttachmentDisplay(thisAttachmentInstance, data);
+				}
+	
+				deleteFile(filename, callbackFunction);
+			});
+		}
+		
+		
+		// Set the field value.
+		// Set the delete button data attr.
+		// Set the link URL and text to uploaded worksheet.
+		// Toggle buttons to show.
+		function updateFileAttachmentDisplay ($scope, data) {
+			// If widget is multi-file option, there's no reuse of the widget
+			// We just clone the template and add it to the list, and on remove, we remove the whole div.
+			// Else, it's single-instance so we just toggle add/delete buttons.
+			if ($scope.data('multiple') === true) {
+				// If we're adding a file, clone the template (first instance) and add values.
+				// If we're removing a file, remove the instance completely.
+				if (data.hasFile) {
+					$newInstance = $scope.clone(true, true);
+					$newInstance.find("input").val(data.id);
+					$newInstance.find('.custom-deletefile').attr('data-filename', data.fileName);
+					$newInstance.find('.custom-filelink').attr('href', '{% url 'research:get_file' %}?filename=' + data.fileName).text(data.displayName);
+					// Remove _itemTemplate from field name. In place so empty value doesn't throw validation error.
+					$newInstance.find('input:hidden').attr('name', $newInstance.find('input:hidden').attr('name').replace('_itemTemplate',''));
+					$scope.before($newInstance);
+					$newInstance.addClass('custom-hasfile');
+				}
+				else {
+					$scope.remove();
+				}
+			}
+			else {
+				$scope.find("input").val(data.id);
+				$scope.find('.custom-deletefile').attr('data-filename', data.fileName);
+				$scope.find('.custom-filelink').attr('href', '{% url 'research:get_file' %}?filename=' + data.fileName).text(data.displayName);
+				
+				if (data.hasFile) {
+					$scope.addClass('custom-hasfile');
+				}
+				else {
+					$scope.removeClass('custom-hasfile');
+				}
+			}
+		}
+		
+		
+		function setupUploadFileOverlay (callback) {
+			$('#custom-fileupload-overlay-upload').on('click', function (evt) {
+				evt.preventDefault();
+				
+				if (!document.getElementById('overlay_file_attachment').files[0]) {
+					alert('You have to select a file to upload');
+					return;
+				}
+				
+				var formData = new FormData();
+				formData.append('file', document.getElementById('overlay_file_attachment').files[0]);
+				formData.append('csrfmiddlewaretoken','{{ csrf_token }}');
+
+				document.getElementById('custom-fileupload-overlay').classList.add('uploading');
+				
+				$.ajax({
+					url: "{% url 'research:api_upload_file' %}",
+					type: 'post',
+					data: formData,
+					contentType: false,
+					enctype: 'multipart/form-data',
+					processData: false,
+					success: function (data) {
+						document.getElementById('custom-fileupload-overlay').classList.remove('uploading');
+						document.getElementById('overlay_file_attachment').value = '';
+						if (OM.uploadFileOverlayCallback) {
+							OM.uploadFileOverlayCallback(data);
+							OM.uploadFileOverlayCallback = null;
+						}						
+					},
+					error: function (data) {
+						console.log(data);
+					}
+				});
+				
+			});
+		}
+		
+		// Callback set by each caller.
+		function showUploadFileOverlay (callback) {
+			OM.uploadFileOverlayCallback = callback;
+			MicroModal.show('custom-fileupload-overlay');
+		}
+		
+		
+		function deleteFile(fileName, callback) {
+			$.ajax({
+				url: "{% url 'research:api_delete_file' %}",
+				type: 'post',
+				data: {
+					'csrfmiddlewaretoken': '{{ csrf_token }}',
+					'filename': fileName
+				},
+				success: function (data) {
+					if (callback) {
+						callback(data);
+					}
+					else {
+						console.log(data);
+					}
+				},
+				error: function (data) {
+					console.log(data);
+				}
+			});
+		}
+		
+		
+		$(function () {
+			$("[data-widget='filefield']").each(function () {
+				setupFileAttachmentButtons($(this));
+			});
+			setupUploadFileOverlay();
+		});
+		
+
+	})(jQuery);
+
+</script>	
+	
+		<div class="common-modal" id="custom-fileupload-overlay" aria-hidden="true">
+			<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+				<div class="w-90 mw6 bg-white pa4 pt3" role="dialog" aria-modal="true" aria-label="file upload form" >
+					<header class="fr">
+						<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+					</header>
+					<div class="custom-content">
+						<div class="mt4 mb3 b"><label for="overlay_file_attachment">Select a file to attach</label></div>
+						<div class="mb3 w-90"><input type="file" name="overlay_file" id="overlay_file_attachment"></div>
+						<div class="mb3 f6 gray">Note: Depending on your connection, files over 30MB may take longer than two minutes and time out</div>
+						<div class="flex items-center">
+							<button id="custom-fileupload-overlay-upload" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Upload attachment</button>
+							<button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}" disabled="">Upload attachment</button>
+							<div class="uploading-msg {{ templateHelpers.classes.spinner }} ml3 bw2 w2 h2 dib"></div>
+							<div class="dib ml2 f6">Uploading</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>

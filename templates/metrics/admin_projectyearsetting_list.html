@@ -1,0 +1,65 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Project year settings {% endblock %}
+
+{% block pageTitle %} Project year settings {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it</p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0, "desc"], [1, "asc"]]'>
+			<thead>
+				<tr>
+					<th class="tl pl2">Year</th>
+					<th class="tl pl2">Project</th>
+					<th class="tl pl2">NPS base</th>
+					<th class="tl pl2">NPS base count</th>
+					<th class="tl pl2">NPS base MOE</th>
+					<th class="tl pl2">NPS target</th>
+					<th class="tl pl2">How</th>
+					<th class="tl pl2">Who</th>
+					<th class="tl pl2">When</th>
+					<th class="tl pl2">From</th>
+					<th class="tl pl2">Notes</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_projectyearsetting_edit' id=item.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="pv2 pl2 pr3">{{ item.year }}</td>
+						<td class="pv2 pl2 pr3">{{ item.project.name }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline|floatformat:1 }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_response_count|floatformat:0 }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_margin_error|floatformat:1 }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_target|floatformat:0 }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_entry_type }}</td>
+						<td class="pv2 pl2 pr3">{{ item.updated_by.username }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_created_at|date:'M d, Y' }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_from }}</td>
+						<td class="pv2 pl2 pr3">{{ item.nps_baseline_notes }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

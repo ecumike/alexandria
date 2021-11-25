@@ -1,0 +1,53 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Targets {% endblock %}
+
+{% block pageTitle %} Targets {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{{ newItemUrl }}"><span class="mr1">add a new {{ modelMeta.verbose_name }}</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw7">
+		
+		<table {{ templateHelpers.html.tableWidget.sortOnly|safe }}>
+			
+			<thead>
+				<tr>
+					<th class="tl pl2">NPS</th>
+					<th class="tl pl2">UMUX score</th>
+					<th class="tl pl2">Achieve target</th>
+					<th class="tl pl2">Exceed target</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_target_edit' id=item.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="">{{ item.nps_score|default:'' }}</td>
+						<td class="">{{ item.umux_score|default:'' }}</td>
+						<td class="">{{ item.achieve_target }}</td>
+						<td class="">{{ item.exceed_target }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

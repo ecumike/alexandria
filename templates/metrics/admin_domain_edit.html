@@ -1,0 +1,14 @@
+{% extends "metrics/admin_domain_add.html" %}
+
+{% block browserTitle %}Admin - Edit: {{ domain.name }}{% endblock %}
+
+{% block pageTitle %} Edit: <span class="{{ templateHelpers.classes.pageTitleSecondary }}">{{ domain.name }}</span> {% endblock %}
+
+{% block deleteButton %}
+	<form class="w-100 pa4 mb4 bg-white" action="{% url 'metrics:admin_domain_delete' %}" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="id" value="{{ domain.id }}">
+		<div class="mb3 red b">This is irreversible</div>
+		<button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.redSecButton }} ">Delete</button>
+	</form>
+{% endblock %}

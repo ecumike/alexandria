@@ -1,0 +1,92 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Tools &amp; services {% endblock %}
+
+{% block metaDate %}{{ LATEST_RESPONSE_DATE }}{% endblock %}
+
+{% block extraFiles %}
+	
+	
+{% endblock %}
+
+
+{% block leadspace %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="w-100 flex flex-wrap justify-between">
+			<div class="flex items-baseline mb3">
+				<h1 class="f4 fw6 mv0 pv0">Tools &amp; services</h1>
+				<div id="custom-display-count" class="ml3 f6 gray">Showing <span class="b">{{ resultsCount }}</span> of <span class="b">{{ totalProjectsCount }}</span></div>
+			</div>
+			<div class="mb3 flex items-center">
+				<a href="#" onclick="MicroModal.show('scoring-legends-modal');return false;" class="f6 smallicon flex items-center {{ templateHelpers.classes.link }}">Scoring legends<div class="ml1">{{ templateHelpers.html.icons.modal|safe }}</div></a>
+				<div class="ml4"><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
+			</div>
+		</div>
+	</div>
+		
+{% endblock %}
+
+
+{% block content %}
+
+	
+	<div class="{{ templateHelpers.classes.grid }} mt2">
+		
+		<div class="flex-ns">
+			
+			<div class="mr4-ns mb4 lh-copy bg-white pa3" style="flex: 0 0 288px;">
+				{% include 'metrics/partials/filters.html' %}
+			</div>			
+			
+			<div class="">
+				
+				<div class="flex flex-wrap">
+					{% if not projectSnapshots and not projectsWithoutSnapshot %}
+						<div>Hmm, we didn't find any tools &amp; services with the selected filters.</div>
+					{% endif %}
+				
+					{# Putting IF first provides least amount of logic processing. Only processes that once. #}
+					{# for projects that don't have a snapshot, show them at the end of the list with specific score type #}
+					
+					{% if tileFiltersData.selectedShowData == 'nps_score' %}
+						{% for snapshot in projectSnapshots %}
+							{% include 'metrics/partials/project_tile_nps_score.html' with snapshot=snapshot %}
+						{% endfor %}
+						{% for project in projectsWithoutSnapshot %}
+							{% include 'metrics/partials/project_tile_no_snapshot.html' with project=project scoreType='NPS' %}
+						{% endfor %}
+					{% elif tileFiltersData.selectedShowData == 'umux_score' %}
+						{% for snapshot in projectSnapshots %}
+							{% include 'metrics/partials/project_tile_umux_score.html' with snapshot=snapshot %}
+						{% endfor %}
+						{% for project in projectsWithoutSnapshot %}
+							{% include 'metrics/partials/project_tile_no_snapshot.html' with project=project scoreType='UMUX' %}
+						{% endfor %}
+					{% else %}
+						{% for snapshot in projectSnapshots %}
+							{% include 'metrics/partials/project_tile_goal_completed.html' with snapshot=snapshot %}
+						{% endfor %}
+						{% for project in projectsWithoutSnapshot %}
+							{% include 'metrics/partials/project_tile_no_snapshot.html' with project=project scoreType='goal completed' %}
+						{% endfor %}
+					{% endif %}
+					
+				</div>
+				
+			</div>
+			
+		</div>
+		
+	{% include 'metrics/partials/project_jumplinks_overlay.html' %}
+	
+	{% include 'metrics/partials/project_scoring_modal.html' %}
+	
+	
+
+{% endblock %}
+

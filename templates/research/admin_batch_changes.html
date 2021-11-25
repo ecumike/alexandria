@@ -1,0 +1,41 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Batch changes {% endblock %}
+
+{% block pageTitle %} Batch changes {% endblock %}
+
+{% block extraFiles %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+
+		<form action="" method="post" class="bg-white pa4 mb4">
+			{% csrf_token %}
+			<div class="">
+				<div class="mb4">Perform search and replace across research artifacts:</div>
+				
+				<p class="b pt3">Change all research artifacts:</p>
+
+				<div class="flex items-center mb3">
+					<div>Where current owner is </div>
+					<div class="ml2"><select aria-label="Existing owner" name="existing_owner" data-width="300px" data-placeholder="Select one"><option></option>{% for user in artifactOwners %}<option value="{{ user.id }}">{{ user.username }}</option>{% endfor %}</select></div>
+					<div class="ml3">change to new owner </div>
+					<div class="ml2"><select aria-label="New owner" name="new_owner" data-width="300px" data-placeholder="Select one"><option></option>{% for user in activeUsers %}<option value="{{ user.id }}">{{ user.username }}</option>{% endfor %}</select></div>
+					<button class="ml4 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Do it</button>
+				</div>
+				
+				
+
+			</div>
+		</form>
+				
+	</div>
+
+{% endblock %}

@@ -1,0 +1,167 @@
+
+	<script>
+	
+		(function ($) {
+			
+			function setupInstantSubmit () {
+				$('#tilebase-filters').on('mouseup', '.bo-checkboxradio', function (evt) {
+					setTimeout(function () {
+						$('#tilebase-filters').submit();
+					},100);
+				});
+				
+				
+				$('#tilebase-filters').on('change', 'select', function (evt) {
+					setTimeout(function () {
+						$('#tilebase-filters').submit();
+					},100);
+				});
+				
+				$('.custom-clear-field').on('click', function (evt) {
+					evt.preventDefault();
+					var className = evt.target.dataset.fieldClass;
+					$('.' + className).prop('checked', false).trigger('mouseup');
+				});
+			}
+			
+			$(setupInstantSubmit);
+		})(jQuery);
+			
+	</script>
+
+	
+	<form aria-label="Form will automatically submit and reload the page when selecting a filter value" id="tilebase-filters" action="{% url 'metrics:projects_home' %}" method="get">
+		<input type="hidden" name="display" value="tiles">
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Domain</div>
+			<select name="domain" data-width="resolve">
+				<option value="alldomains" {% if tileFiltersData.selectedDomain == 'alldomains' %}selected{% endif %}>All domains</option>
+				{% for domain in tileFiltersData.domains %}
+					<option value="{{ domain.id}}" {% if tileFiltersData.selectedDomain == domain.id|stringformat:'i' %}selected{% endif %}>{{ domain.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Report period</div>
+			<select name="reportperiod" data-width="resolve">
+				{% for option in tileFiltersData.reportPeriodChoices %}
+					<option value="{{ option.0 }}" {% if tileFiltersData.selectedReportPeriod == option.0 %}selected{% endif %}>{{ option.1}}</option>
+				{% endfor %}
+			</select>
+		</div>
+	
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Data set</div>
+			{% for option in tileFiltersData.showDataChoices %}
+				<div class="mb1 bo-checkboxradio f6">
+					<input id="id_showdata_{{ option.0 }}" type="radio" name="showdata" value="{{ option.0 }}" {% if tileFiltersData.selectedShowData == option.0 %}checked{% endif %}>
+					<label class="pointer db" for="id_showdata_{{ option.0 }}">{{ option.1 }}</label>
+				</div>
+			{% endfor %}
+		</div>
+		
+		{% if request.user.hasAdminAccess %}
+			<div class="mb4 lh-copy">
+				<div class="b mb2">Project status</div>
+				<div class="mb1 bo-checkboxradio f6">
+					<input id="id_archived" type="checkbox" name="archived" value="y" {% if request.GET.archived == 'y' %}checked{% endif %}>
+					<label class="pointer db" for="id_archived">Archived</label>
+				</div>
+			</div>
+		{% endif %}
+		
+		{% if projectKeywords %}
+			<div class="mb4 lh-copy">
+				<div class="b mb2">Tool/service keyword<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-keyword" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+				<div class="overflow-y-auto" style="max-height:16rem;">
+					{% for keyword in projectKeywords %}
+						<div class="mb1 bo-checkboxradio f6">
+							<input id="id_keyword_{{ keyword.id }}" type="checkbox" name="keyword" class="custom-keyword" value="{{ keyword.id }}" {% if keyword.id|stringformat:'i' in tileFiltersData.selectedProjectKeywords %}checked{% endif %}>
+							<label class="pointer db" for="id_keyword_{{ keyword.id }}">{{ keyword.name }}</label>
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+		{% endif %}
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Tool/service priority<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-priority" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+			<div class="flex">
+				{% for option in priorities %}
+					<div class="mr3 mb1 bo-checkboxradio f6">
+						<input id="id_priority_{{ option }}" type="checkbox" name="priority" class="custom-priority" value="{{ option }}" {% if option|stringformat:'i' in tileFiltersData.selectedPriorities %}checked{% endif %}>
+						<label class="pointer db" for="id_priority_{{ option }}">{{ option }}</label>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Scoring<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-scoring" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+			<div class="mb1 bo-checkboxradio f6">
+				<input id="id_meetingnpstarget" type="checkbox" class="custom-scoring" value="y" name="meetingnpstarget" {% if tileFiltersData.selectedMeetingNpsTarget == 'y' %}checked{% endif %}>
+				<label class="pointer db"  for="id_meetingnpstarget">Achieving NPS target</label>
+			</div>
+			<div class="mb1 bo-checkboxradio f6">
+				<input id="id_meetingumuxtarget" type="checkbox" class="custom-scoring" value="y" name="meetingumuxtarget" {% if tileFiltersData.selectedMeetingUmuxTarget == 'y' %}checked{% endif %}>
+				<label class="pointer db"  for="id_meetingumuxtarget">Achieving UMUX target</label>
+			</div>
+			<div class="mb1 bo-checkboxradio f6">
+				<input id="id_exceedingnpstarget" type="checkbox" class="custom-scoring" value="y" name="exceedingnpstarget" {% if tileFiltersData.selectedExceedingNpsTarget == 'y' %}checked{% endif %}>
+				<label class="pointer db"  for="id_exceedingnpstarget">Exceeding NPS target</label>
+			</div>
+			<div class="mb1 bo-checkboxradio f6">
+				<input id="id_exceedingumuxtarget" type="checkbox" class="custom-scoring" value="y" name="exceedingumuxtarget" {% if tileFiltersData.selectedExceedingUmuxTarget == 'y' %}checked{% endif %}>
+				<label class="pointer db"  for="id_exceedingumuxtarget">Exceeding UMUX target</label>
+			</div>
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">NPS category<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-npscategory" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+			{% for item in tileFiltersData.npsCategories %}
+				<div class="mb1 bo-checkboxradio f6">
+					<input id="id_npscat_{{ item.id }}" type="checkbox" name="npscat" class="custom-npscategory" value="{{ item.id }}" {% if item.id|stringformat:'i' in tileFiltersData.selectedNpsCats %}checked{% endif %}>
+					<label class="pointer db" for="id_npscat_{{ item.id }}">{{ item.name }}</label>
+				</div>
+			{% endfor %}
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">UMUX category<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-umuxcategory" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+			<div class="flex flex-column flex-wrap" style="height: 5rem;">
+				{% for item in tileFiltersData.umuxCategories %}
+					<div class="mr2 mb1 bo-checkboxradio f6">
+						<input id="id_umuxcat_{{ item.id }}" type="checkbox" name="umuxcat" class="custom-umuxcategory" value="{{ item.id }}" {% if item.id|stringformat:'i' in tileFiltersData.selectedUmuxCats %}checked{% endif %}>
+						<label class="pointer db" for="id_umuxcat_{{ item.id }}">{{ item.name }}</label>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Goal completed category<span class="normal gray dib ml3 f6">[<a href="#" data-field-class="custom-goalcategory" class="custom-clear-field {{ templateHelpers.classes.link }}">Clear</a>]</span></div>
+			{% for item in tileFiltersData.goalCategories %}
+				<div class="mb1 bo-checkboxradio f6">
+					<input id="id_goalcat_{{ item.id }}" type="checkbox" name="goalcat" class="custom-goalcategory" value="{{ item.id }}" {% if item.id|stringformat:'i' in tileFiltersData.selectedGoalCats %}checked{% endif %}>
+					<label class="pointer db" for="id_goalcat_{{ item.id }}">{{ item.name }}</label>
+				</div>
+			{% endfor %}
+		</div>
+		
+		<div class="mb4 lh-copy">
+			<div class="b mb2">Task</div>
+			<select name="task" data-width="resolve">
+				<option value="all" {% if tileFiltersData.selectedDomain == 'alldomains' %}selected{% endif %}>All tasks</option>
+				{% for task in tileFiltersData.tasks %}
+					<option value="{{ task.id}}" {% if tileFiltersData.selectedTask == task.id|stringformat:'i' %}selected{% endif %}>{{ task.name }}</option>
+				{% endfor %}
+			</select>
+		</div>
+		
+		<div class="mb3 pt2">
+			<button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Apply filters</button>
+		</div>
+		
+	</form>

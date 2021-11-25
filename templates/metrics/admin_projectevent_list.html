@@ -1,0 +1,52 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - {{ modelMeta.verbose_name_plural|capfirst }} {% endblock %}
+
+{% block pageTitle %} {{ modelMeta.verbose_name_plural|capfirst|capfirst }} {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_projectevent_add' %}"><span class="mr1">add a new {{ modelMeta.verbose_name }}</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<tr>
+					<th class="tl">Project</th>
+					<th class="w5 tl">Event</th>
+					<th class="w3 tl">Date</th>
+					<th class="w4 tl">Created by</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for event in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_projectevent_edit' id=event.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="pv2 pl2 pr3">{{ event.project.name }}</td>
+						<td class="pv2 pl2 pr3">{{ event.name }}</td>
+						<td class="pv2 pl2 pr3">{{ event.date }}</td>
+						<td class="pv2 pl2 pr3">{{ event.created_by.username }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

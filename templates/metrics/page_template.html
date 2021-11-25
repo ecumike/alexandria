@@ -1,0 +1,39 @@
+{% extends "page_template.html" %}
+{% load static %}
+
+{% block browserTitle %}Metrics Dashboard - {% endblock %}
+
+{% block headerMetricsClass %}custom-highlight{% endblock %}
+
+{% block contentClasses %}bg-near-white no-shadow{% endblock %}
+
+{% block menunav %}
+	<div class="bg-blue-70 ph3">
+		<div class="flex flex-wrap custom-menunav">
+			{% if menunavItem == 'dashboard' %}
+				<div class="b {{ templateHelpers.classes.menunavText }}">Dashboard</div>
+			{% else %}
+				<a href="{% url 'metrics:home' %}" class="{{ templateHelpers.classes.menunavLink }}">Dashboard</a>
+			{% endif %}
+			
+			{% if menunavItem == 'domains' %}
+				<div class="b {{ templateHelpers.classes.menunavText }}">Domains</div>
+			{% else %}
+				<a href="{% url 'metrics:domains_home' %}" class="{{ templateHelpers.classes.menunavLink }}">Domains</a>
+			{% endif %}
+			
+			{% if menunavItem == 'projects' %}	
+				<div class="b {{ templateHelpers.classes.menunavText }}">Tools &amp; services</div>
+			{% else %}
+				<a href="{% url 'metrics:projects_home' %}" class="{{ templateHelpers.classes.menunavLink }}">Tools/services</a>
+			{% endif %}
+			
+			{% if menunavItem == 'tasks' %}	
+				<div class="b {{ templateHelpers.classes.menunavText }}">Tasks</div>
+			{% else %}
+				<a href="{% url 'metrics:tasks_home' %}" class="{{ templateHelpers.classes.menunavLink }}">Tasks</a>
+			{% endif %}
+			
+		</div>
+	</div>
+{% endblock %}

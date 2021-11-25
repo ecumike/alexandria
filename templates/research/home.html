@@ -1,0 +1,245 @@
+{% extends "research/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Home{% endblock %}
+
+{% block pageTitle %} User research library{% endblock %}
+
+{% block extraFiles %}
+	
+	<style>
+		
+	</style>
+	
+	<script>
+		
+		(function ($) {
+			
+			var $artifactsContainer,
+				$loadmoreContainer,
+				pageNum = 2; // page 1 is loaded by default.
+			
+			
+			function setupFilterSelections () {
+				$('#custom-listing-filter-form').on('change', 'input', function (evt) {
+					$('#custom-listing-filter-form').trigger('submit');
+				});
+			}
+			
+			
+			// Clone search field into filter form, as hidden, then submit.
+			function setupFilterFormSubmit () {
+				$('#custom-listing-filter-form').on('submit', function (evt) {
+					if ($('#custom-search-field').val() !== "") {
+						$(this).append($('#custom-search-field').clone().attr('type', 'hidden'));
+					}
+				});
+			}
+			
+			
+			// Defers form submission to filter form.
+			function setupSearchField () {
+				$('#custom-search-form').on('submit', function (evt) {
+					evt.preventDefault();
+					$('#custom-listing-filter-form').trigger('submit');
+				});
+			}
+			
+			
+			function setupFilterTags () {
+				$('#custom-filter-tags').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					
+					var fieldName = $(this).data('fieldname'),
+						fieldValue = $(this).data('id');
+						
+					$("[name='" + fieldName + "'][value='" + fieldValue + "']").prop('checked', false).trigger('change');
+					$(this).siblings().addClass('disabled');
+					$(this).remove();
+					$('#custom-listfilters').find('form').trigger('submit');
+				});
+			}
+			
+			
+			function loadMoreArtifacts () {
+				document.getElementById('custom-loading-msg-con').classList.add('flex');
+				
+				$.ajax({
+					url: "{% url 'research:api_artifacts_search' %}?page=" + (pageNum) + "&{{ request.GET.urlencode }}",
+					dataType: "json",
+					success: function (data) {
+						$artifactsContainer.append(data.resultsHtml);
+						
+						if (data.hasNextPage) {
+							pageNum = (data.pageNum + 1);
+						}
+						else {
+							$loadmoreContainer.remove();
+						}
+						document.getElementById('custom-loading-msg-con').classList.remove('flex');
+					}
+				});
+			}
+			
+			
+			$(function () {
+				setupFilterFormSubmit();
+				setupFilterSelections();
+				setupSearchField();
+				setupFilterTags();
+				
+				$artifactsContainer = $(document.getElementById('custom-artifact-items'));
+				$loadmoreContainer = $(document.getElementById('custom-loadmore'));
+				if ($loadmoreContainer.find('button')[0]) {
+					$loadmoreContainer.find('button')[0].addEventListener('click', loadMoreArtifacts);
+				}
+			});
+			
+		})(jQuery);
+		
+	</script>
+	
+	{% if request.GET.showwalkthru == 'y' %}
+		{% include 'research/partials/walkthru_home.inc' %}
+	{% endif %}
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<form id="custom-search-form" action="" method="get">
+			<div class="relative flex-ns mw7 mb3">
+				<input id="custom-search-field" class="w-100 input-reset pa2" style="padding-right: 105px;" aria-label="Search for research items" name="q" value="{{ request.GET.q }}" placeholder="Search for research items" type="text">
+				<button class="absolute right-0 top-0 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}" id="custom-search-button">Search</button>
+			</div>
+			<div class="f6 mb3 pb2"><a href="{% url 'research:home' %}" class="{{ templateHelpers.classes.link }}">Clear search/filters</a></div>
+		</form>
+		
+	</div>
+
+	<div class="{{ templateHelpers.classes.grid }} mt4 mb4 flex-ns">
+		
+		<div id="custom-listfilters" class="w-100 mr4-ns mb5 lh-copy bg-white pa3" style="flex: 0 0 288px;">
+			
+			<form id="custom-listing-filter-form" method="get" action="">
+				
+				{% if tags %}
+					<div id="step-filter-tag" class="mb4 bo-word-break-all">
+						<div class="b mb3">Keyword</div>
+						<div class="overflow-auto" style="max-height:16rem;">
+							{% for item in tags %}
+								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_tag_{{ item.id }}" type="checkbox" name="tag" value="{{ item.id }}" {% if item in selectedTags %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_tag_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				
+				{% if methods %}
+					<div id="step-filter-method" class="mb4">
+						<div class="b mb3">Method</div>
+						<div class="overflow-auto" style="max-height:16rem;">
+							{% for item in methods %}
+								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_method_{{ item.id }}" type="checkbox" name="method" value="{{ item.id }}" {% if item in selectedMethods %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_method_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				
+				{% if statuses %}
+					<div id="step-filter-status" class="mb4">
+						<div class="b mb3">Status</div>
+						<div class="overflow-auto" style="max-height:16rem;">
+							{% for item in statuses %}
+								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_status_{{ item.id }}" type="checkbox" name="status" value="{{ item.id }}" {% if item in selectedStatuses %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_status_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				
+				{% if projects %}
+					<div id="step-filter-project" class="mb4">
+						<div class="b mb3">Tool/service</div>
+						<div class="overflow-auto" style="max-height:16rem;">
+							{% for item in projects %}
+								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_project_{{ item.id }}" type="checkbox" name="project" value="{{ item.id }}" {% if item in selectedProjects %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_project_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				
+				{% if sources %}
+					<div id="step-filter-source" class="mb4">
+						<div class="b mb3">Source</div>
+						<div class="overflow-auto" style="max-height:16rem;">
+							{% for item in sources %}
+								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_source_{{ item.id }}" type="checkbox" name="source" value="{{ item.id }}" {% if item in selectedSources %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_source_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+
+			</form>
+		</div>
+		
+		
+		<div class="w-100">
+			
+			<div class="mb3">
+				<div class="flex justify-between items-center-l flex-column-reverse-m mb3">
+					<div class="mb3 mb0-ns">Showing <code class="b">{{ resultsCount }}</code> research item{{ resultsCount|pluralize }}</div>
+					<div class="mb3 mb0-l">
+						<a href="{% url 'research:artifacts_add' %}" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}"><span class="flex items-center fill-white smallicon">{{ templateHelpers.html.icons.add|safe }}<span class="ml2">Add new research</span></span></a></div>
+					
+				</div>
+				
+				{% if selectedMethods or selectedSources or selectedStatuses or selectedProjects or selectedTags %}
+					<div id="step-filter-tags" class="mt2 w-75">
+						<div id="custom-filter-tags">
+							{% for method in selectedMethods %}
+								<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="method" data-id="{{ method.id }}" title="Remove method filter">{{ method.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+							
+							{% for source in selectedSources %}
+								<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="source" data-id="{{ source.id }}" title="Remove source filter">{{ source.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+
+							{% for status in selectedStatuses %}
+								<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="status" data-id="{{ status.id }}" title="Remove status filter">{{ status.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+
+							{% for project in selectedProjects %}
+								<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="project" data-id="{{ project.id }}" title="Remove project filter">{{ project.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+
+							{% for tag in selectedTags %}
+								<a href="#" class="{{ templateHelpers.classes.tag }}" data-fieldname="tag" data-id="{{ tag.id }}" title="Remove tag filter">{{ tag.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+			</div>
+			
+			<div id="custom-artifact-items" class="mt3 bo-word-break-all">
+				{% include 'research/partials/artifacts_list_items.html' with artifacts=artifacts %}
+			</div>
+
+			{% if hasNextPage %}
+				<div class="ml3 ml0-ns mt3 flex-ns items-center">
+					<div id="custom-loadmore" class="">
+						<button type="button" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Load more</button>
+					</div>
+					<div id="custom-loading-msg-con" class="items-center ml3-ns dn"><div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div><div id="custom-loading-msg" class="dib ml2 f6">Fetching</div></div>
+				</div>
+			{% endif %}	
+
+		</div>
+		
+	</div>
+
+{% endblock %}
+

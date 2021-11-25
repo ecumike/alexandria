@@ -1,0 +1,121 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Responses goal import {% endblock %}
+
+{% block pageTitle %} Responses goal import {% endblock %}
+
+{% block extraFiles %}
+		
+	<script>
+		
+		(function ($) { 
+			
+			function postFile (submit) {
+				var messageContainer = document.getElementById('custom-post-message'),
+					fileInput = document.getElementById('custom-file'),
+					previewContainer = document.getElementById('custom-preview-list'),
+					formData = new FormData();
+				
+				formData.append('file', document.getElementById('custom-file').files[0]);
+				formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+				
+				if (!submit) {
+					formData.append('preview', 'yes');
+				}
+				
+				document.getElementById('custom-processing').removeAttribute('style');
+			
+				$.ajax({
+					url: '{% url 'metrics:api_set_responses_goal' %}',
+					type: 'post',
+					dataType: 'json',
+					processData: false,
+					contentType: false,
+					data: formData,
+					success: function (data) {
+						messageContainer.classList.remove('red');
+						messageContainer.classList.add('green');
+						messageContainer.innerHTML = data.message;
+						
+						if (submit) {
+							fileInput.value = '';
+							previewContainer.innerHTML = '';
+						}
+						else {
+							var trs = '';
+							data.data.forEach(function (item) {
+								trs += '<tr><td>' + item.id + '</td><td>' +  item.existingGoal + '</td><td>' + item.newGoal + '</td></tr>';
+							});
+							previewContainer.innerHTML = '<table><tr><td>Response ID</td><td>Old goal</td><td>New goal</td></tr>' + trs + '</table>';
+						}
+						document.getElementById('custom-processing').style.display = 'none';
+					},
+					error: function (data) {
+						messageContainer.classList.remove('green');
+						messageContainer.classList.add('red');
+						messageContainer.innerHTML = data.responseJSON.message;
+						document.getElementById('custom-processing').style.display = 'none';
+					},
+				});
+			}
+			
+			
+			$(function () {
+				document.getElementById('custom-preview-button').addEventListener('click', function () {
+					postFile(false);
+				});
+				document.getElementById('custom-submit-button').addEventListener('click', function () {
+					postFile(true);
+				});
+
+			});
+			
+		})(jQuery);
+		
+	</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		<div class="pa4 bg-white">
+			
+			<div id="custom-post-message" class="mb3 b"></div>
+			
+			<div class="mw7">
+				<div class="mw6 mb4 lh-copy">Find and attach your CSV file with responses and their new goals to set.
+					<br><strong>NOTE:</strong> The CSV file <strong>must</strong> have the "response ID" in column "C" and the goal in column "G". Nothing else matters.
+				</div>
+				
+				<div class="mw6"><input id="custom-file" type="file" name="file"></div>
+				
+				<div class="mt4 mb3 flex items-center">
+					<button id="custom-preview-button" class="mr4 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }} ">Preview the updates</button>
+					<button id="custom-submit-button" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.greenPriButton }} ">Submit for updating</button>
+					<div id="custom-processing" class="flex items-center ml3-ns" style="display:none;"><div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div><div id="custom-processing-msg" class="dib ml2 f6">Processing</div></div>
+				</div>
+	
+				<style>
+					table td {
+						padding: 8px;
+						border-bottom: 1px solid lightgray;
+					}
+				</style>
+				<div id="custom-preview-list" class="mt4 mb4"></div>
+					
+			</div>
+			
+		</div>
+	
+	</div>
+
+
+	
+
+{% endblock %}

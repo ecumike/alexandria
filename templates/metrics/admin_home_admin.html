@@ -1,0 +1,350 @@
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+<div class="{{ templateHelpers.classes.grid }} mt4">	
+	
+	<div class="bg-white {{ templateHelpers.classes.grid }} ">	
+		
+		<div class="pt4 b f4">Metrics</div>
+
+		<div class="flex-ns flex-wrap mv4">
+			
+			{% url 'metrics:admin_campaign_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Campaigns' totalNum=counts.campaigns description='Campaigns belong to a project' %}
+			
+			{% url 'metrics:admin_project_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Tools/services' totalNum=counts.projects description='Projects belong to a domain' %}
+				
+			{% url 'metrics:admin_projectsnapshot_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Snapshots' totalNum=counts.projectSnapshots description='Metrics that are displayed' %}
+			
+			<div>
+				<div class="mb2 dib"><a class="animate link underline-hover flex items-center" href="/djangoadmin/request/request/overview/" target="_blank"><span>Site analytics</span><span class="relative ml1">{{ templateHelpers.html.icons.newWindow|safe }}</span></a></div>
+				
+				{% url 'metrics:admin_online_users' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Users currently online' description='' %}
+				
+				{% url 'research:admin_brokenlink_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Broken research links' description='' %}
+			</div>
+		</div>	
+			
+			
+		<div class="flex-ns flex-wrap">
+			
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Domains</div>
+			
+				{% url 'metrics:admin_domain_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Domains' totalNum=counts.domains description='Domains contain tools/services' %}
+				
+				{% url 'metrics:admin_domainyearsnapshot_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Domain year snapshots' totalNum=counts.domainYearSnapshots description='Running metrics for domains' %}
+			</div>
+	
+	
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Tools/services</div>
+	
+				{% url 'metrics:admin_project_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tools/services' totalNum=counts.projects description='Tools/services contain campaigns' %}
+				
+				{% url 'metrics:admin_projectkeyword_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tools/services keywords' totalNum=counts.projectKeywords description='Keywords for tools &amp; services' %}
+				
+				{% url 'metrics:admin_project_keyword_tagging' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tools/services keyword tagging' totalNum=counts.projectKeywords description='Tag projects with keywords' %}
+				
+				{% url 'metrics:admin_projectevent_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Events' totalNum=counts.projectEvents description='Important project events' %}
+				
+				{% url 'metrics:admin_projectsnapshot_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Snapshots' totalNum=counts.projectSnapshots description='Metrics that are displayed' %}
+				
+				{% url 'metrics:admin_projectsnapshots_to_csv' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Snapshots - download as CSV' %}
+				
+				{% url 'metrics:admin_projectyearsetting_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Year settings' totalNum=counts.projectYearSettings description='Yearly settings for a project' %}
+			</div>
+			
+	
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Campaigns & Responses</div>
+	
+				{% url 'metrics:admin_campaign_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Campaigns' totalNum=counts.campaigns description='Campaigns belong to a project' %}
+				
+				{% url 'metrics:admin_datasource_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Data sources' totalNum=counts.dataSources description='Metrics data sources AVL' %}
+				
+				{% url 'metrics:response_counts' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Response counts' description='' %}
+					
+				{% url 'metrics:admin_email_all_responses_as_csv' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Email me a CSV with every response, now' description='' %}
+				
+				{% url 'metrics:admin_responses_export' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Export responses' description='' %}
+					
+				{% url 'metrics:admin_responses_import_goal' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Import responses\' goals' description='' %}
+					
+				{% url 'metrics:admin_get_new_usabilla_responses' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch the latest Usabilla responses now' description='' %}
+				<div class="f7 pl3 mb2"><strong>Last run:</strong>
+					<br>{{ lastUsabillaRun.date|date:'M d, Y' }} - {{ lastUsabillaRun.date|time:'TIME_FORMAT' }}
+					<br>By {{ lastUsabillaRun.user.username|default:'nightly script' }}</div>
+					
+				{% url 'metrics:admin_get_new_beeheard_responses' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch the latest BeeHeard responses now' description='' %}
+				<div class="f7 pl3 mb2"><strong>Last run:</strong>
+					<br>{{ lastBeeHeardRun.date|date:'M d, Y' }} - {{ lastBeeHeardRun.date|time:'TIME_FORMAT' }}
+					<br>By {{ lastBeeHeardRun.user.username|default:'nightly script' }}</div>
+	
+			</div>
+			
+			
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Tasks</div>
+	
+				{% url 'metrics:admin_task_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tasks' totalNum=counts.tasks description='' %}
+	
+				{% url 'metrics:admin_role_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Roles' totalNum=counts.roles description='' %}
+			</div>
+			
+			
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Scoring</div>
+	
+				{% url 'metrics:admin_npslettergrade_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='NPS letter grades' totalNum=counts.npsLetterGrades description='4 point score for domain\'s NPS' %}
+				
+				{% url 'metrics:admin_goalcompletedcategory_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Goal completed categories' totalNum=counts.goalCompletedCategories description='Goal completed % ranges' %}
+				
+				{% url 'metrics:admin_npsscorecategory_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='NPS categories' totalNum=counts.npsScoreCategories description='NPS range categories' %}
+	
+				{% url 'metrics:admin_umuxscorecategory_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='UMUX score categories' totalNum=counts.umuxScoreCategories description='' %}
+				
+				{% url 'metrics:admin_target_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='NPS & UMUX targets' description='' %}
+			</div>
+			
+			
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Analytics</div>
+	
+				{% url 'metrics:admin_activity_log' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Activity log' totalNum=counts.activityLogs description='History of misc data changes' %}
+				
+				{% url 'research:admin_brokenlink_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Broken research links' description='' %}
+				
+				{% url 'metrics:admin_page_views' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Page views' totalNum=counts.pageViews.view_count__sum description='' %}
+	
+				<div class="mb2 dib"><a class="animate link underline-hover flex items-center" href="/djangoadmin/request/request/overview/" target="_blank"><span>Site analytics</span><span class="relative ml1">{{ templateHelpers.html.icons.newWindow|safe }}</span></a></div>
+				
+				{% url 'metrics:admin_usabilla_import_log' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Usabilla/BeeHeard import log' totalNum=lastUsabillaRun.date|date:'M d, Y' description='Import history, latest run:' %}
+	
+				{% url 'metrics:admin_online_users' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Users currently online' description='' %}
+				
+				
+			</div>
+			
+			
+			<!--
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb3">Read-only</div>
+	
+				{% url 'metrics:admin_import_data_list' modelName='browser' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Browsers' totalNum=counts.browsers description='' %}
+				
+				{% url 'metrics:admin_import_data_list' modelName='city' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Cities' totalNum=counts.cities description='' %}
+	
+				{% url 'metrics:admin_import_data_list' modelName='country' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Countries' totalNum=counts.countries description='' %}
+				
+				{% url 'metrics:admin_import_data_list' modelName='operatingsystem' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Operating systems' totalNum=counts.operatingsystems description='' %}
+				
+				{% url 'metrics:admin_import_data_list' modelName='primarygoal' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Primary goals' totalNum=counts.primaryGoals description='' %}
+	
+				{% url 'metrics:admin_import_data_list' modelName='state' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='States' totalNum=counts.states description='' %}
+	
+				{% url 'metrics:admin_import_data_list' modelName='userrole' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='User roles' totalNum=counts.userRoles description='' %}
+			</div>
+			-->
+			
+			<div class="w-33-l w-100 pb4 mr4-ns">
+				<div class="b mb3">Data audits</div>
+	
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Responses' number=counts.responses|intcomma %}
+	
+				{% url 'metrics:admin_inactive_users' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with inactive users' number=dataAudits.projectsInactiveContacts itemUrl=thisUrl %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with no responses' number=dataAudits.projectsNoSnapshots %}
+	
+				{% url 'metrics:admin_campaign_noproject_list' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Campaigns with responses with no project' number=dataAudits.campaignsResponsesNoProject itemUrl=thisUrl %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with no contacts' number=dataAudits.projectsNoContact %}
+	
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with no domain' number=dataAudits.projectsNoDomain %}
+	
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Active projects' number=dataAudits.projects %}
+	
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Inactive projects' number=dataAudits.projectsInactive %}
+	
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Core projects' number=dataAudits.coreProjects %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with UX specialist' number=dataAudits.projectsWithDesigners %}
+			</div>
+	
+		</div>
+	</div>
+</div>
+
+
+<div class="{{ templateHelpers.classes.grid }} mt4 mb4">	
+	
+	<div class="bg-white pa4 pb0">	
+		
+		<div class="pb4 b f4">Research, Web site, and users</div>
+		
+		<div class="flex-ns flex-wrap">
+			
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb2">Research</div>
+	
+				{% url 'research:admin_artifacts_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Research artifacts' totalNum=counts.artifacts description='' %}
+				
+				{% url 'research:admin_brokenlink_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Broken research links' description='' %}
+				
+				{% url 'research:admin_method_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Methods' totalNum=counts.methods description='' %}
+				
+				{% url 'research:admin_source_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Sources' totalNum=counts.sources description='' %}
+				
+				{% url 'research:admin_status_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Statuses' totalNum=counts.statuses description='' %}
+				
+				{% url 'research:admin_tag_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tags' totalNum=counts.tags description='' %}
+				
+				{% url 'research:admin_batch_changes' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Batch changes' description='Perform search and replace across research artifacts' %}
+				
+				{% url 'research:admin_surveyquestionexclusion_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Survey questions to exclude from display on research' description='Manage question text matches to exclude' %}
+
+			</div>
+	
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb2">Web site</div>
+			
+				{% url 'info:admin_faqcategory_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='FAQ categories' totalNum=counts.faqCategories description='Categories for FAQ page' %}
+				
+				{% url 'info:admin_faq_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='FAQs' totalNum=counts.faqs description='Uhh, FAQs for FAQ page' %}
+	
+				{% url 'info:admin_whatsnew_list' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='What\'s new' description='News items and alerts' %}
+				
+				{% if request.user.is_superuser %}
+					{% url 'info:admin_releasenote_list' as url %}
+					{% include 'metrics/partials/admin_home_item2.html' with url=url title='Release notes' description='' %}
+				{% endif %}
+			</div>
+	
+			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
+				<div class="b mb2">Users and access</div>
+			
+				{% url 'research:admin_users' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='All users' totalNum=counts.users description='' %}
+				
+				{% url 'metrics:admin_inactive_users' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Inactive users' description='Owners/Contacts no longer active' %}
+				
+				{% url 'research:admin_adminaccess' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Admins' totalNum=counts.admins description='' %}
+				
+				{% url 'metrics:admin_email_admins' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Email all admins' description='Send a message to all Omnia admins' %}
+	
+				
+			</div>
+	
+		</div>
+	
+		<div class="mb3 b">Misc stats</div>
+		
+		<div class="flex-ns flex-wrap">
+			<div class="w5-ns w-100 mr4-ns mb4">
+				<p class="b">Tagging and taxonomies</p>
+				
+				{% url 'research:admin_users_noprofile' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Users without a full name' url=url number=dataAudits.usersNoProfile itemUrl=thisUrl %}
+				
+				{% url 'research:admin_artifacts_notags' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Artifacts without tags' url=url number=dataAudits.notags itemUrl=thisUrl %}
+				
+				{% url 'metrics:admin_inactive_users' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Research with inactive users' number=dataAudits.artifactsInactiveOwners itemUrl=thisUrl %}
+				
+				{% url 'metrics:admin_brokenlinks_list' as thisUrl %}
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Broken research links' number=counts.brokenLinks itemUrl=thisUrl %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Archived artifacts' number=dataAudits.archivedArtifacts %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Unused methods' number=dataAudits.methodsUnused %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Unused sources' number=dataAudits.sourcesUnused %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Unused statuses' number=dataAudits.statusesUnused %}
+				
+				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Unused tags' number=dataAudits.tagsUnused %}
+				
+			</div>
+			
+			<div class="w5-ns w-100 mr4-ns mb4">
+				<p class="b">Top 10 research artifact owners</p>
+				{% for user in dataAudits.userArtifacts %}
+					<div class="flex mb2">
+						<div class="w2 tr b mr3">{{ user.numarts }}</div>
+						<div class="w-100 w5-ns"><a class="{{ templateHelpers.classes.link }}" href="{% url 'research:home' %}?q={{ user.username }}">{{ user.username }}</a></div>
+						
+					</div>
+				{% endfor %}
+			</div>
+			
+			<div class="w5-ns w-100 mr4-ns pb4">
+				<p class="b">Top 10 searches</p>
+				{% for search in dataAudits.artifactSearches %}
+					<div class="flex mb2">
+						<div class="w2 tr b mr3">{{ search.search_count }}</div>
+						<div class="w-100 w5-ns">{{ search.search_text }}</div>
+						
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>

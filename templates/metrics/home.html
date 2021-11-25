@@ -1,0 +1,661 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}}Metrics dashboard{% endblock %}
+
+{% block metaDate %}{{ LATEST_RESPONSE_DATE }}{% endblock %}
+
+{% block pageTitle %} Priority 1-3 tools &amp; services {% endblock %}
+
+{% block leadspace %}{% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/c3_files.inc' %}
+	
+	<style>
+		
+		.donut-chart svg,
+		.pie-chart svg {
+			height: 100% !important;
+			width: 100%;
+		}
+		
+		.donut-chart svg {
+			max-height: 130px;
+		}
+		
+		.pie-chart svg {
+			max-height: 200px;
+		}
+		
+		.bg-chartblue {
+			background-color: var(--tab-hover-background);
+		}
+		
+		.smallicon.hint--medium {
+			cursor: help;
+		}
+		
+	</style>
+	
+	<script>
+		(function ($) {
+			
+			function setupFilter () {
+				$('#custom-combined-filter').on('change', function (evt) {
+					var selectedValue = this.value,
+						group = $(this).find('option:selected').parent().attr('label') || null;
+					
+					document.getElementById('custom-switching-domain').removeAttribute('style'); 
+					
+					if (group == 'Domains') {
+						window.location.href = '?domain=' + selectedValue;
+					}
+					else if (group == 'Keywords') {
+						window.location.href = '?domain=alldomains' + '&keyword=' + selectedValue;
+					}
+					else {
+						window.location.href = '?domain=alldomains';
+					}
+				});
+			}
+			
+			
+			function setupPieChartSwitcher () {
+				$('#custom-pie-charts-toggle').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					var $link = $(evt.target),
+						chartId = $link.data('chartid');
+					// Reset; show all links and hide text items.
+					// Then hide $this link clicked, and show it's text.
+					// Then hide charts and show associated chart.
+					$('#custom-pie-charts-toggle a.dn').removeClass('dn');
+					$('#custom-pie-charts-toggle span').addClass('dn');
+					$link.addClass('dn');
+					$link.siblings().removeClass('dn');
+					$('#custom-pie-charts-con div').addClass('dn');
+					document.getElementById(chartId).classList.remove('dn');
+				});
+				$('#custom-pie-charts-toggle a')[0].click();
+			}
+			
+			$(function () {
+				setupFilter();
+				if (document.getElementById('custom-pie-charts-toggle')) {
+					setupPieChartSwitcher();
+				}
+			});
+			
+		})(jQuery);
+		
+	</script>
+	
+	{% if request.GET.showwalkthru == 'y' %}
+		{% include 'metrics/partials/walkthru_home.inc' %}
+	{% endif %}
+	
+{% endblock %}
+
+
+{% block content %}
+		
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="flex flex-wrap justify-between">
+			<div class="f4 fw6 mb4 mr4">Priority 1-3 tools &amp services</div>
+			<div class="mb3"><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
+		</div>
+	</div>
+		
+	<div class="ph0 ph4-ns">
+		<div class="flex-ns items-center flex-wrap ml3 ml0-ns">
+			<div class="b mb4 mr3"><label class=""for="custom-combined-filter">Filter:</label></div>
+			<div id="step-domain-selector" class="mb4">
+				<select aria-label="Filter" id="custom-combined-filter" name="filter" data-placeholder="Filter by domain or keyword" data-width="resolve">
+					<option value="alldomains">None</option>
+					<optgroup label="Domains">
+						{% for domain in domains %}
+							<option value="{{ domain.id }}" {% if domain.id == selectedDomain.id %}selected="selected"{% endif %}>{{ domain.name }}</option>
+						{% endfor %}
+					</optgroup>
+					<optgroup label="Keywords">
+						{% for keyword in projectKeywords %}
+							<option value="{{ keyword.id }}" {% if keyword.id == selectedKeyword.id %}selected="selected"{% endif %}>{{ keyword.name }}</option>
+						{% endfor %}
+					</optgroup>
+				</select>
+			</div>
+			
+			<div id="custom-switching-domain" class="flex items-center ml3-ns mb4" style="display:none;"><div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div><div id="custom-loading-msg" class="dib ml2 f6">Filtering</div></div>
+		</div>
+	</div>
+	
+	{% if domainSnapshot.core_projects_count > 0 %}
+		
+		<div class="ph0 ph3-ns">
+	
+			<div class="flex-ns flex-wrap">
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<a href="{% url 'metrics:projects_home' %}?showdata=nps_score&reportperiod=last90&{{ linkFilter }}&meetingnpstarget=y" class="db w-100 h-100 pa3 bg-white ba custom-border-color hover-b--dark-blue shadow-hover">
+						<div id="step-meeting-target" class="flex">
+							<div class="mt4" style="width:180px;">
+								<div>
+									<div class="f6 br4 bg-blue white dib pv1 ph2 lh-copy">{{ domainSnapshot.core_projects_nps_target_achieved_count }} of {{ domainSnapshot.core_projects_currently_reporting_count }}</div>
+									<div class="mt2 f6 textcolor">Achieving target</div>
+								</div>
+								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="% of 'currently reporting' that are achieving their NPS targets">{{ templateHelpers.html.icons.info|safe }}</div>
+							</div>
+							<div class="w-100 relative flex items-center justify-center">
+								<div class="donut-chart relative w-100" id="custom-achieving-target-donut"></div>
+								<div class="absolute f2 w-100 h-100 flex items-center justify-center textcolor">{{ domainSnapshot.core_projects_nps_target_achieved_percent|floatformat:0 }}%</div>
+							</div>
+						</div>
+					</a>
+				</div>
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<a href="{% url 'metrics:projects_home' %}?showdata=nps_score&reportperiod=last90&{{ linkFilter }}&meetingnpstarget=n&npscat=5" class="db w-100 h-100 pa3 bg-white ba custom-border-color hover-b--dark-blue shadow-hover">
+						<div id="step-excellent-range" class="flex">
+							<div class="mt4" style="width:180px;">
+								<div>
+									<div class="f6 br4 bg-blue white dib pv1 ph2 lh-copy">{{ domainSnapshot.core_projects_excellent_nps_count }} of {{ domainSnapshot.core_projects_currently_reporting_count }}</div>
+									<div class="mt2 f6 textcolor">Excellent range</div>
+								</div>
+								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="% of 'currently reporting' that are in NPS excellent range">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							</div>
+							<div class="w-100 relative flex items-center justify-center">
+								<div class="donut-chart relative w-100" id="custom-excellent-nps-donut"></div>
+								<div class="absolute f2 w-100 h-100 flex items-center justify-center textcolor">{{ domainSnapshot.core_projects_excellent_nps_percent|floatformat:0 }}%</div>
+							</div>
+						</div>
+					</a>
+				</div>
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<a href="{% url 'metrics:projects_home' %}?showdata=nps_score&reportperiod=last90&{{ linkFilter }}" class="db w-100 h-100 pa3 bg-white ba custom-border-color hover-b--dark-blue shadow-hover">
+						<div id="step-active" class="flex">
+							<div class="mt4" style="width:180px;">
+								<div>
+									<div class="f6 br4 bg-blue white dib pv1 ph2 lh-copy">{{ domainSnapshot.vote_projects_count }} of {{ domainSnapshot.core_projects_count }}</div>
+									<div class="mt2 f6 textcolor">Active</div>
+								</div>
+								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools &amp; services with data in the past 180 days">{{ templateHelpers.html.icons.info|safe }}</div>
+							</div>
+							<div class="w-100 relative flex items-center justify-center">
+								<div class="donut-chart relative w-100" id="custom-core-active-donut"></div>
+								<div class="absolute f2 w-100 h-100 flex items-center justify-center textcolor">{{ domainSnapshot.vote_projects_percent|floatformat:0 }}%</div>
+							</div>
+						</div>
+					</a>
+				</div>
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<a href="{% url 'metrics:projects_home' %}?showdata=nps_score&reportperiod=last90&{{ linkFilter }}" class="db w-100 h-100 pa3 bg-white ba custom-border-color hover-b--dark-blue shadow-hover">
+						<div id="step-nps-grade" class="flex">
+							<div class="mt4" style="width:180px;">
+								<div class="f6 br4 bg-blue white dib pv1 ph2 lh-copy">{{ domainSnapshot.core_projects_nps_score_points_average|floatformat:1 }} / 4.0</div>
+								<div class="mt2 f6 textcolor">NPS grade</div>
+								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Letter grade based on current NPS">{{ templateHelpers.html.icons.info|safe }}</div>
+							</div>
+							<div class="w-100 flex items-center justify-center relative">
+								<div class="donut-chart relative w-100" style="top:13px;" id="custom-nps-grade-gauge"></div>
+								<div class="absolute f2 flex items-center w-100 h-100 justify-center textcolor">{% if domainSnapshot.core_projects_currently_reporting_count > 0 %}
+										{{ domainSnapshot.core_projects_nps_letter_grade }}
+									{% else %}
+										N/A
+									{% endif %}</div>
+								<div class="absolute top w-100 f7" style="top: 70%;">
+									<div class="w-100 hint--top-left hint--medium textcolor" aria-label="Just like school, but different">
+										<div class="flex justify-between"><div>F</div><div>D</div><div>C</div><div>B</div><div>A</div></div>
+										<div class="mt1 pt1 custom-border-color bt flex justify-between"><div>0</div><div>1</div><div>2</div><div>3</div><div>4</div></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</a>
+				</div>
+					
+			</div>
+		
+			<div id="step-core-lists" class="flex-ns flex-wrap">
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<div id="step-list-most-improved" class="bg-white pa3 h-100">
+						<div class="b">Most improved NPS</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the largest increase over their baseline NPS">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="w-100 f6">
+							{% if mostImprovedProjects %}
+								{% for projectSnapshot in mostImprovedProjects %}
+									{% if projectSnapshot.diff > .61 %}
+										<div class="flex justify-between w-100 relative pv1" style="top:-1px;">
+											{% if forloop.counter == 1 %}
+												<div class="pr3 f4 mt1 mb2">{{ projectSnapshot.project.name }}</div>
+												<div class="b f4 mt1 flex">
+													<div class="green relative mediumicon" style="top:8px;">{{ templateHelpers.html.icons.sortup|safe }}</div>
+													<div>{{ projectSnapshot.diff|floatformat:0 }}</div>
+												</div>
+											{% else %}
+												<div class="pr3 f7">{{ projectSnapshot.project.name }}</div>
+												<div class="b f6 w-100 tr" style="max-width:40px;">+ {{ projectSnapshot.diff|floatformat:0 }}</div>
+											{% endif %}
+										</div>
+									{% endif %}
+								{% endfor %}
+							{% else %}
+								<div>No data available</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<div id="step-list-worst-nps" class="bg-white pa3 h-100">
+						<div class="b">Worst NPS</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the lowest NPS">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="w-100">
+							{% if worstNpsProjects %}
+								{% for projectSnapshot in worstNpsProjects %}
+									<div class="flex justify-between items-start w-100 pv1">
+										{% if forloop.counter == 1 %}
+											<div class="pr3 f4 mb2">{{ projectSnapshot.project.name }}</div>
+											<div class="b f4 tr flex items-center" style="max-width:64px;">{{ projectSnapshot.nps_score|floatformat:0 }}<span class="ml1 dib br-100" style="width: 8px; height:8px;background-color:{{ projectSnapshot.nps_score_category.color_code }};"></span></div>
+										{% else %}
+											<div class="pr3 f7">{{ projectSnapshot.project.name }}</div>
+											<div class="b f6 flex items-center">{{ projectSnapshot.nps_score|floatformat:0 }}<span class="ml1 dib br-100" style="width: 8px; height:8px;background-color:{{ projectSnapshot.nps_score_category.color_code }};"></span></div>
+										{% endif %}
+									</div>
+								{% endfor %}
+							{% else %}
+								<div>No data available</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+				
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<div id="step-list-best-goal" class="bg-white pa3 h-100">
+						<div class="b">Best goal completion rates</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the highest goal completion rates">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="w-100">
+							{% if bestCompletionProjects %}
+								{% for projectSnapshot in bestCompletionProjects %}
+									<div class="flex justify-between w-100 pv1">
+										{% if forloop.counter == 1 %}
+											<div class="pr3 f4 mb2">{{ projectSnapshot.project.name }}</div>
+											<div class="b f4">{{ projectSnapshot.goal_completed_percent|floatformat:0 }}%</div>
+										{% else %}
+											<div class="pr3 f7">{{ projectSnapshot.project.name }}</div>
+											<div class="b f6">{{ projectSnapshot.goal_completed_percent|floatformat:0 }}%</div>
+										{% endif %}
+									</div>
+								{% endfor %}
+							{% else %}
+								<div>No data available</div>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+	
+				<div class="w-25-l w-50-m ph3-ns mb4">
+					<div id="step-list-piecharts" class="bg-white pa3 h-100">
+						<div id="custom-pie-charts-toggle" class="f6 w-100 mb3 flex flex-wrap justify-center">
+							<div class="mr3 mb2"><a href="#" class="{{ templateHelpers.classes.link }}" data-chartid="custom-pie-npsCats">NPS</a><span class="bb b--textcolor b dn">NPS</span></div>
+							<div class="mr3 mb2"><a href="#" class="{{ templateHelpers.classes.link }}" data-chartid="custom-pie-umuxCats">Ease &amp; capabilities</a><span class="bb b--textcolor b dn">Ease &amp; capabilities</span></div>
+							<div class="mb2"><a href="#" class="{{ templateHelpers.classes.link }}" data-chartid="custom-pie-goalCats">Goal completion</a><span class="bb b--textcolor b dn">Goal completion</span></div>
+						</div>
+						<div id="custom-pie-charts-con" class="w-100 relative">
+							<div class="pie-chart relative" id="custom-pie-npsCats"></div>
+							<div class="pie-chart relative dn" id="custom-pie-umuxCats"></div>
+							<div class="pie-chart relative dn" id="custom-pie-goalCats"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</div>
+		
+	{% else %}
+		<div class="{{ templateHelpers.classes.grid }} mb4">This domain does not have any priority 1-3 tools & services to report on</div>
+		
+	{% endif %}
+	
+	<div class="{{ templateHelpers.classes.grid }} b f4">All domains</div>
+	
+	<div class="ph0 ph4-ns mt4">
+		<div class="flex-ns flex-wrap">
+			<div class="w-50-l w-100 pr3-l mb4">
+				<div id="step-all-responses" class="pv4 ph3-ns bg-white h-100">
+					<div class="pl3 pb4 b">% of projects by NPS categories</div>
+					<div id="alldomains-nps-history-chart"></div>
+				</div>
+			</div>
+
+			<div class="w-50-l w-100 pl3-l mb4">
+				<div id="step-all-responses" class="pv4 ph3-ns bg-white h-100">
+					<div class="pl3 pb4 b">Responses</div>
+					<div id="alldomains-response-history-chart"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<div class="ph0 ph4-ns">
+		<div class="flex-ns flex-wrap">
+			<div class="w-50-l pr3-l mb4">
+				<div class="pv4 ph3 ph4-ns bg-white h-100 relative">
+					<div class="b mb3">Recent research items</div>
+					{% for item in researchItems %}
+						<div class="mb3 lh-copy">
+							<div class="f6 gray ">{{ item.sort_date|date:'M d, Y' }}</div>
+							<div class="b">{{ item.name }}</div>
+							<div class="f6">{{ item.abstract }}</div>
+						</div>
+					{% endfor %}
+					<div class="absolute mr4-ns mr3 pt4 top-0 right-0"><a href="{% url 'research:home' %}" class="{{ templateHelpers.classes.link }}">View all</a></div>
+				</div>
+			</div>
+
+			<div class="w-50-l pl3-l mb4">
+				<div class="pv4 ph3 ph4-ns bg-white h-100 relative">
+					<div class="b mb3">What's new</div>
+					{% for item in whatsnewItems %}
+					<div class="mb3 lh-copy">
+						<div class="f6 gray ">{{ item.date|date:'M d, Y' }}</div>
+						<div class="b">{{ item.heading }}</div>
+						<div class="f6">{{ item.description|safe }}</div>
+					</div>
+					{% endfor %}
+					<div class="absolute mr4-ns mr3 pt4 top-0 right-0"><a href="{% url 'info:whatsnew_list' %}" class="{{ templateHelpers.classes.link }}">View all</a></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+	<script>
+		(function () {
+			var width = 500,
+				height = Math.min(width, 500),
+				svgheight = 180,
+				donutColor = '#0f62fe';
+				
+			var pie = d3.pie()
+				.sort(null)//.startAngle(-0.8 * Math.PI).endAngle(0.8 * Math.PI)
+				.value(d => d.value);
+				
+			var gauge = d3.pie()
+				.sort(null).startAngle(-0.5 * Math.PI).endAngle(0.5 * Math.PI)
+				.value(d => d.value);
+
+			function arcLabel () {
+				var radius = Math.min(width, height) / 2 * 0.7;
+				return d3.arc().innerRadius(radius).outerRadius(radius);
+			}
+			
+			function arcDonut () {
+				return d3.arc()
+					.innerRadius(200)
+					.outerRadius(Math.min(width, height) / 2 - 1)
+			}
+			
+			function arcPie () {
+				return d3.arc().innerRadius(0).outerRadius(Math.min(width, height) / 2 - 1)
+			}
+			
+			function createSvg (id, dataSet) {
+				svg1 = d3.create("svg")
+					.attr("viewBox", [-width / 2, -height / 2, width, height])
+					.attr('id', id)
+					.attr('style', 'height: ' + svgheight + 'px;');
+				
+				svg1.append("g")
+					.selectAll("path")
+					.data(dataSet)
+					.join("path")
+						.attr("fill", d => d.data.color)
+						.attr("d", arcDonut());
+				
+				svg1.append("g")
+					.selectAll("text")
+					.data(dataSet)
+					.join("text");
+				
+				return svg1;
+			}
+			
+			function createSvgPie (id, dataSet) {
+				svg = d3.create("svg")
+					.attr("viewBox", [-width / 2, -height / 2, width, height])
+					.attr('id', id)
+					.attr('style', 'height: ' + svgheight + 'px;');
+				
+				svg.append("g")
+					.selectAll("path")
+					.data(dataSet)
+					.join("path")
+						.attr("fill", d => d.data.color)
+						.attr("d", arcPie());
+				
+				svg.append("g")
+					.attr("font-family", "sans-serif")
+					.attr("font-size", 20)
+					.attr("text-anchor", "middle")
+					.selectAll("text")
+					.data(dataSet)
+					.join("text")
+						.attr("transform", d => 'translate(' + arcLabel().centroid(d) + ')')
+						.call(text => text.append("tspan")
+							.attr("x", 0)
+							.attr("y", "0")
+							.attr("font-weight", "bold")
+							.attr("fill", d => d.data.textColor)
+							.text(d => d.data.name))
+						.call(text => text.append("tspan")
+							.attr("x", 0)
+							.attr("y", "1.25em")
+							.attr("fill", d => d.data.textColor)
+							.text(d => d.data.value));
+							
+				return svg;
+			}
+			
+			function createMeetingTargetDonut () {
+				var dataSet = pie([
+						{name: "Target percent", color: donutColor, value: {{ domainSnapshot.core_projects_nps_target_achieved_count }}},
+						{name: "nontarget", color: '#ccc', value: ({{ domainSnapshot.core_projects_currently_reporting_count }}-{{ domainSnapshot.core_projects_nps_target_achieved_count }})},
+					]);
+				var svg1 = createSvg('meetingTargetDonut', dataSet);
+				document.getElementById('custom-achieving-target-donut').appendChild(svg1.node());	
+			}
+			
+			function createReportingExcellentDonut () {
+				var dataSet = pie([
+						{name: "Reporting excellent", color: donutColor, value: {{ domainSnapshot.core_projects_excellent_nps_count }}},
+						{name: "nontarget", color: '#ccc', value: ({{ domainSnapshot.core_projects_currently_reporting_count }}-{{ domainSnapshot.core_projects_excellent_nps_count }})},
+					]);
+				var svg1 = createSvg('reportingExcellentDonut', dataSet);
+				document.getElementById('custom-excellent-nps-donut').appendChild(svg1.node());	
+			}
+			
+			function createCoreActiveDonut () {
+				var dataSet = pie([
+						{name: "Priority 1-3 active", color: donutColor, value: {{ domainSnapshot.vote_projects_count }}},
+						{name: "nontarget", color: '#ccc', value: ({{ domainSnapshot.core_projects_count }}-{{ domainSnapshot.vote_projects_count }})},
+					]);
+				var svg1 = createSvg('reportingExcellentDonut', dataSet);
+				document.getElementById('custom-core-active-donut').appendChild(svg1.node());	
+			}
+			
+			function createNpsLetterGradeGauge () {
+				var dataSet = gauge([
+						{name: "NPS grade", color: donutColor, value: {{ domainSnapshot.core_projects_nps_score_points_average|floatformat:1 }}},
+						{name: "nontarget", color: '#ccc', value: 4-{{ domainSnapshot.core_projects_nps_score_points_average|floatformat:1 }}},
+					]);
+				var svg1 = createSvg('npsGradeDonut', dataSet);
+				document.getElementById('custom-nps-grade-gauge').appendChild(svg1.node());	
+			}
+			
+			function createPieNps () {
+				var dataSet = pie([
+						{% for cat in domainSnapshot.npsScoreCategories %}
+							{
+								name: '{{ cat.name }}', 
+								color: '{{ cat.color_code }}',
+								textColor: '{{ cat.text_color_code|default:'#000' }}', 
+								value: {{ cat.categoryCount }}
+							},
+						{% endfor %}
+					]);
+				var svg = createSvgPie('pieNpsCats', dataSet);
+				document.getElementById('custom-pie-npsCats').appendChild(svg.node());	
+			}
+			
+			function createPieUmux () {
+				var dataSet = pie([
+						{% for cat in domainSnapshot.umuxScoreCategories %}
+							{
+								name: '{{ cat.name }}', 
+								color: '{{ cat.color_code }}',
+								textColor: '{{ cat.text_color_code|default:'#000' }}', 
+								value: {{ cat.categoryCount }}
+							},
+						{% endfor %}
+					]);
+				var svg = createSvgPie('pieUmuxCats', dataSet);
+				document.getElementById('custom-pie-umuxCats').appendChild(svg.node());	
+			}
+			
+			function createPieGoal () {
+				var dataSet = pie([
+						{% for cat in domainSnapshot.goalCompletedCategories %}
+							{
+								name: '{{ cat.name }}', 
+								color: '{{ cat.color_code }}',
+								textColor: '{{ cat.text_color_code|default:'#000' }}', 
+								value: {{ cat.categoryCount }}
+							},
+						{% endfor %}
+					]);
+				var svg = createSvgPie('pieGoalCats', dataSet);
+				document.getElementById('custom-pie-goalCats').appendChild(svg.node());	
+			}
+			
+			function createResponseHistoryChart () {
+				var chart = c3.generate({
+					bindto: '#alldomains-response-history-chart',
+					data: {
+						json: {{ allDomains.responsesHistoryChartData|safe }},
+						keys: {
+							x: 'label',
+							value: ['NPS', 'Ease & Capabilities', 'Goal completion'],
+						},
+						colors: {
+							'NPS': donutColor,
+							'Ease & Capabilities': '#A6266E',
+							'Goal completion': '#00B4A0',
+						},					
+						type: 'spline',
+					},
+					legend: { 
+						show: true,
+					},
+					tooltip: {
+						format: {
+							value: function(value) {
+								return d3.format(",.0f")(value)
+							}
+						}
+					},
+					padding: { bottom: 10 },
+					axis: {
+						x: {
+							type: 'category',
+						},
+						y: {
+							tick: {
+								format: function (d) {
+									return d3.format(",.0f")(d)
+									
+								}
+							}
+						},
+					}
+				});
+			}
+						
+			
+			function createNpsHistoryChart () {
+				dataOrder = ['Excellent', 'Very good', 'Good', 'Poor', 'Unacceptable'];
+				var chart = c3.generate({
+					bindto: '#alldomains-nps-history-chart',
+					data: {
+						json: {{ allDomains.npsHistoryChartData|safe }},
+						keys: {
+							x: 'label',
+							value: dataOrder,
+						},
+						colors: {
+							{% for cat in domainSnapshot.npsScoreCategories %}
+							'{{ cat.name }}': '{{ cat.color_code }}',
+							{% endfor %}
+						},					
+						order: function (v1, v2) {
+							return dataOrder.indexOf(v1.id) < dataOrder.indexOf(v2.id) ? 1 : -1
+						},
+						type: 'area-spline',
+						groups: [dataOrder],
+					},
+					legend: { 
+						show: true,
+					},					
+					padding: { bottom: 10 },
+					axis: {
+						x: {
+							type: 'category',
+						},
+						y: {
+							tick: {
+								format: function (d) {
+									return d3.format(",.0f")(d)
+								},
+								outer: false,
+							},
+							padding: 4,
+						},
+					}
+				});
+			}
+						
+			
+			{% if domainSnapshot.core_projects_count > 0 %}
+				createMeetingTargetDonut();
+				createReportingExcellentDonut();
+				createCoreActiveDonut();
+				createNpsLetterGradeGauge();
+			{% endif %}
+			
+			createResponseHistoryChart();
+			createNpsHistoryChart();
+			
+			if (document.getElementById('custom-pie-npsCats')) {
+				createPieNps();	
+			} 
+			if (document.getElementById('custom-pie-umuxCats')) {
+				createPieUmux();
+			}
+			if (document.getElementById('custom-pie-goalCats')) {
+				createPieGoal();
+			}
+		})();
+		
+	</script>
+	
+	{% include 'metrics/partials/project_jumplinks_overlay.html' %}
+	
+{% endblock %}
+
+

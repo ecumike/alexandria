@@ -1,0 +1,6 @@
+<div class="flex mb2 dynamic-fields-item">
+	<input name="{{fieldId}}" id="id_{{fieldId}}" {% if fieldId == 'final_report_urls' or fieldId == 'study_plan_urls' %}readonly{% endif %} value="{{ fieldValue }}" type="text">
+	<div class="pl2 mt2">
+		<span class="hint hint--left" aria-label="Remove this item"><a class="db f2 lh-solid relative red hover-dark-red dynamic-fields-remove" href="#">{{ templateHelpers.html.icons.close|safe }}</a></span>
+	</div>
+</div>

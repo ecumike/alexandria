@@ -1,0 +1,134 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} {{ selectedProject.name }} comments{% endblock %}
+
+{% block pageTitle %} {{ selectedFieldLabel }} {% endblock %}
+
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+
+
+	{% if request.GET.showwalkthru == 'y' %}
+		{% include 'partials/walkthru_home.inc' %}
+	{% endif %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function setupInstantSubmit () {
+				$('#custom-filters').on('change', 'select', function (evt) {
+					$('#custom-filters').submit();
+				});
+			}
+			
+			$(setupInstantSubmit);
+		})(jQuery);
+			
+	</script>
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4 mb4">
+	
+		<form aria-label="Form will automatically submit and reload the page when selecting a filter value" id="custom-filters" action="" method="get">
+			<div class="mb4 flex-ns flex-row-ns flex-column flex-wrap items-center">
+				<div class="mr3 mb3">
+					<select aria-label="Project" class="dib" name="project" data-width="resolve" required>
+						<option value="">Select a project</option>
+						{% for project in projects %}
+							<option value="{{ project.id }}"{% if selectedProject.id == project.id %}selected="selected"{% endif %}>{{ project.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="mr3 mb3">
+					<select aria-label="Report period" name="reportperiod" data-width="resolve">
+						{% for item in reportPeriodChoices %}
+							<option value="{{ item.0 }}"{% if selectedReportPeriod == item.0 %} selected="selected"{% endif %}>{{ item.1 }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="db mr3 mb3">
+					<select aria-label="Data to show" class="dib" name="showdata" data-width="resolve">
+						{% for option in showFieldOptions %}
+							<option value="{{ option.0 }}"{% if selectedField == option.0 %}selected="selected"{% endif %}>{{ option.1 }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<button style="width:0;height:0;opacity:0;" class="pa0 ma0">Show them</button>
+			</div>
+		</form>
+		
+		{% if customTimeMachineMessage %}
+			<div class="mt2 mb4 tc">
+				<div class="pv3 ph4 bg-light-yellow dib">{{ customTimeMachineMessage|safe }}</div>
+			</div>
+		{% endif %}
+		
+		{% if not selectedProject.private_comments %}
+			{% if responses.count > 0 and emptyResponseCount > 0 %}
+				<div class="f6 mb3">{{ emptyResponseCount }} responses without comments have been omitted from the table.</div>
+			{% endif %}
+			<div class="mb3 f6 dib"><a class="flex items-center smallicon {{ templateHelpers.classes.link }}" href="{% url 'metrics:api_project_vote_responses_to_csv' %}?{{ request.GET.urlencode }}"><span class="mr1">{{ templateHelpers.html.icons.csv|safe }}</span>Export all responses with all comment fields as a CSV file</a></div>
+			
+			<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[{% if request.GET.sort %}{{ request.GET.sort }},"asc"{% else %}0,"desc"{% endif %}]]'>
+				<thead class="f6">
+					<th style="width:100px;">Date</th>
+					{% if selectedField == 'goal_not_completed_reason' %}
+						<th>Reason goal not completed</th>
+					{% elif selectedField == 'improvement_suggestion' %}
+						<th>Suggestion for improvement</th>
+					{% else %}
+						<th>Comment</th>
+					{% endif %}
+					{% if isProjectAdmin %}
+						<th class="mw3">Email</th>
+					{% endif %}
+					<th class="w2 mw2">NPS</th>
+					<th class="mw3">UMUX capability</th>
+					<th class="w3 mw3">UMUX ease of use</th>
+					<th class="w3 mw3">Goal</th>
+				</thead>
+				
+				<tbody class="f6">
+					{% for response in responses %}
+						<tr>
+							<td>{{ response.date|date:"Y-m-d" }}</td>
+							{% if selectedField == 'goal_not_completed_reason' %}
+								<td>{{ response.goal_not_completed_reason }}</td>
+							{% elif selectedField == 'improvement_suggestion' %}
+								<td>{{ response.improvement_suggestion }}</td>
+							{% elif selectedField == 'missing' %}
+								<td>{{ response.raw_data.data.missing }}</td>
+							{% else %}
+								<td>{{ response.comments }}</td>
+							{% endif %}
+							{% if isProjectAdmin %}
+								<td>{{ response.raw_data.data.email|default:'' }}</td>
+							{% endif %}
+							<td class="mw2">{% if response.nps > -1 %}{{ response.nps }}{% else %}{% endif %}</td>
+							<td class="mw2">{{ response.umux_capability|default:'' }}</td>
+							<td class="mw2">{{ response.umux_ease_of_use|default:'' }}</td>
+							<td>{{ response.primary_goal.name|replace_underscore|default:'' }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>			
+		{% else %}
+			<div class="">Survey comments are private due to the sensitive nature of this application.</div>
+		{% endif %}
+	</div>
+
+
+{% endblock %}
+

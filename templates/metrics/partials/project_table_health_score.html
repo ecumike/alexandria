@@ -1,0 +1,63 @@
+{% load humanize %}
+
+
+<div class="{{ templateHelpers.classes.grid }} mt4">
+
+	<table data-widget="datatable" data-fixed-header="true" data-searching="false" data-paging="false" class="f6 hover stripe" width="100%" data-info="false">
+		<thead>
+			<th style="min-width:150px;">Project</th>
+			<th style="min-width:200px;">Domain</th>
+			<th>Source</th>
+			<th>Baseline NPS</th>
+			<th>Baseline NPS category</th>
+			<th>Required pt. change</th>
+			<th>Target NPS</th>
+			<th>Latest NPS</th>
+			<th>Latest valid snapshot</th>
+			<th>Latest NPS category</th>
+			<th>NPS target status</th>
+			<th>Embedded designer</th>
+		</thead>
+		
+		<tbody>
+			{% for project in data %}
+				<tr class="{{ project.classes }}">
+					<td style="min-width:150px;"><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:projects_detail' %}?project={{ project.id }}">{{ project.name }}</a></td>
+					<td style="min-width:200px;">{{ project.domain.name }}</td>
+					<td>{{ project.latest_valid_currently_reporting_snapshot.data_source.name }}</td>
+					<td>{{ project.yearSettings.nps_baseline|floatformat:1 }}</td>
+					<td style="background-color: {{ project.yearSettings.npsBaselineCategory.color_code }}; color: {{ project.yearSettings.npsBaselineCategory.text_color_code }};">{{ project.yearSettings.npsBaselineCategory.name|default:'' }}</td>
+					
+					<td>{{ project.baselineChange|floatformat:0 }}</td>
+					<td>{{ project.yearSettings.nps_target|floatformat:1 }}</td>
+					<td>{{ project.latest_valid_currently_reporting_snapshot.nps_score|floatformat:1 }}</td>
+					<td>{% if project.latest_valid_currently_reporting_snapshot.date %}
+							{{ project.latest_valid_currently_reporting_snapshot.date.year }} 
+							{% if project.latest_valid_currently_reporting_snapshot.date_quarter %}
+								Q{{ project.latest_valid_currently_reporting_snapshot.date_quarter }}
+							{% else %}
+								{{ project.latest_valid_currently_reporting_snapshot.date|date:'M' }}
+							{% endif %}
+						{% elif project.latest_valid_currently_reporting_snapshot.response_day_range %}
+							Last {{ project.latest_valid_currently_reporting_snapshot.response_day_range }}
+						{% endif %}</td>
+					<td style="background-color: {{ project.latest_valid_currently_reporting_snapshot.nps_score_category.color_code }}; color: {{ project.latest_valid_currently_reporting_snapshot.nps_score_category.text_color_code }};">{{ project.latest_valid_currently_reporting_snapshot.nps_score_category.name|default:'' }}</td>
+					{% if project.yearSettings.nps_target %}
+						{% if not project.latest_valid_currently_reporting_snapshot %}
+							<td style="background-color: #fff;">TBD</td>
+						{% elif project.latest_valid_currently_reporting_snapshot.nps_score > project.yearSettings.nps_target %}
+							<td style="background-color: rgba(0,0,0,0.8); color: #fff;">Achieving target</td>
+						{% else %}
+							<td style="background-color: #eee;">Below</td>
+						{% endif %}
+					{% else %}
+						<td></td>
+					{% endif %}
+					<td class="tc">{% if project.designer_assigned == 'yes' %}✅{% endif %}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+		
+	</table>
+	
+</div>

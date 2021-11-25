@@ -1,0 +1,143 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block metaDate %}{{ LATEST_RESPONSE_DATE }}{% endblock %}
+
+
+{% block extraFiles %}
+
+	<style>
+		
+		.custom-leadspace {
+			padding-bottom: 0;
+		}
+		
+		.smallicon.hint--medium {
+			cursor: help;
+		}
+				
+	</style>
+
+{% endblock %}
+
+
+{% block leadspace %} {% endblock %}
+
+
+{% block content %}
+		
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<!-- <div class="flex items-center justify-between mb4">
+			<div class="flex">
+				<div class="flex items-center mr3 b textcolor fill-textcolor"><span>{{ templateHelpers.html.icons.grid|safe }}</span>Tile view</div>
+				<a href="{% url 'metrics:domains_table' %}" class="{{ templateHelpers.classes.link }} flex items-center"><span class="mr2">{{ templateHelpers.html.icons.list|safe }}</span>Detailed table view</a>
+			</div>
+			<div><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
+		</div> -->
+			
+		<div class="flex-l flex-wrap justify-between">
+			
+			<div class="flex-l">
+				<div class="f4 fw6 mb2 mr4">Overall:</div>
+			
+				<div class="mt1-l mr4-l w-100 mb4" style="width:280px;">
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Domain metrics apply only to tools &amp; services designated priority 1-3 by domain leader">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">Priority 1-3 tools &amp; services:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_count }}</div>
+					</div>
+					
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Tools &amp; services with data in the past 180 days">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">Active:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.vote_projects_percent|floatformat:0 }}%</div>
+					</div>
+					
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Tools &amp; services with sufficient NPS responses (30+ and <15 moe) within the past 180 days">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">Reporting:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_currently_reporting_percent|floatformat:0 }}%</div>
+					</div>
+				</div>
+				
+				<div class="w5 mt1-l w-100 mb4" style="width:280px;">
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="% of 'currently reporting' that are achieving their NPS target">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">Reporting achieving target:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_nps_target_achieved_percent|floatformat:0 }}%</div>
+					</div>
+					
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="% of 'currently reporting' that is in NPS excellent range">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">Reporting excellent NPS:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_excellent_nps_percent|floatformat:0 }}%</div>
+					</div>
+					
+					<div class="flex justify-between">
+						<div class="flex">
+							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Designer/researcher currently assigned to the project">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div style="width: 220px;">UX specialist assigned:</div>
+						</div>
+						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_designer_assigned_percent|floatformat:0 }}%</div>
+					</div>
+	
+				</div>
+			</div>
+			
+			<div class="mb4"><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
+		</div>
+
+		<div class="flex-ns flex-wrap-ns">
+			{% for snapshot in domainSnapshots %}
+				<a class="bg-white db link mr4-ns mb4 w-100 shadow-hover" style="width:17rem;" href="{% url 'metrics:projects_home' %}?domain={{ snapshot.domainId }}&showdata=nps_score&reportperiod=last90&priority=1&priority=2&priority=3">
+					<div class="ba custom-border-color hover-b--dark-blue ph3 pv3 h-100 f6 relative overflow-hidden textcolor">
+						<div style="height:6.5rem;">
+							<div class="flex justify-between">
+								<div class="f5 b linkcolor mb1">{{ snapshot.domainName }}<br><span class="f7 gray normal">{{ snapshot.core_projects_count }} tools/services</span></div>
+								<div><span style="width:40px;" class="hint--bottom-left" aria-label="{{ snapshot.leadName }}"><img data-email="{{ snapshot.leadEmail }}" width="40" height="40" aria-label="{{ snapshot.leadName }}" alt="" class="custom-userimage br-100 dib"></span></div>
+							</div>
+							
+						</div>
+						
+						{% if snapshot.core_projects_count > 0 %}
+							<div class="flex items-center lh-title">
+								<div class="tl f4" style="width:70px;">{{ snapshot.vote_projects_percent|floatformat:0 }}%</div><div class="">Active</div>
+							</div>
+							<div class="flex items-center lh-title">
+								<div class="tl f4" style="width:70px;">{{ snapshot.core_projects_nps_target_achieved_percent|floatformat:0 }}%</div><div class="">Achieving target</div>
+							</div>
+							{% if snapshot.core_projects_nps_letter_grade %}
+								<div class="flex items-center lh-title">
+									<div class="tl f4" style="width:70px;">{{ snapshot.core_projects_nps_letter_grade }}</div><div class="">NPS grade</div>
+								</div>
+							{% elif snapshot.core_projects_count == 0 %}
+							{% else %}
+								<div class="f6 lh-copy">Insufficient responses to calculate letter grade</div>
+							{% endif %}
+						{% else %}
+							<div class="f6 lh-title">Domain must have at least one priority 1-3 tool/service</div>						
+						{% endif %}
+					</div>
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+	
+	{% include 'metrics/partials/project_jumplinks_overlay.html' %}
+	
+{% endblock %}
+

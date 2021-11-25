@@ -1,0 +1,94 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} {{ selectedProject.name }} feedback {% endblock %}
+
+{% block pageTitle %} Feedback {% endblock %}
+
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+
+	<script>
+	
+		(function ($) {
+			
+			function setupInstantSubmit () {
+				$('#custom-filters').on('change', 'select', function (evt) {
+					$('#custom-filters').submit();
+				});
+			}
+			
+			$(setupInstantSubmit);
+		})(jQuery);
+			
+	</script>
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4 mb4">
+	
+		<form aria-label="Form will automatically submit and reload the page when selecting a filter value" id="custom-filters" action="" method="get">
+			<div class="mb4 flex-ns flex-row-ns flex-column flex-wrap items-center">
+				<div class="mr3 mb3">
+					<select aria-label="Project" class="dib" name="project" data-width="resolve" required>
+						<option value="">Select a project</option>
+						{% for project in projects %}
+							<option value="{{ project.id }}"{% if selectedProject.id == project.id %}selected="selected"{% endif %}>{{ project.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<button style="width:0;height:0;opacity:0;" class="pa0 ma0">Show them</button>
+			</div>
+		</form>
+		
+		{% if customTimeMachineMessage %}
+			<div class="mt2 mb4 tc">
+				<div class="pv3 ph4 bg-light-yellow dib">{{ customTimeMachineMessage|safe }}</div>
+			</div>
+		{% endif %}
+		
+		{% if responses.count > 0 and emptyResponseCount > 0 %}
+			<div class="f6 mb3">{{ emptyResponseCount }} responses without comments have been omitted from the table.</div>
+		{% endif %}
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[{% if request.GET.sort %}{{ request.GET.sort }},"asc"{% else %}0,"desc"{% endif %}]]'>
+			<thead class="f6">
+				<th style="width:100px;">Date</th>
+				<th>Rating</th>
+				<th>Type</th>
+				<th>Comments</th>
+				<th>Location</th>
+				<th class="mw3">Email</th>
+			</thead>
+			
+			<tbody class="f6">
+				{% for response in responses %}
+					<tr>
+						<td>{{ response.date|date:"Y-m-d" }}</td>
+						<td>{{ response.rating }}</td>
+						<td>{{ response.feedback_type }}</td>
+						<td>{{ response.comments }}</td>
+						<td>{% if response.raw_data.data.cc %}
+								{{ response.raw_data.data.cc|upper }}
+							{% elif response.raw_data.data.location %}
+								{{ response.raw_data.data.location }}
+						{% endif %}</td>
+						<td>{{ response.raw_data.data.email|default:'' }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+
+{% endblock %}
+

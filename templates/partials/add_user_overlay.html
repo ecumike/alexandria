@@ -1,0 +1,95 @@
+
+<script>
+	(function ($) {
+		var modalId = 'custom-add-user';
+		
+		function setupAddUserLink (selectEl) {
+			var $modalContent = $('#custom-add-user-content'),
+				$select = $(selectEl),
+				$addUserLink = $('<a class="db w2 f2 lh-solid relative right-0 pl3" href="#"><span class="hint hint--left" aria-label="Add a new user">+</span></a>');
+			
+			$select.parent().addClass('flex relative').append($addUserLink);
+			
+			$addUserLink.on('click', function (evt) {
+				evt.preventDefault();
+				
+				var updateField = $select.attr('name');
+				
+				$modalContent.find('form').attr('data-target-field', updateField)
+				MicroModal.show(modalId);
+				$modalContent.find('select').select2('open');
+			});	
+		} 
+	
+	
+		function setupAdduserForm () {
+			$('#custom-add-user-content').on('submit', 'form', function (evt) {
+				var $form = $(evt.target);
+				
+				evt.preventDefault();
+				
+				var email = document.getElementById('custom-employee-search').value;
+				
+				if (!email) {
+					alert('You can\'t add a ghost.');
+					return;
+				}
+				
+				$.ajax({
+					url: $form.attr('action'),
+					type: $form.attr('method'),
+					dataType: 'json',
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'email': email,
+					},
+					success: function (data) {
+						MicroModal.close(modalId);
+						
+						var newOption = new Option(data.fullName, data.id, true, true);
+							$('#id_' + $form.attr('data-target-field')).prepend(newOption).trigger('change');
+					},
+					error: function (data) {
+						$('#custom-add-user-msg').html(data.responseJSON.results.message);
+					},
+				});
+			});
+		}
+		
+	
+		$(function () {
+			document.querySelectorAll('[data-widget="addnewuser"]').forEach(function (el) {
+				setupAddUserLink(el);	
+			});
+			setupAdduserForm();
+		});
+			
+		
+	})(jQuery);
+	
+</script>
+
+<div class="common-modal" id="custom-add-user" aria-hidden="true">
+<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+	<div class="w-90 mw6 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+		<header class="flex align-items justify-between">
+			<h3 class="f5 b" id="modal-adduser-title">Enter new user's email</h2>
+			<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+		</header>
+ 
+		<div id="custom-add-user-msg" class="dark-red"></div>
+		<div id="custom-add-user-content">
+			<form id="custom-add-user-form" method="post" action="{% url 'research:api_users_add' %}">
+				{% csrf_token %}
+				<div class="mt3 mb4 relative">
+					<input aria-label="Enter email address" id="custom-employee-search" data-width="100%" class="w-100" data-placeholder="joe@domain.com">
+				</div>
+				
+				<div>
+					<button type="submit" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }} ">Add</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+</div>

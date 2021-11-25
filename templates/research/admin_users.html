@@ -1,0 +1,114 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Users {% endblock %}
+
+{% block pageTitle %} Users{% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		.custom-inactive-icon {
+			display: none;
+		}
+		
+		.custom-inactive .custom-inactive-icon {
+			display: block;
+		}
+		
+	</style>
+	
+	<script>
+
+	(function () {
+		
+		function setupUserStateToggle () {
+			$('#custom-userlist').on('click', 'a', function (evt) {
+				evt.preventDefault();
+				
+				var thisUserUrl = $(evt.target).data('url'),
+					$userRow = $(evt.target).closest('.custom-user-item'),
+					currentlyInactive = $userRow.hasClass('custom-inactive');
+				
+				$.ajax({
+					url: thisUserUrl,
+					dataType: 'json',
+					data: {
+						'inactive': currentlyInactive ? 'n' : 'y'
+					},
+					success: function (data) {
+						if (data.results == true) {
+							$userRow.addClass('custom-inactive');
+						}
+						else {
+							$userRow.removeClass('custom-inactive');
+						}
+					},
+					error: function () {
+						alert('Woops, we had a problem toggling the user\'s state.\nContact Michael Santelia and let him know what happened.');
+					}
+				});
+			});
+		}
+		
+		$(setupUserStateToggle);
+	})(jQuery);
+		
+	</script>
+
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+
+		<div class="bg-white pa4 mb4">
+			<div class="lh-copy mw7 mb4">There are <code class="b dark-green">{{ users.count }}</code> users in the system.
+				<br>A user is automatically set to "inactive" if the employee is no longer in Bluepages.
+				<br>Inactive users are not shown, nor able to be selected in user lists.</div>
+		</div>
+			<div class="flex-ns">
+				
+				<div class="w-100 w-50-ns mr4-ns bg-white pa4" id="custom-userlist">
+					<div class="mb4">Click any user to toggle their active state in OM.</div>
+					
+					<div class="flex mb3">
+						<div class="w5 b">User</div>
+						<div class="w3 pl3 b">Owns</div>
+						<div class="w3 pl3 b">Inactive</div>
+					</div>
+					{% for user in users %}
+						<div class="custom-user-item flex h2 {% if user.profile.inactive %}custom-inactive{% endif %}">
+							<div class="w5"><a href="" data-url="{% url 'research:api_users_toggle_state' id=user.id %}" target="_blank" title="Click to toggle active/inactive state">{{ user.username }}</a></div>
+							<div class="w3 pl3 tr">{{ user.numarts }}</div>
+							<div class="w3 pl3 tc custom-inactive-icon"><span class="red">{{ templateHelpers.html.icons.close|safe }}</span></div>
+						</div>
+					{% endfor %}
+				</div>
+				
+				<div class="w-100 w-50-ns bg-white pa4">
+					<div class="pb4">&nbsp;</div>
+					<div class="flex mb3">
+						<div class="w5 b">User</div>
+						<div class="w4 pl3 b tr">Page views</div>
+					</div>
+					<div class=" lh-copy">
+							{% for user in usersByPageviews %}
+							<div class="flex">
+								<div class="w5">{{ user.user__username }}</div>
+								<div class="w4 pl3 tr">{{ user.views }}</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+				
+			</div>
+
+	</div>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+{% comment %}
+	VARS needed:
+		fieldName (ex: 'worksheet') - This is used to create hidden input for form submission. 
+		attachment (ex: myObject.worksheet) - This is to determin what to show and provide delete capabilities.
+{% endcomment %}
+
+<div data-widget="filefield" class="custom-file-attachment-con mw7 mb3 flex items-center {% if attachment %}custom-hasfile{% endif %}">
+	<input type="hidden" name="{{ fieldName }}" value="{{ attachment.id }}">
+	<a data-filename="{{ attachment.name }}" href="#" class="custom-deletefile f6 mr3 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }} "><div class="flex" style="min-width: 150px;"><span class="mr2 h1">{{ templateHelpers.html.icons.close|safe }}</span> Delete attachment</div></a>
+	<a class="custom-filelink {{ templateHelpers.classes.link }}" target="_blank" href="{% url 'audits:get_file' %}?filename={{ attachment.name }}">{{ attachment.getFileName }}</a>
+	
+	<a data-filename="" href="#" class="custom-addfile f6 mr3 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }} "><div class="flex"><span class="mr2 h1">{{ templateHelpers.html.icons.add|safe }}</span> Attach file</div></a>
+</div>

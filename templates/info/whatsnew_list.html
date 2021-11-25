@@ -1,0 +1,95 @@
+{% extends "info/page_template.html" %}
+{% load static %}
+
+
+{% block browserTitle %} {{ block.super}} What's new {% endblock %}
+
+{% block pageTitle %} What's new {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		.custom-link-underline a:focus,
+		.custom-link-underline a:hover {
+			color: var(--blue);
+			text-decoration: underline;
+		}
+		
+		
+	</style>
+	
+	<script>
+		
+		(function ($) {
+			
+			// Don't care what happens, it can't not work.
+			function setEmailPreference () {
+				$.ajax({
+					url: '{% url 'info:api_whats_new_email_subscription' %}',
+					dataType: 'json',
+					success: function () {
+						document.getElementById('custom-emailsub-msg').classList.remove('bo-fadeout');
+						setTimeout(function () {
+							document.getElementById('custom-emailsub-msg').classList.add('bo-fadeout');
+						}, 1500);
+					}
+				});
+			}
+			
+			$(function () {
+				// Bind subscription checkbox.
+				document.getElementById('whatsnew-email-subscription').addEventListener('change', function (evt) {
+					setEmailPreference();
+				});
+			
+			});
+	
+		})(jQuery);
+	
+	</script>
+	
+{% endblock %}
+
+
+{% block contentClasses %}bg-near-white{% endblock %}
+{% block footerClasses %}bg-white{% endblock %}
+
+{% block mainContent %}
+
+	<div class="{{ templateHelpers.classes.grid }} pt4 pb1">
+
+		<div class="flex">
+			<div class="pr2 mb4 bo-checkboxradio"><input id="whatsnew-email-subscription" type="checkbox" {% if request.user.profile.whats_new_email %}checked{% endif %} value="1" name="notify-whatsnew-email" class="mr2 pointer"><label class="pointer" for="whatsnew-email-subscription">Notify me about updates via email</label></div>
+			<div id="custom-emailsub-msg" class="ml2 mb4 bo-fadein bo-fadeout ph2" style="background-color: #fff7aa">Your subscription has been updated</div>
+		</div>
+
+		{% if featuredItem.exists %}
+			<div class="flex-ns w-100 bg-white mb4">
+				<div class="w-50-ns w-100 pa4">
+					<div class="dark-gray mb3">{{ featuredItem.0.date }}</div>
+					<div class="f3 b mb3">{{ featuredItem.0.heading }}</div>
+					<div class="lh-copy custom-link-underline">{{ featuredItem.0.description|safe }}</div>
+				</div>
+				<div class="db-ns dn w-50-ns w-100 tc pa3" style="background-image: linear-gradient(to right, rgb(4,42,85), rgb(1,20,40));">
+					<div class="h-100" style="background: url({% static 'info/img/whats-new.png' %}) no-repeat 50% 50% / contain;"></div>
+				</div>
+			</div>
+		{% endif %}
+		
+
+		<div class="w-100 custom-whatsnew-list">
+			{% for item in whatsNews %}
+				<div class="mb4 bg-white pa4">
+					<div class="dark-gray mb3">{{ item.date }}</div>
+					<div class="b mb3">{{ item.heading }}</div>
+					<div class="mw7 custom-link-underline lh-copy">{{ item.description|safe }}</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+
+{% endblock %}
+

@@ -1,0 +1,92 @@
+{% extends "info/page_template.html" %}
+
+{% block browserTitle %}{{ block.super}}FAQs{% endblock %}
+
+{% block metaDescription %} User Research and Analytics FAQs{% endblock %}
+
+
+{% block pageTitle %} Frequently asked questions {% endblock %}
+
+{% block extraFiles %}
+	
+	<style>
+			
+		/* Editors can put html links in text, so this makes them act like our link class */
+		/* Editors can put html links in text, so this makes them act like our link class */
+		.custom-link-underline a:focus,
+		.custom-link-underline a:hover {
+			color: var(--blue);
+			text-decoration: underline;
+		}
+		
+		table th {
+			padding-bottom: 8px;
+		}
+		
+		table td, table th {
+			padding: 3px 5px 3px 0;
+			
+		}
+		
+		table td {
+			border-top: 1px solid #ddd;
+		}
+		
+	</style>
+	
+	<script>
+		
+		(function ($) {
+			
+			$(function () {
+				document.getElementById('custom-expand-all').addEventListener('click', function (evt) {
+					evt.preventDefault();
+					$('details').attr('open', true);
+				})	
+				document.getElementById('custom-collapse-all').addEventListener('click', function (evt) {
+					evt.preventDefault();
+					$('details').removeAttr('open');
+				})	
+			});
+			
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block mainContent %}
+		
+	<div class="{{ templateHelpers.classes.grid }} flex-ns mt4">
+		<div class="w4 w5-ns mr4-ns" style="margin-top:-20px;">
+			{{ templateHelpers.html.icons.chat|safe }}
+		</div>
+		<div class="w-100">
+			<div class="lh-copy">Reference the information below to get answers to our most frequently asked questions (FAQ) on the following subjects:</div>
+			
+			{# Make the TOC jump links here #}
+			<div class="mt3 mb3 lh-copy">
+				{% for category in faqCatgories %}
+					<div><a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }}" href="#{{ category.slug }}"><span class="mr1">{{ templateHelpers.html.icons.arrowDown|safe }}</span>{{ category.name }}</a></div>
+				{% endfor %}
+			</div>
+			
+		</div>
+	</div>
+	
+	<div class="custom-link-underline {{ templateHelpers.classes.grid }} mt3 mb4 mw8">
+		<div class="f6">[<a id="custom-expand-all" class="{{ templateHelpers.classes.link }}" href="#">Expand all</a> | <a id="custom-collapse-all" class="{{ templateHelpers.classes.link }}" href="{{ templateHelpers.classes.link }}" href="#">Collapse all</a>]</div>
+		
+		{% for category in faqCatgories %}
+			<div id="{{ category.slug }}" class="lh-copy">
+				<div class="mv4 b f4">{{ category.name }}</div>
+				{% for faq in category.faq_categories.all %}
+					{% include 'info/partials/show_hide_item.html' with title=faq.question content=faq.answer|safe %}
+				{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}
+

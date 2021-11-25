@@ -1,0 +1,51 @@
+{% extends "info/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Release notes {% endblock %}
+
+{% block pageTitle %} Release notes {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'info:admin_releasenote_add' %}"><span class="mr1">add a new release note</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mt4 ">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0, "desc"]]'>
+			
+			<thead>
+				<tr>
+					<th class="tl pl2">R</th>
+					<th class="tl pl2">Date</th>
+					<th class="tl pl2">Notes</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr tabindex="0" data-url="{% url 'info:admin_releasenote_edit' id=item.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="">{{ item.release_number }}</td>
+						<td class="w4">{{ item.date }}</td>
+						<td class="lh-copy">{{ item.notes|safe }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

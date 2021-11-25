@@ -1,0 +1,27 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load humanize %}
+
+{% load request_tag %}
+{% active_users as user_list %}
+
+{% block browserTitle %}{{ block.super}} Admin center - Online users {% endblock %}
+
+{% block pageTitle %} Online users{% endblock %}
+
+{% block extraFiles %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="b mb3">Users active in the past 15 minutes</div>
+		{% for user in user_list %}
+			<div class="mb2">{{ user.username }}</div>
+		{% endfor %}
+	</div>
+		
+
+{% endblock %}

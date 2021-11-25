@@ -1,0 +1,62 @@
+{% load common_templatetags %}
+
+
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% for artifact in artifacts %}
+
+	<div class="custom-artifact-item pa4 mb4 bg-white relative">
+		
+		<div class="flex-l">
+			
+			<div class="w-100">
+				<div class="flex">
+					<a class="db b lh-copy {{ templateHelpers.classes.link }}" href="{% url 'research:artifacts_detail' id=artifact.id %}">{{ artifact.name|striptags }}</a>
+					
+					<div class="relative w2">
+						<div class="absolute ml2 pl1 gray smallicon" style="top:2px;">{{ templateHelpers.html.icons.copy|safe }}</div>
+						<div class="absolute"><span class="hint--top-left" aria-label="Copy link to clipboard"><input class="pointer" style="opacity: 0;padding:0!important;" value="https://REPLACE_ME{% url 'research:artifacts_detail' id=artifact.id %}" aria-label="Copy to clipboard" onclick="this.select();document.execCommand('copy'); return false;" type="text"></span></div>
+					</div>
+					
+					{% comment %}
+						{% if artifact.id in userEditableArtifacts %}
+							<div class="relative w2 ml2 pl1">
+								<div class="absolute pl1 gray" style="top:2px;"><span class="hint--top-left" aria-label="Edit this research artifact"><a class="smallicon" aria-label="Edit this research" href="{% url 'research:artifacts_edit' id=artifact.id %}">{{ templateHelpers.html.icons.edit|safe }}</a></span></div>
+							</div>
+							<div class="relative w2 pl1">
+								<div class="absolute pl1 gray" style="top:2px;"><span class="hint--top-left" aria-label="Archive this research artifact"><a class="smallicon" aria-label="Archive this research" href="{% url 'research:artifacts_archive' id=artifact.id %}">{{ templateHelpers.html.icons.archive|safe }}</a></span></div>
+							</div>
+						{% endif %}
+						{% if request.user.hasAdminAccess %}
+							<div class="relative w2 pl1">
+								<div class="absolute pl1 gray" style="top:2px;"><span class="hint--top-left" aria-label="Delete this research artifact"><a class="smallicon" aria-label="Delete this research" href="{% url 'research:artifacts_delete' id=artifact.id %}">{{ templateHelpers.html.icons.trash|safe }}</a></span></div>
+							</div>
+						{% endif %}
+					{% endcomment %}
+				</div>
+				
+				<div class="mt2 mb3 lh-copy">
+					{% if artifact.abstract %}
+						{{ artifact.abstract|striptags }}
+					{% else %}
+						{{ artifact.description|striptags|truncatewords:40 }}
+					{% endif %}
+				</div>
+				
+				<div class="{{ templateHelpers.classes.textTag }} {{ artifact.status.color_class }} {{ artifact.status.text_color_class }}">{{ artifact.status.name }}</div>
+			</div>
+	
+			<div class="w-100 w5-l pl4-l mt1 mb3 f6">
+				<div class="mb3 b">{{ artifact.sort_date|date:'M d, Y' }}</div>
+				<div class="b">Contact:</div>
+				<div class="mb3 flex items-center">{{ artifact.ownerName }} <span class="ml2 hint--top-left" aria-label="Send email"><a aria-label="Email {{ artifact.ownerName }}" href="mailto:{{ artifact.ownerEmail }}">{{ templateHelpers.html.icons.email|safe }}</a></span></div>
+				<div class="b mb1">Methodology:</div>
+				{% for method in artifact.methods.all %}
+					<div class="mb1">{{ method.name }}</div>
+				{% endfor %}
+			</div>	
+		</div>
+	</div>
+	
+{% endfor %}

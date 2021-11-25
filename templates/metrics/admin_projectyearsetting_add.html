@@ -1,0 +1,27 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Add a new project year setting {% endblock %}
+
+{% block pageTitle %} Add a new project year setting {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		{% include 'partials/form_complete_horizontal.html' with form=form %}
+				
+		{% block deleteButton %}{% endblock %}
+		
+	</div>
+	
+{% endblock %}
+

@@ -1,0 +1,53 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Domains {% endblock %}
+
+{% block pageTitle %} Domains {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+			
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_domain_add' %}"><span class="mr1">add a new domain</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-paging="false">
+			<thead>
+				<tr>
+					<th class="tl" style="min-width:200px">Name</th>
+					<th class="tl">Projects</th>
+					<th class="tl">Campaigns</th>
+					<th class="tl">Lead</th>
+					<th class="tl">Admins</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for domain in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_domain_edit' id=domain.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="">{{ domain.name }}</td>
+						<td class="">{{ domain.project_domain.count }}</td>
+						<td class="">{{ domain.getCampaignCount }}</td>
+						<td class="">{{ domain.lead.profile.full_name }}</td>
+						<td class="">{% for admin in domain.admins.all %}<div>{{ admin.profile.full_name }}</div>{% endfor %}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

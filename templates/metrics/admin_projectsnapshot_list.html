@@ -1,0 +1,86 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Project snapshots {% endblock %}
+
+{% block pageTitle %} Project snapshots {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_projectsnapshot_add' %}">add a new project snapshot<span class="ml1">{{ templateHelpers.html.icons.chevronForward|safe }}</span></a></p>
+	
+		<div class="">
+			<a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_projectsnapshots_to_csv' %}">Download all snapshot fields for all snapshots as CSV (table is curated set)<span class="ml1">{{ templateHelpers.html.icons.chevronForward|safe }}</span></a>
+		</div>
+	
+	</div>
+	
+	
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<tr>
+					<th class="tl">Project</th>
+					<th class="tl pl2">Date</th>
+					<th class="tl pl2">Date period</th>
+					<th class="tl pl2">Day range</th>
+					<th class="tl pl2">Data source</th>
+					<th class="tl pl2">Resp. count</th>
+					<th class="tl pl2">Entry type</th>
+					<th class="tl pl2">NPS</th>
+					<th class="tl pl2">MOE</th>
+					<th class="tl pl2">Created</th>
+					<th class="tl pl2">Last updated</th>
+					<th class="tl pl2">Updated by</th>
+					<th class="tl pl2">Promoters</th>
+					<th class="tl pl2">Passives</th>
+					<th class="tl pl2">Detractors</th>
+					
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for projectSnapshot in projectSnapshots %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_projectsnapshot_edit' id=projectSnapshot.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="">{{ projectSnapshot.project.name }}</td>
+						<td class="">{% if projectSnapshot.date %}{{ projectSnapshot.date.year }} 
+								{% if projectSnapshot.date_period == 'quarter' %}Q{{ projectSnapshot.date_quarter }}
+								{% elif projectSnapshot.date_period == 'month' %}{{ projectSnapshot.date|date:'M' }}
+								{% endif %}
+							{% endif %}</td>
+						<td class="">{{ projectSnapshot.date_period|title }}</td>
+						<td class="">{{ projectSnapshot.response_day_range|default:'' }}</td>
+						<td class="">{{ projectSnapshot.data_source.name|default:'N/A' }}</td>
+						<td class="">{{ projectSnapshot.meaningful_response_count|default:projectSnapshot.nps_count }}</td>
+						<td class="">{{ projectSnapshot.get_entry_type_display }}</td>
+						<td class="">{{ projectSnapshot.nps_score|floatformat:1 }}</td>
+						<td class="">{{ projectSnapshot.nps_margin_error|floatformat:1 }}</td>
+						<td data-order="{{ projectSnapshot.created_at|date:'U' }}" class="">{{ projectSnapshot.created_at|date:'M d, Y'}} - {{ projectSnapshot.created_at|time:'TIME_FORMAT'}}</td>
+						<td data-order="{{ projectSnapshot.updated_at|date:'U' }}" class="">{{ projectSnapshot.updated_at|date:'M d, Y'}} - {{ projectSnapshot.updated_at|time:'TIME_FORMAT'}}</td>
+						<td class="">{{ projectSnapshot.updated_by.username }}</td>
+						<td class="">{{ projectSnapshot.nps_promoter_count }}</td>
+						<td class="">{{ projectSnapshot.nps_passive_count }}</td>
+						<td class="">{{ projectSnapshot.nps_detractor_count }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

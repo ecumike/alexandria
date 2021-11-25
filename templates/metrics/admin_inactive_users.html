@@ -1,0 +1,56 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center - Inactive users{% endblock %}
+
+{% block pageTitle %} Inactive users {% endblock %}
+
+{% block extraFiles %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="flex-ns">
+			<div class="w-100 w-50-ns mr4-ns pa4 bg-white mb4">
+				<div class="lh-title b f4 mb4">Research owners no longer active:</div>
+			
+				{% for user in inactiveUsers %}
+					{% if user.artifact_owner.count > 0 %}
+					<div class=""><strong>{{ user.profile.full_name }}</strong> ({{ user.username }})</div>
+					<div class="mb3 ml3 lh-copy">
+						{% for artifact in user.artifact_owner.all %}
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'research:artifacts_detail' id=artifact.id %}">{{ artifact.name }}</a></div>
+						{% endfor %}
+					</div>
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div class="w-100 w-50-ns pa4 bg-white mb4">
+				<div class="lh-title b f4 mb4">Project contacts or admins no longer active:</div>
+			
+				{% for user in inactiveUsers %}
+					{% if user.project_contact.count > 0 or user.project_admins.count %}
+					<div class=""><strong>{{ user.profile.full_name }}</strong> ({{ user.username }})</div>
+					<div class="mb3 ml3 lh-copy">
+						{% for project in user.project_contact.all %}
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:admin_project_edit' id=project.id %}">{{ project.name }}</a></div>
+						{% endfor %}
+						{% for project in user.project_admins.all %}
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:admin_project_edit' id=project.id %}">{{ project.name }}</a></div>
+						{% endfor %}
+					</div>
+					{% endif %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	
+		
+
+{% endblock %}

@@ -1,0 +1,271 @@
+{% extends "research/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}}{{ artifact.name|striptags }}{% endblock %}
+
+{% block metaDescription %}{{ artifact.abstract|striptags|truncatewords:20 }}{% endblock %}
+{% block metaKeywords %}{{ artifact.tags.all|join:','}}{% endblock %}
+{% block metaDate %}{{ artifact.sort_date|date:'Y-m-d' }}{% endblock %}
+
+{% block pageTitle %}{{ artifact.name|striptags }}{% endblock %}
+
+{% block pageSubtitle %}
+{% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		/* Editors can put html links in text, so this makes them act like our link class */
+		.custom-link-underline a:focus,
+		.custom-link-underline a:hover {
+			color: var(--blue);
+			text-decoration: underline;
+		}
+	</style>
+	
+	<script>
+	
+		(function ($) {
+			function setupBrokenLinkReport () {
+				$('.custom-report-link').on('click', function (evt) {
+					evt.preventDefault();
+					
+					var linkUrl = evt.currentTarget.previousElementSibling.href,
+						msgCon =  evt.currentTarget.nextElementSibling;
+						
+					$.ajax({
+						url: "{% url 'research:api_report_broken_link' %}",
+						type: 'post',
+						data: {
+							'csrfmiddlewaretoken': '{{ csrf_token }}',
+							'artifact': {{ artifact.id }},
+							'link_url': linkUrl,
+						},
+						success: function () {
+							OM.flashMessage(msgCon);
+						}
+					})
+				});
+			}
+			
+			$(setupBrokenLinkReport);
+		})(jQuery);
+	
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+		
+	<div class="mv4 {{ templateHelpers.classes.grid }}">
+
+		<div class="flex-l">
+	
+			<div class="w-100 bg-white pa4 relative mb0-l mb4">
+				<div class="flex items-center justify-between">
+					<div class="dib f6 {{ templateHelpers.classes.rounded }} pv1 ph2 {{ artifact.status.color_class }} {{ artifact.status.text_color_class }}">{{ artifact.status.name }}</div>
+					{% if canEditArtifact %}
+						<div><a href="{% url 'research:artifacts_edit' id=artifact.id %}" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Edit</a></div>
+					{% endif %}
+				</div>
+				
+				<div class="w-100 mw8-ns mt4 mb4">
+					{% if artifact.abstract %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Abstract</div>
+							<div class="w-100 lh-copy">{{ artifact.abstract|striptags|linebreaksbr }}</div>
+						</div>
+					{% endif %}
+	
+					<div class="flex-ns mb4 custom-link-underline">
+						<div class="b w5 mb3">Description</div>
+						<div class="w-100 lh-copy bo-overflow-wrap-break-word">{{ artifact.description|striptags|linebreaksbr|urlize }}</div>
+					
+					</div>
+					
+					{% if artifact.hypothesis %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Hypothesis/Goal</div>
+							<div class="w-100 lh-copy">{{ artifact.hypothesis|striptags|linebreaksbr }}</div>
+						</div>
+					{% endif %}
+	
+					{% if artifact.target_audience|length > 2 %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">User group(s)</div>
+							<div class="w-100 lh-copy">{{ artifact.target_audience|striptags|linebreaksbr }}</div>
+						</div>
+					{% endif %}
+					
+					{% if surveyQuestionsFiltered|length > 0 %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Survey questions used</div>
+							<div class="w-100 lh-copy">
+								<details class="">
+									<summary class="pointer b mb2">Question list</summary>
+									<div class="mb4 ml4 lh-copy"><ul class="{{ templateHelpers.classes.bulletlist }}">{% for question in surveyQuestionsFiltered %}
+										<li class="mb2">{{ question|striptags }}</li>
+										{% endfor %}
+									</ul></div>
+								</details>
+							</div>
+						</div>
+					{% endif %}
+	
+					{% if artifact.findings %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Findings</div>
+							<div class="w-100 lh-copy">
+								<ul class="mt2 pl3">
+									{% for item in artifact.findings %}
+										<li>{{ item|striptags|linebreaksbr|urlize }}</li>
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
+					{% endif %}
+					
+					{% if artifact.study_plan_urls.value or artifact.study_plan_files.all %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Study plans</div>
+							<div class="w-100 lh-copy">
+								{% for url in artifact.study_plan_urls %}
+									<div class="flex mb2 lh-copy">
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
+										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
+									</div>
+								{% endfor %}
+								{% for attachment in artifact.study_plan_files.all %}
+									<div class="flex mb2 lh-copy">
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
+										
+									</div>
+								{% endfor %}
+								{% if artifact.study_plan_urls.value %}
+									<div class="mt3 f6 gray">(Report any non-accessible or broken links using the flag next to it so we can fix it)</div>
+								{% endif %}
+							</div>
+						</div>
+					{% endif %}
+	
+					
+	
+					{% if artifact.final_report_urls or artifact.external_research_urls or artifact.final_report_files.all %}
+						<div class="flex-ns mb4">
+							<div class="b w5 mb3">Final reports</div>
+							<div class="w-100 lh-copy">
+								{% for url in artifact.final_report_urls %}
+									<div class="flex mb2 lh-copy">
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
+										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
+									</div>
+								{% endfor %}
+								{% for url in artifact.external_research_urls %}
+									<div class="flex mb2 lh-copy">
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
+										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
+									</div>
+								{% endfor %}
+								{% for attachment in artifact.final_report_files.all %}
+									<div class="flex mb2 lh-copy">
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
+										
+									</div>
+								{% endfor %}
+								{% if artifact.final_report_urls or artifact.external_research_urls %}
+								<div class="mt3 f6 gray">(Report any non-accessible or broken links using the flag next to it so we can fix it)</div>
+							{% endif %}					
+							</div>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+				
+			<div class="bg-near-white w-100 w-40-l pl4-l">
+				
+				<div class="b mb3">Research info</div>
+					
+				<div class="mt4 pa4 bg-white f6">
+					
+					<div class="flex-l mb4">
+						<div class="mb3"><img class="custom-userimage bo-downsize br-100" data-email="{{ artifact.owner.username }}" width="60" height="60" alt="{{ artifact.owner.profile.full_name }}"></div>
+						<div class="w-70-l mb3 pl3-l bo-overflow-wrap-break-word">
+							<div class="mt2">{{ artifact.owner.profile.full_name }}</div>
+							<div class="mt1"><a aria-label="Email {{ artifact.owner.profile.full_name }}" class="{{ templateHelpers.classes.link }} hint--top-left" href="mailto:{{ artifact.owner.username }}">{{ artifact.owner.username }}</a></div>
+						</div>
+					</div>
+					
+					
+					<div class="bt b--light-gray mb4">
+						{% if artifact.projects.all %}
+							<div class="pt4 b w5 lh-copy">Projects</div>
+							<ul class="mt2 pl3">
+								{% for project in artifact.projects.all %}
+									<li class="mb1 lh-title"><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:projects_detail' %}?project={{project.id}}">{{ project }}</a></li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					</div>
+				
+					{% if artifact.research_date %}
+						<div class="mb2 b">Research date</div>
+						<div class="lh-copy mb4">{{ artifact.research_date|date:"M d, Y" }}</div>
+					{% endif %}
+				
+				
+					<div class="mb4 bb b--light-gray pb4">
+						<div class="mb2 b">Last update</div>
+						<div>{{ artifact.updated_at|date:'M d, Y' }}</div>
+					</div>
+				
+					{% if artifact.tags.count > 0 %}
+						<div class="mb4">
+							<div class="mb2 b">Keywords</div>
+							{% for tag in artifact.tags.all %}
+								<a href="{% url 'research:home' %}?tag={{ tag.id }}" class="{{ templateHelpers.classes.tag }}" title="View all research with this keyword">{{ tag.name }}</a> 
+							{% endfor %}
+						</div>
+					{% endif %}
+				
+					{% if artifact.methods.count > 0 %}
+						<div class="mb4">
+							<div class="mb2 b lh-copy">Methodology</div>
+							{% for method in artifact.methods.all %}
+								<a href="{% url 'research:home' %}?method={{ method.id }}" class="{{ templateHelpers.classes.tag }}" title="View all research with this methodology">{{ method.name }}</a> 
+							{% endfor %}
+						</div>
+					{% endif %}
+	
+					{% if artifact.source %}
+						<div class="mb4">
+							<div class="mb2 b lh-copy">Source</div>
+							<a href="{% url 'research:home' %}?source={{ artifact.source.id }}" class="{{ templateHelpers.classes.tag }}" title="View all research with this source">{{ artifact.source.name }}</a> 
+						</div>
+					{% endif %}
+	
+					{% if artifact.related_artifacts.count > 0 %}
+						<div class="mb4">
+							<div class="mb2 b lh-copy">Related research</div>
+							<ul class="mt1 pl3">
+								{% for artifact in artifact.related_artifacts.all %}
+									<li class="mb1 lh-title"><a class="{{ templateHelpers.classes.link }}" href="{% url 'research:artifacts_detail' id=artifact.id %}">{{ artifact.name }}</a></li>
+								{% endfor %}
+							</ul>
+						</div>
+					{% endif %}					
+				</div>
+			</div>
+		</div>
+	</div>
+
+	
+{% endblock %}
+

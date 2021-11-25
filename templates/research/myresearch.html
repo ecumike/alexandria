@@ -1,0 +1,73 @@
+{% extends "research/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} My research{% endblock %}
+
+{% block pageTitle %} My research {% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		td, th {
+			padding: 8px;
+		}
+	</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="mt4 bg-white pa4">
+			
+			<div class="mb4 lh-copy"><span class="b">You are the named owner of <code class="dark-red regular">{{ artifactsOwner.count|default:0 }}</code> research artifacts.</span>
+				{% if artifactsOwner.count > 0 %}
+					<br>Share the research you own with others by distributing this link: <a href="https://REPLACE_ME/research/?q={{ request.user.username }}" target="_blank">https://REPLACE_ME/research/?q={{ request.user.username }}</a>
+				{% endif %}
+			</div>
+			
+			<div class="mb3 b">You have edit access to <code class="dark-red">{{ artifacts.count }}</code> research artifacts:</div>
+			
+			{% if artifacts.count > 0 %}
+				<table class="w-100" cellspacing="0" cellpadding="0">
+					<thead>
+						<tr>
+							<th class="w2"></th>
+							<th class="ml3 b" style="width: 60%;">Name</th>
+							{#<th class="ml3 w5 b">Created</th>#}
+							<th class="ml3 w3 b">Role</th>
+							<th class="ml3 w3 b">Archived</th>
+							<th class="ml3 w5 b">Updated</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for artifact in artifacts %}
+							<tr class="hover-bg-washed-yellow">
+								<td class=""><a class="db green" href="{% url 'research:artifacts_edit' id=artifact.id %}"><span class="hint--top" aria-label="Edit this item">{{ templateHelpers.html.icons.edit|safe }}</span></a></td>
+								
+								<td><span class="hint--top" aria-label="View this item"><a class="{{ templateHelpers.classes.link }}" href="{% url 'research:artifacts_detail' id=artifact.id %}">{{ artifact.name }}</a></span></td>
+								
+								{#<td>{{ artifact.created_at }}</td>#}
+								
+								<td>{% if artifact.created_by == request.user %}Creator
+									{% elif artifact.owner == request.user %}Owner
+									{% else %}Editor{% endif %}
+								</td>
+								
+								<td class="tc">{% if artifact.archived %}<span class="red">{{ templateHelpers.html.icons.close|safe }}</span>{% endif %}</td>
+								<td>{{ artifact.updated_at }}</td>
+								
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+		</div>
+	</div>
+
+
+{% endblock %}

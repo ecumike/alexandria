@@ -1,0 +1,155 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Project keyword tagging {% endblock %}
+
+{% block pageTitle %} Project keyword tagging {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+
+	<script>
+	
+		(function ($) {
+			
+			function showHideSubmit (evt) {
+				var selected = $('select[name="keyword"]').val().length > 0,
+					newOne = $('input[name="keyword_new"]').val().length > 0,
+					boxesChecked = $('[name="project"]:checked').length > 0;
+					
+				if ((selected || newOne) && boxesChecked) {
+					document.getElementById('custom-submit-button').classList.remove('dn');
+				}
+				else {
+					document.getElementById('custom-submit-button').classList.add('dn');
+				}
+			}
+			
+			function setupKeywordRemoval () {
+				$('#custom-project-keywords').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					
+					var project = evt.currentTarget.dataset.project,
+						keyword = evt.currentTarget.dataset.keyword;
+						
+					$.ajax({
+						url: "{% url 'metrics:admin_project_keyword_tagging_remove' %}",
+						type: 'post',
+						data: {
+							'csrfmiddlewaretoken': '{{ csrf_token }}',
+							'project': project,
+							'keyword': keyword,
+						},
+						success: function () {
+							console.log('removed');
+						}
+					});
+					
+					evt.currentTarget.remove();
+				});
+			}
+			
+			function setupSelectedOrNew () {
+				$('select[name="keyword"]').on('change', function (evt) {
+					if ($('select[name="keyword"]').val().length > 0) {
+						$('input[name="keyword_new"]').val('');
+					}					
+				});
+				$('input[name="keyword_new"]').on('input', function (evt) {
+					if ($('input[name="keyword_new"]').val().length > 0) {
+						$('select[name="keyword"]').val('').trigger('change');
+					}
+				});
+			}
+			
+			$(function () {
+				$('select[name="keyword"], [name="project"]').on('change', showHideSubmit);
+				$('input[name="keyword_new"]').on('input', showHideSubmit);
+				showHideSubmit();
+				
+				setupSelectedOrNew();
+				setupKeywordRemoval();
+				
+			})
+			
+		})(jQuery);
+	
+	</script>
+	
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<form action="{% url 'metrics:admin_project_keyword_tagging_add' %}" method="post">
+		{% csrf_token %}
+		<div class="{{ templateHelpers.classes.grid }}">
+			
+			<div class="bg-white pa4 mt4 flex-ns">
+				<div class="w-100 w-40-ns">
+					<div class="b">To tag projects with a keyword</div>
+					<ol class="lh-copy">
+						<li>Select a keyword to apply, or enter a new one</li>
+						<li>Select the projects you want to apply it to</li>
+						<li>Hit apply</li>
+					</ol>
+				</div>
+				
+				<div class="pl4-ns w-100 w-60-ns">
+					<div class="b">To remove a keyword from a project</div>
+					<ol class="lh-copy">
+						<li>Click the keyword you want to remove</li>
+						<li>The keyword is instantly removed, no need to hit "apply"</li>
+					</ol>
+				</div>
+			</div>
+			
+			<div class="flex-ns mt4 pa4 bg-white">
+				
+				<div class="w-100 w-40-ns">
+					
+					<select aria-label="Keyword" name="keyword">
+						<option value="">Select a keyword</option>
+						{% for keyword in keywords %}
+							<option value="{{ keyword.id }}">{{ keyword.name }}</option>
+						{% endfor %}
+					</select>
+					<div class="mv4">
+						<div class="mb3">Or create a new one</div>
+						<div><input type="text" value="" name="keyword_new"></div>
+					</div>	
+						
+					
+				</div>
+				
+				<div id="custom-project-keywords" class="pl4-ns w-100 w-60-ns">
+					
+					{% for project in projects %}
+						<div class="bo-checkboxradio mb2 ">
+							<input type="checkbox" name="project" value="{{ project.id }}" id="id_project_{{ project.id }}">
+							<label for="id_project_{{ project.id }}">{{ project.name }}</label>
+						</div>
+						<div class="ml4">
+							{% for keyword in project.keywords.all %}
+								<a href="#" class="mb2 {{ templateHelpers.classes.tag }}" data-project="{{ project.id }}" data-keyword="{{ keyword.id }}" title="Remove keyword">{{ keyword.name }}<span class="ml2">{{ templateHelpers.html.icons.close|safe }}</span></a>
+							{% endfor %}
+						</div>
+					{% endfor %}
+				</div>
+				
+			</div>
+			
+		</div>
+		
+		<div id="custom-submit-button" class="dn left-0 pl4 fixed z-4 bottom-0 w-100 bg-white shadow-2">
+			<button type="submit" class="mv3 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Apply keywords to selected project(s)</button>
+		</div>
+		
+	</form>
+{% endblock %}
+

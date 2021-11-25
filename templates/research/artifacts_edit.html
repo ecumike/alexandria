@@ -1,0 +1,19 @@
+{% extends "research/artifacts_add.html" %}
+
+{% block browserTitle %} Research library - Edit: {{ artifact.name }}{% endblock %}
+
+{% block pageTitle %}Edit: {{ artifact.name }} {% endblock %}
+
+{% block addResearchJs %} {% endblock %}
+
+{% block editHistory %}
+	<div class="bg-washed-yellow pa3 mb4">
+		<div class="lh-copy mb3"><span class="b">Created</span><br>{{ artifact.created_by.profile.full_name }}<br>{{ artifact.created_at }}</div>
+		<div class="lh-copy"><span class="b">Last updated</span><br>{{ artifact.updated_by.profile.full_name }}<br>{{ artifact.updated_at }}</div>
+	</div>
+{% endblock %}
+
+{% block content %}{{ block.super}} 
+
+	{% include 'partials/upload_file_overlay.html' %}
+{% endblock %}

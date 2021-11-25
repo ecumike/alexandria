@@ -1,0 +1,49 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Targets {% endblock %}
+
+{% block pageTitle %} Project keywords {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{{ newItemUrl }}"><span class="mr1">add a new {{ modelMeta.verbose_name }}</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw8">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			
+			<thead>
+				<tr>
+					<th class="w5 tl pl2">Keyword</th>
+					<th class="w-100tl pl2">Projects tagged</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_projectkeyword_edit' id=item.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="">{{ item.name }}</td>
+						<td class="">{{ item.project_keywords.all|join:', ' }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Add a new tool/service {% endblock %}
+
+{% block pageTitle %} Add a new tool/service {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	<script>
+	
+		(function ($) {
+			
+			function createUxSpecialistHistoryList (data) {
+				var html = '';
+				
+				data.uxSpecialistAssigneds.forEach(function (item) {
+					var itemDate = item[0].split('-'),
+						date = new Date(itemDate[0], itemDate[1]-1, itemDate[2]),
+						month = date.toLocaleString('default', { month: 'short' }),
+						day = date.getDate(),
+						year = date.getFullYear(),
+						displayDate = month + ' ' + day + ', ' + year,
+						assigned = item[1] ? 'Assigned' : 'Un-assigned';
+					
+					html += `<div class="mb2 flex items-start">
+								<div class="dib w4">` + displayDate + `</div>
+								<div class="dib w4">` + assigned + `</div>
+								<div class="dib w4 f6 gray">(` + item[2] + `)</div>
+								<div class="dib ml3 hasicon relative hint hint--top-left" aria-label="Delete this entry"><a href="#" class="red" data-id="` + item[3] + `">{{ templateHelpers.html.icons.close|safe }}</a></div>
+							</div>
+					`;
+				});
+				
+				document.getElementById('custom-specialist-list').innerHTML = html;
+			}
+			
+			
+			function setupSpecialistForm () {
+				var $form = $('#custom-specialist-form');
+				$form.on('submit', function (evt) {
+					evt.preventDefault();
+					
+					formData = $form.serialize();
+					formData += '&csrfmiddlewaretoken={{ csrf_token }}';
+					
+					$.ajax({
+						url: $form.attr('action'),
+						type: $form.attr('method'),
+						dataType: 'json',
+						data: formData,
+						success: function (data) {
+							createUxSpecialistHistoryList(data);
+						},
+						error: function (data) {
+							console.error(data.responseJSON);
+						},
+					});
+
+				});
+			}
+			
+			function setupDeleteSpecialist () {
+				$('#custom-specialist-list').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					
+					var id = $(evt.currentTarget).data('id');
+					
+					$.ajax({
+						url: '{% url 'metrics:admin_uxspecialistassigned_delete' %}',
+						type: 'post',
+						dataType: 'json',
+						data: {
+							'csrfmiddlewaretoken': '{{ csrf_token }}',
+							'id': id,
+							'project': {{ project.id }},
+						},
+						success: function (data) {
+							createUxSpecialistHistoryList(data);
+						},
+						error: function (data) {
+							console.error(data.responseJSON);
+						},
+					});
+				});
+			}
+			
+			$(setupSpecialistForm);
+			$(setupDeleteSpecialist);
+			
+		})(jQuery);
+	
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} flex-ns mt4">
+		
+		
+		<div class="w-60-ns w-100">
+			{% include 'partials/form_complete_horizontal.html' with form=form %}
+				
+			{% block deleteButton %}{% endblock %}
+		</div>
+		
+		<div class="w-40-ns w-100 pl4-ns">
+			{% if project.id %}
+				<div class="bg-white pa3">
+					<form method="post" id="custom-specialist-form" action="{% url 'metrics:admin_uxspecialistassigned_add' %}">
+						<input type="hidden" name="project" value="{{ project.id }}">
+						<div class="b mb3">UX specialist assigned</div>
+						
+						<div class="flex items-center mb3">
+							<div class="w4"><label for="id_specialist_date">Date</label></div>
+							<div style="width: 160px;"><input id="id_specialist_date" type="date" name="date"></div>
+						</div>
+						<div class="flex items-center mb4">
+							<div class="w4">Assigned</div>
+							<div class="flex items-center">
+								<div class="bo-checkboxradio-pads pr3">
+									<input id="id_specialist_assigned_yes" type="radio" name="assigned" value="True">
+									<label for="id_specialist_assigned_yes">Yes</label>
+								</div>
+								<div class="bo-checkboxradio-pads">
+									<input id="id_specialist_assigned_no" type="radio" name="assigned" value="False">
+									<label for="id_specialist_assigned_no">No</label>
+								</div>
+							</div>
+						</div>
+						<div><button class="w4 mr4-ns dib-ns db {{ templateHelpers.classes.button }} {{ templateHelpers.classes.blueSecButton }} ">Add entry</button></div>
+					</form>
+				</div>	
+				
+				<div class="mt4 mb3 b">UX specialist history</div>
+				<div id="custom-specialist-list">
+					{% for sa in uxSpecialistAssigneds %}
+						<div class="mb2 flex items-start">
+							<div class="dib w4">{{ sa.date|date:'M j, Y' }}</div>
+							<div class="dib w4">{% if sa.assigned %}Assigned{% else %}Un-assigned{% endif %}</div>
+							<div class="dib w4 f6 gray">({{ sa.created_by }})</div>
+							<div class="dib ml4 hasicon relative hint hint--top-left" aria-label="Delete this entry"><a href="#" class="red" data-id="{{ sa.id }}">{{ templateHelpers.html.icons.close|safe }}</a></div>
+						</div>
+					{% endfor %}
+				</div>
+				
+			{% endif %}
+			
+		</div>
+		
+	</div>
+	
+	{% include 'partials/add_user_overlay.html' %}
+		
+{% endblock %}
+

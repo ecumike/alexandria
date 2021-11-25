@@ -1,0 +1,66 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Tools &amp; services {% endblock %}
+
+{% block pageTitle %} Tools &amp; services {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it {% if request.user.hasAdminAccess %}or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_project_add' %}"><span class="mr1">add a new tool/service</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a>{% endif %}</p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[2, "asc"]]'>
+			<thead>
+				<tr>
+					<th class="w3 tl">Created at</th>
+					<th class="w3 tl">Created by</th>
+					<th class="tl">Tool/service</th>
+					<th class="tl">Domain</th>
+					<th class="tl w2 mw2">Cmps</th>
+					<th class="tl w2 mw2">Resps</th>
+					<th class="tl w3 mw2">Prty</th>
+					<th class="tl w2 mw3">UX asgnd</th>
+					<th class="tl w2 mw3">Vndr</th>
+					<th class="tl w2 mw3">Inactive</th>
+					<!-- <th class="tl">Admins</th> -->
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for project in projects %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_project_edit' id=project.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td data-order="{{ project.created_at|date:'U' }}" class="w3">{{ project.created_at|date:'Y-m-d' }}</td>
+						<td class="">{{ project.createdbyUsername }}</td>
+						<td class="">{{ project.name }}</td>
+						<td class=" pl2">{{ project.domainName|default:'' }}</td>
+						<td class=" tr">{{ project.campaign_project.count }}</td>
+						<td class=" tr">{{ project.numResponses|intcomma }}</td>
+						<td class=" tc">{{ project.priority }}</td>
+						<td class=" tc w3 mw3">{% if project.designer_assigned == 'yes' %}✅{% elif project.designer_assigned == 'no' %}<span class="red f6">❌</span>{% endif %}</td>
+						<td class=" tc">{% if project.vendor_app == 'yes' %}✅{% elif project.vendor_app == 'no' %}<span class="red g6">❌</span>{% endif %}</td>
+						<td class="w2 mw3 red tc f6">{% if project.inactive %}❌{% endif %}</td>
+						<!-- <td class="">{% for admin in project.admins.all %}<div>{{ admin.profile.full_name }}</div>{% endfor %}</td> -->
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

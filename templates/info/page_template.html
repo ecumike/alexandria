@@ -1,0 +1,67 @@
+{% extends "page_template.html" %}
+{% load static %}
+
+
+{% block browserTitle %}Omnia - {% endblock %}
+	
+{% block extraFiles %} {% endblock %}
+
+{% block headerInfoClass %}custom-highlight{% endblock %}
+
+{% block contentClasses %}no-shadow{% endblock %}
+
+{% block footerClasses %}bg-near-white{% endblock %}
+
+
+{% block leadspace %}
+	<style>
+		.custom-leadspace {
+			background: url({% static 'shared/img/leadspace-website.png' %}) no-repeat 100% 50%;
+		}
+		
+		.custom-leadspace-bottomlayer {
+			background-color: #112C4F;
+			background: linear-gradient(to right, var(--blue-70), var(--dark-blue) 100%);
+		}
+			
+		@media only screen and (max-width: 800px) {
+			.custom-leadspace {
+				background-image: none;
+			}
+		}
+	</style>
+	<div class="custom-leadspace-bottomlayer bg-near-black relative white">
+		<div class="custom-leadspace-middlelayer">
+			<div class="{{ templateHelpers.classes.grid }} custom-leadspace relative overflow-hidden pv4" style="min-height: 150px;">
+				{% if breadcrumbs %}
+					<div class="f6 mb3">
+						{% for link in breadcrumbs %}<a class="underline-hover white hover-white link mr2" href="{{ link.url }}">{{ link.text|safe }}</a> <span class="mr2">/</span> {% endfor %}
+					</div>
+				{% endif %}
+	
+				<h1 class="lh-title f2 fw5 mv0 w-80">{% block pageTitle %}Missing page title{% endblock %}</h1>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+
+{% block content %}
+	
+	<div class="flex-ns">
+		
+		<div class="lh-copy w-100 mw5-ns mt4 {{ templateHelpers.classes.grid }}">
+			<a href="{% url 'info:whatsnew_list' %}" class="{% if highlightLeftnavLink == 'whatsnew' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">What's new</a>
+			<a href="{% url 'info:faqs_list' %}" class="{% if highlightLeftnavLink == 'faqs' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">FAQs</a>
+			<a href="{% url 'info:release_notes' %}" class="{% if highlightLeftnavLink == 'releasenotes' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">Release notes</a>
+		</div>
+		
+		<div class="w-100">
+			{% block mainContent %}	{% endblock %}
+		</div>
+		
+		
+	</div>
+
+{% endblock %}
+

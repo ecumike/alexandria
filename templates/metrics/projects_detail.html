@@ -1,0 +1,1499 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} {{ project.name }} {% endblock %}
+
+{% block metaDate %}{{ LATEST_RESPONSE_DATE }}{% endblock %}
+
+
+{% block extraFiles %}
+
+	{% include 'partials/c3_files.inc' %}
+	
+	<style>
+		.c3-circles-Target,
+		.c3-circles-Exceed {
+			display: none;
+		}
+		.c3-tooltip {
+			text-align: left;
+		}
+		
+		.c3 svg {
+			font-size: 14px;
+		}
+		
+		.c3-grid .c3-xgrid-focus {
+			visibility : hidden !important;
+		}
+
+		.histogram.c3 svg {
+			font-size: 11px;
+		}
+		
+		/* Chart data labels */
+		.c3-chart-texts .c3-text {
+			fill: var(--gray) !important;
+		}
+		
+		.c3-tooltip th {
+			background: var(--textcolor);
+			font-weight: 500;
+		}
+		
+		#goal-histogram .c3-chart-texts .c3-text {
+			fill: #fff !important;
+			transform: translate3d(-34px,0,0);
+		}
+		
+
+		#nps-historical-chart.c3 svg,
+		#umux-historical-chart.c3 svg,
+		#goal-completion-historical-chart.c3 svg {
+			font-size: 11px;
+		}
+		
+		.c3-gauge-value {
+			font-family: 'IBM Plex Sans', 'helvetica neue', 'helvetica', 'sans-serif';
+			font-size: 24px;
+		}
+		
+		.chart-con {
+			height: 316px;
+		}
+		
+		.histogram-con {
+			height: 290px;
+		}
+		
+		.viewall-con {
+			height: 50px;
+		}
+		
+		.historical-con {
+			height: 320px;
+		}
+		
+		
+	</style>
+	
+	<script>
+		
+		(function () {
+			
+			function doAddNewOverlay(iframeUrl, callback) {
+				function handleOverlaySuccess (data) {
+					MicroModal.close('project-event-modal');
+					callback(data);
+				}
+				
+				MicroModal.show('project-event-modal');
+				$('#project-event-modal').find('.custom-modal-content')[0].innerHTML = '<iframe src="' + iframeUrl + '" height="340" style="width:100%;border: none;"></iframe>';
+				window.document.addEventListener("add-success", handleOverlaySuccess, false);
+			}
+		
+
+			function setupAddEvent () {
+				$('#project-event-add').on('click', function (evt) { 
+					evt.preventDefault();
+					doAddNewOverlay($(this).data('url'), function (data) {
+						if (window.location.href.indexOf('&tab=events') == -1) {
+							window.location.href += '&tab=events';
+						}
+						else {
+							window.location.reload();
+						}
+					});
+				});
+			}
+			
+			function setupEditEvent () {
+				$('.project-event-edit').on('click', function (evt) { 
+					evt.preventDefault();
+					doAddNewOverlay($(this).data('url'), function (data) {
+						if (window.location.href.indexOf('&tab=events') == -1) {
+							window.location.href += '&tab=events';
+						}
+						else {
+							window.location.reload();
+						}
+					});
+				});
+			}
+			
+			function setupDeleteEvent () {
+				$('.project-event-delete').on('click', function (evt) { 
+					evt.preventDefault();
+					
+					var $deleteButton = $(this);
+					
+					$.ajax({
+						url: $deleteButton.data('url'),
+						type: 'POST',
+						data: {
+							'csrfmiddlewaretoken': '{{ csrf_token }}',
+							'returntype': 'json'
+						},
+						dataType: 'json',
+						success: function (returnData) {
+							$deleteButton.closest('tr').remove();
+						}
+					});
+				});
+			}
+			
+			
+			function setupFormSubmit () {
+				$('#projectselector-form').on('change', 'select', function (evt) {
+					$('#projectselector-form').submit();
+				});
+				
+				$('#projectselector-form').on('submit', function (evt) {
+					var tabid = $('[data-widget="dyntabs"]').find('.bo-active').data('id');
+					$(this).prepend('<input type="hidden" name="tab" value="' + tabid + '">');	
+				});
+			}
+			
+			
+			function setupTargetsOverlay () {
+				document.querySelectorAll('.custom-show-targets').forEach(function (item) {
+					item.addEventListener('click', function (evt) {
+						evt.preventDefault();
+						MicroModal.show('project-targets-modal');
+					});
+				});
+				
+			}
+			
+			
+			$(function () {
+				setupAddEvent();
+				setupEditEvent();
+				setupDeleteEvent();
+				setupFormSubmit();
+				setupTargetsOverlay();
+			});
+			
+		})(jQuery);
+	</script>
+	
+{% endblock %}
+
+
+{% block pageTitle %} {{ project.name }} {% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="">
+			<form id="projectselector-form" action="" method="get">
+				<div class="flex-ns flex-wrap">
+					<div class="mr3 mb3">
+						<select aria-label="Project" name="project" data-width="element">
+							<option value="">Select a project</option>
+							{% for projectOption in projects %}
+								<option value="{{ projectOption.id }}"{% if project.id == projectOption.id %} selected="selected"{% endif %}>{{ projectOption.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					
+					<div class="mr3 mb3">
+						<select aria-label="Report period" name="reportperiod" data-width="element">
+							{% for item in reportPeriodChoices %}
+								<option value="{{ item.0 }}"{% if selectedReportPeriod == item.0 %} selected="selected"{% endif %}>{{ item.1 }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					
+					<button style="width:0;height:0;opacity:0;" class="ma0 pa0">Change</button>
+				</div>
+			</form>
+		</div>
+		
+		<div class="mt3">
+			<div class="flex-ns custom-border-color bb" data-widget="dyntabs">
+				<button data-id="scorecard" class="{{ templateHelpers.classes.tab }} bo-active">Scorecard</button>
+				<button data-id="events" class="{{ templateHelpers.classes.tab }}">Events</button>
+				<button data-id="comments" class="{{ templateHelpers.classes.tab }}">VotE comments</button>
+				{% if isProjectEditor and feedbackResponses %}<button data-id="feedback" class="{{ templateHelpers.classes.tab }}">Feedback button</button>{% endif %}
+				<button data-id="projectinfo" class="{{ templateHelpers.classes.tab }}">Tool/service information</button>
+			</div>
+			
+		</div>
+		
+	</div>
+	
+	<div id="scorecard" class="bo-tab-content bo-active"> 
+		{% if hasAnyData %}
+			<div class="mt3 tr {{ templateHelpers.classes.grid }}">
+				<div class="f6 smallicon dib">
+					<a href="#" onclick="MicroModal.show('scoring-legends-modal');return false;" class="flex items-center {{ templateHelpers.classes.link }}">Scoring legends<div class="ml1">{{ templateHelpers.html.icons.modal|safe }}</div></a>
+				</div>
+			</div>
+			
+			<div class="ph3">
+
+				{% if customTimeMachineMessage %}
+					<div class="mv3 tc">
+						<div class="pv3 ph4 bg-light-yellow dib">{{ customTimeMachineMessage|safe }}</div>
+					</div>
+				{% endif %}
+				
+				<div class="flex-l mt3">
+					<div class="w-third-l tc relative ph3-l mb4">
+						<div class="bg-white ph3 h-100 pv3">
+							<div class="b mb3 tl">NPS</div>
+							<div class="relative chart-con">
+								{# If there's a valid sample set, show the dial graphs and stats. #}
+								{# Else if there's a score, show "not enough responses" and stats. #}
+								{# Else show "no responses". #}
+								{% if projectSnapshot.nps_meaningful_data %}
+									<div id="npschart" class="relative bo-fadein bo-fadeout">
+										<div id="npschart-donut" class="absolute w-100"></div>
+										<div id="npschart-dial" class="absolute w-100"></div>
+									</div>
+									<div id="npschart-text" class="absolute w-100 relative bo-fadein bo-fadeout" style="top:136px;">
+										<div class="absolute bg-white br-100" style="z-index: 1;transform: translate3d(-40px,-16px,0);width: 80px;height: 80px;top: 0;left: 50%;"></div>
+										<div class="z-2 relative">
+											<div class="f3 tc mv2"><span class="dib bg-white br3 ph1">{{ projectSnapshot.nps_score|floatformat:1 }}</span></div>
+											{% include 'metrics/partials/stats_lines.html' with moeWarning=projectSnapshot.npsMoeWarning responseCount=projectSnapshot.nps_count moe=projectSnapshot.nps_margin_error date=projectSnapshot.nps_score_date %}
+											
+											{% if project.current_year_settings.nps_target and projectSnapshot.date_period == 'last90' %}
+												<div class="mt3 f6">
+													{% if projectSnapshot.nps_score > project.current_year_settings.nps_target_exceed or projectSnapshot.nps_score >= 41 %}
+														Exceeding
+													{% elif projectSnapshot.nps_score > project.current_year_settings.nps_target or projectSnapshot.nps_score >= 26 %}
+														Achieving
+													{% else %}
+														Below
+													{% endif %} <a href="#" class="custom-show-targets {{ templateHelpers.classes.link }} underline hint hint--top" aria-label="View {{ project.current_year_settings.year }} targets">target</a>
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elif projectSnapshot.nps_score %}
+									{% include 'metrics/partials/insufficient_responses.html' with scoreType='NPS' %}
+									{% include 'metrics/partials/stats_lines.html' with responseCount=projectSnapshot.nps_count moe=projectSnapshot.nps_margin_error date=projectSnapshot.nps_score_date %}
+								{% else %}
+									<div class="tc">
+										{% include 'metrics/partials/no_data_for_period.html' %}
+									</div>			
+								{% endif %}
+							</div>
+							
+							<div class="relative histogram-con mt4">
+								{% if projectSnapshot.entry_type == 'manual' %}
+									{% include 'metrics/partials/responses_not_available.html' %}
+								{% elif npsHistogramData %}
+									<div id="nps-histogram-con" class="bo-fadein bo-fadeout"><div id="nps-histogram" class="histogram" style="transform: translate3d(0,-4px,0);"></div></div>
+								{% else %}
+									{% include 'metrics/partials/no_data_for_period.html' %}
+								{% endif %}
+							</div>
+								
+							{% if projectSnapshot.suggestions and not project.private_comments %}
+								<div class="relative viewall-con mt4">
+									<div class="hasicon lh-copy tl ml1"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=improvement_suggestion&reportperiod={{ selectedReportPeriod }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} User suggestions for improvement</a></div>
+								</div>
+							{% endif %}
+							
+							<div class="relative historical-con mt3 mb4 mb0-l">
+								{% if npsChartDataArr.actual %}
+									<div id="nps-historical-chart-con" class="bo-fadein bo-fadeout"><div style="left:-10px;" id="nps-historical-chart"></div></div>
+								{% else %}
+									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
+								{% endif %}
+							</div>
+						</div>						
+					</div>
+					
+					<div class="w-third-l tc relative ph3-l mb4">
+						<div class="bg-white ph3 h-100 pv3">
+							<div class="b mb3 tl">Ease & capabilities</div>
+							<div class="relative chart-con">
+								{# If there's a valid sample set, show the dial graphs and stats. #}
+								{# Else if there's a score, show "not enough responses" and stats. #}
+								{# Else show "no responses". #}
+								{% if projectSnapshot.umux_meaningful_data %}
+									<div id="umuxchart" class="relative bo-fadein bo-fadeout">
+										<div id="umuxchart-donut" class="absolute w-100"></div>
+										<div id="umuxchart-dial" class="absolute w-100"></div>
+									</div>
+									<div id="umuxchart-text" class="absolute w-100 bo-fadein bo-fadeout" style="top:100px;">
+										<div class="absolute bg-white br-100" style="z-index: 1;transform: translate3d(-60px,0px,0);width:120px; height:120px; top:0; left:50%;"></div>
+										<div class="z-2 relative">
+											<div class="mt2 f2 mb1">{{ projectSnapshot.umux_score_category.name }}</div>
+											<div class="mb2"><span class="dib bg-white br3 ph1">{{ projectSnapshot.umux_score|floatformat:1 }}</span></div>
+											{% include 'metrics/partials/stats_lines.html' with moeWarning=projectSnapshot.umuxMoeWarning responseCount=projectSnapshot.umux_count moe=projectSnapshot.umux_margin_error date=projectSnapshot.umux_score_date %}
+											
+											{% if project.current_year_settings.umux_target and projectSnapshot.date_period == 'last90' %}
+												<div class="mt3 f6">
+													{% if projectSnapshot.umux_score > project.current_year_settings.umux_target_exceed or projectSnapshot.umux_score >= 84 %}
+														Exceeding
+													{% elif projectSnapshot.umux_score > project.current_year_settings.umux_target or projectSnapshot.umux_score >= 74 %}
+														Achieving
+													{% else %}
+														Below
+													{% endif %} <a href="#" class="custom-show-targets {{ templateHelpers.classes.link }} underline hint hint--top" aria-label="View {{ project.current_year_settings.year }} targets">target</a>
+												</div>
+											{% endif %}
+										</div>
+									</div>
+								{% elif projectSnapshot.umux_score %}
+									{% include 'metrics/partials/insufficient_responses.html' with scoreType='UMUX'  %}
+									{% include 'metrics/partials/stats_lines.html' with responseCount=projectSnapshot.umux_count moe=projectSnapshot.umux_margin_error date=projectSnapshot.umux_score_date %}
+								{% else %}
+									<div class="tc">
+										{% include 'metrics/partials/no_data_for_period.html' %}
+									</div>			
+								{% endif %}
+							</div>
+							
+							<div class="relative histogram-con mt4">
+								{% if projectSnapshot.entry_type == 'manual' %}
+									{% include 'metrics/partials/responses_not_available.html' %}
+								{% elif projectSnapshot.umux_count > 0 %}
+									<div id="umux-histogram-charts" class="bo-fadein bo-fadeout">
+										<div class="flex-ns">
+											<div class="w-50-ns f7">
+												<div>Capabilities</div>
+												<div id="umux-cap-histogram" class="histogram" style="left:-20px;"></div>
+											</div>
+											<div class="w-50-ns f7">
+												<div>Ease of use</div>
+												<div id="umux-ease-histogram" class="histogram" style="left:-20px;"></div>
+											</div>
+										</div>
+										
+										<div class="flex items-center f7 mt4">
+											<div class="mr3" style="min-width: 110px;">Capabilities average</div>
+											<div class="bg-lightest-blue w-100 tc">
+												<div class="bg-blue white align-self pt1 pb1" style="width: calc(100% * {{ projectSnapshot.umux_capability_avg }}/7);">{{ projectSnapshot.umux_capability_avg|floatformat:1 }}</div>
+											</div>
+										</div>
+										<div class="flex items-center f7 mt2">
+											<div class="mr3" style="min-width: 110px;">Ease of use average</div>
+											<div class="bg-lightest-blue w-100 tc">
+												<div class="bg-blue white align-self pt1 pb1" style="width: calc(100% * {{ projectSnapshot.umux_ease_of_use_avg }}/7);">{{ projectSnapshot.umux_ease_of_use_avg |floatformat:1 }}</div>
+											</div>
+										</div>
+									</div>
+								{% else %}
+									{% include 'metrics/partials/no_data_for_period.html' %}
+								{% endif %}
+							</div>
+							
+							{% if projectSnapshot.suggestions and not project.private_comments %}
+								<div class="relative viewall-con mt4">
+									<div class="hasicon lh-copy tl ml1-ns"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=improvement_suggestion&reportperiod={{ selectedReportPeriod }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} User suggestions for improvement</a></div>
+								</div>
+							{% endif %}
+							
+							<div class="relative historical-con mt3 mb4 mb0-l">
+								{% if umuxChartDataArr.actual %}
+									<div id="umux-historical-chart-con" class="bo-fadein common bo-fadeout"><div style="left:-10px;" id="umux-historical-chart"></div></div>
+								{% else %}
+									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
+								{% endif %}
+							</div>
+						</div>
+					</div>
+		
+					<div class="w-third-l tc relative ph3-l mb4">
+						<div class="bg-white ph3 h-100 pv3">
+							<div class="b mb3 tl">Goal completion</div>
+							<div class="relative chart-con">
+								{% if projectSnapshot.goal_completed_percent %}
+									<div class="" style="transform: translate3d(0,-38px,0);">
+										<div id="goalpercentchart"></div>
+										<div style="top:174px;" class="f3 absolute tc ml-auto mr-auto w-100">{{ projectSnapshot.goal_completed_percent|floatformat:1 }}%</div>
+									</div>
+								{% else %}
+									<div class="tc">
+										{% include 'metrics/partials/no_data_for_period.html' %}
+									</div>
+								{% endif %}
+								
+								{% if projectSnapshot.goal_completed_percent %}
+								<div id="goalpercentchart-text" class="">
+									<div style="transform: translate3d(0,-40px,0);">
+									{% include 'metrics/partials/stats_lines.html' with responseCount=projectSnapshot.goal_completed_count moe=None date=projectSnapshot.goal_completed_date %}
+									</div>
+								</div>
+								{% endif %}
+							</div>
+							
+							<div class="relative histogram-con mt4">
+								{% if projectSnapshot.entry_type == 'manual' %}
+									{% include 'metrics/partials/responses_not_available.html' %}
+								{% elif goalHistogramData %}
+									<div id="goal-completion-histogram-con" class="bo-fadein bo-fadeout">
+										<div class="relative f6 flex justify-center" title="This was Claude's idea">
+											<div class="f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.4.color_code }};"></div><div class="f7">No</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.3.color_code }};"></div><div class="f7">Partially</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.0.color_code }};"></div><div class="f7">Yes</div>
+										</div>
+										<div style="max-height: 260px; overflow-y: auto">
+											<div id="goal-histogram" class="histogram" style="overflow-y: hidden"></div>
+										</div>
+									</div>
+								{% else %}
+									{% if projectSnapshot.goal_completed_count > 0 %}
+										<div class="f4 gray">Goals not available<br>for selected period</div>
+									{% else %}
+										{% include 'metrics/partials/no_data_for_period.html' %}
+									{% endif %}
+								{% endif %}
+							</div>
+							
+							{% if projectSnapshot.goal_not_completeds and not project.private_comments %}
+								<div class="relative viewall-con mt4">
+									<div class="hasicon lh-copy tl ml1"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=goal_not_completed_reason&reportperiod={{ selectedReportPeriod }}&sort=5" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} Reasons why users couldn't complete goals</a></div>
+								</div>
+							{% endif %}
+							
+							<div class="relative historical-con mt3 mb4 mb0-l">
+								{% if goalCompletionChartDataArr.actual %}
+									<div id="goal-completion-historical-chart-con" class="bo-fadein bo-fadeout"><div style="left:-20px;" id="goal-completion-historical-chart"></div></div>
+								{% else %}
+									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
+								{% endif %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		{% else %}
+			<div class="{{ templateHelpers.classes.grid }} mt4">
+				<div class="mt3">No data has been collected yet for this project</div>
+			</div>
+		{% endif %}
+	</div>
+		
+	<div id="events" class="bo-tab-content mb4"> 
+		<div class="{{ templateHelpers.classes.grid }}">	
+			<div class="bg-white pa4 w-100 mw7">
+				<div><a id="project-event-add" data-url="{% url 'metrics:admin_projectevent_add' %}?iframe=yes&project={{ project.id }}" href="#" class="dib {{ templateHelpers.classes.link }}"><span class="flex items-center smallicon">{{ templateHelpers.html.icons.add|safe }}<span class="ml2">Add a new event</span></span></a></div>
+				
+				{% if projectEvents.count > 0 %}
+					<table cellspacing="0" class="mt4 w-100">
+						<thead>
+							<tr>
+								<th>All project events</th>
+								<th>Date</th>
+								<th></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for event in projectEvents %}
+								<tr>
+									<td class="w-100 {{ templateHelpers.classes.tableListCell }}">{{ event.name }}</td>
+									<td class="{{ templateHelpers.classes.tableListCell }}">{{ event.date|date:'m/d/Y' }}</td>
+									<td class="{{ templateHelpers.classes.tableListCell }}"><a data-url="{% url 'metrics:admin_projectevent_edit' id=event.id %}?iframe=yes" href="#" class="project-event-edit dib {{ templateHelpers.classes.link }}" title="Edit event"><span class="flex items-center">{{ templateHelpers.html.icons.edit|safe }}</span></a></td>
+									<td class="{{ templateHelpers.classes.tableListCell }}"><a data-url="{% url 'metrics:admin_projectevent_delete' id=event.id %}" href="#" class="project-event-delete dib {{ templateHelpers.classes.link }}" title="Delete event"><span class="flex items-center">{{ templateHelpers.html.icons.trash|safe }}</span></a></td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				{% else %}
+					<p class="mt4">There are no events for this project yet.</p>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+		
+	<div id="comments" class="bo-tab-content mb4"> 
+		<div class="{{ templateHelpers.classes.grid }}">
+			<div class="bg-white pa4 w-100 mw7">
+				{% if not project.private_comments %}
+					<p class="b">General comments</p>
+					{% if projectSnapshot.comments %}
+						<ul class="lh-copy">
+							{% for comment in projectSnapshot.comments %}
+								<li>{{ comment|capfirst|truncatewords:40 }}</li>
+							{% endfor %}
+						</ul>
+						<div class="mb2 lh-copy hasicon" style="margin-left: 27px;"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=comments&reportperiod={{ selectedReportPeriod }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} All comments</a></div>
+					{% else %}
+						<p>N/A</p>
+					{% endif %}
+					
+					
+					<p class="b mt4">Suggestions for improvements</p>	
+					{% if projectSnapshot.suggestions %}
+						<ul class="lh-copy">
+							{% for comment in projectSnapshot.suggestions %}
+								<li>{{ comment|capfirst|truncatewords:40 }}</li>
+							{% endfor %}
+						</ul>
+						<div class="mb2 lh-copy hasicon" style="margin-left: 27px;"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=improvement_suggestion&reportperiod={{ selectedReportPeriod }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} All suggestions for improvement</a></div>
+					{% else %}
+						<p>N/A</p>
+					{% endif %}
+					
+					
+					<p class="b mt4">Reason goal was not completed</p>
+					{% if projectSnapshot.goal_not_completeds %}
+						<ul class="lh-copy">
+							{% for comment in projectSnapshot.goal_not_completeds %}
+								<li>{{ comment|capfirst|truncatewords:40 }}</li>
+							{% endfor %}
+						</ul>
+						<div class="mb2 lh-copy hasicon" style="margin-left: 27px;"><a href="{% url 'metrics:projects_vote_responses' %}?project={{ project.id }}&showdata=goal_not_completed_reason&reportperiod={{ selectedReportPeriod }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} All reasons for non-completed goal</a></div>
+					{% else %}
+						<p>N/A</p>
+					{% endif %}					
+			{% else %}
+				<div class="">Survey comments are private due to the sensitive nature of this application.</div>
+			{% endif %}
+			</div>
+		</div>
+	</div>
+	
+	{% if isProjectEditor and feedbackResponses %}
+		<div id="feedback" class="bo-tab-content mb4"> 
+			<div class="{{ templateHelpers.classes.grid }}">
+				<div class="bg-white pa4 w-100 mw7">
+					<ul class="lh-copy">
+						{% for feedback in feedbackResponses %}
+							<li>Rating: {{ feedback.rating|default:'n/a' }} | Comments: {{ feedback.comments|capfirst|truncatewords:40|default:'n/a' }}</li>
+						{% endfor %}
+					</ul>
+					<div class="mb2 lh-copy hasicon" style="margin-left: 27px;"><a href="{% url 'metrics:projects_feedback_responses' %}?project={{ project.id }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} All feedback responses</a></div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	
+	
+	<div id="projectinfo" class="bo-tab-content mb4"> 
+		<div class="{{ templateHelpers.classes.grid }}">
+			<table class="bg-white pa4 pt3 w-100 mw7">
+				<thead></thead>
+				<tbody>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Domain:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.domain.name }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Url:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{% if project.url %}<a href="{{ project.url}}" target="_blank">{{ project.url|noprotocol }}</a>{% else %}N/A{% endif %}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Estimated # of users:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.estimated_num_users|default:'N/A' }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Contact:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.contact.profile.full_name|default:'N/A' }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Vendor app:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.vendor_app|title }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Research:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{% if projectResearchCount > 0 %}<a class="{{ templateHelpers.classes.link }}" href="{% url 'research:home' %}?project={{ project.id }}">Research items</a>{% else %}None yet{% endif %}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Tasks:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{% if project.task_projects.count > 0 %}
+							{% for task in project.task_projects.all %}
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:tasks_detail' id=task.id %}">{{ task.name }}</a></div>
+							{% endfor %}{% else %}None{% endif %}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Embedded designer:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.designer_assigned|title }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Data source:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ projectSnapshot.data_source.name }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Average responses per day:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ responsesPerDay }}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Entry method:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{{ projectSnapshot.entry_type|title }}</td>
+					</tr>
+					{% if isProjectAdmin %}
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">API to fetch all responses:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}"><a href="{% url 'metrics:api_projects_vote_responses' %}?key={{ project.api_key }}" class="{{ templateHelpers.classes.link }}" target="_blank">Get all responses JSON data</a></td>
+					</tr>					
+					{% endif %}
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Admins:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{% if project.admins.count > 0 %}{% for user in project.admins.all %}{{ user.profile.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %}</td>
+					</tr>
+					<tr>
+						<td class="{{templateHelpers.classes.tableListCell }} b">Editors:</td>
+						<td class="{{templateHelpers.classes.tableListCell }}">{% if project.editors.count > 0 %}{% for user in project.editors.all %}{{ user.profile.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+	
+	<script>
+		var historyHeight = 300,
+			historyDotSize = 5,
+			timeOffset = 100;
+		
+		// NPS donut and dial chart.
+		function createNpsDonut () {
+			if (!document.getElementById('npschart')) {
+				return;
+			}
+			
+			var width = 500,
+				height = Math.min(width, 500),
+				svgheight = 330,
+				data = [
+					{name: "{{ npsScoreCategories.4.name }}", range: "-100 to -27", color: '{{ npsScoreCategories.4.color_code }}', textcolor: '#fff', value: (100-27)+.8},
+					{name: "{{ npsScoreCategories.3.name }}", range: "-26 to 8", color: '{{ npsScoreCategories.3.color_code }}', value: (26+8)+.8},
+					{name: "{{ npsScoreCategories.2.name }}", range: "9 to 25", color: '{{ npsScoreCategories.2.color_code }}', value: (25-9)+.8},
+					{name: "{{ npsScoreCategories.1.name }}", range: "26-40", color: '{{ npsScoreCategories.1.color_code }}', value: (40-26)+.8},
+					{name: "{{ npsScoreCategories.0.name }}", range: "41-100", color: '{{ npsScoreCategories.0.color_code }}', textcolor: '#fff', value: (100-41)+.8},
+				];
+				
+			var nps = {{ projectSnapshot.nps_score|default:0 }},
+				moe = {{ projectSnapshot.nps_margin_error|default:0 }},
+				moeLower = {{ projectSnapshot.nps_margin_error_lower|default:0 }},
+				moeUpper = {{ projectSnapshot.nps_margin_error_upper|default:0 }};
+				
+			var data2 = [
+				{name: "moeBelowSpace", color: 'transparent', value: (100+moeLower)}, 
+				{name: "moeBelow", color: 'rgba(0,0,0,.3)', value: moe}, 
+				{name: "npsScore", color: 'black', value: .5}, // Always
+				{name: "moeAbove", color: 'rgba(0,0,0,.3)', value: moe}, 
+				{name: "moeBelowSpace", color: 'transparent', value: (200-(100+moeLower)-(moe*2))},
+			];				
+			
+			var pie = d3.pie()
+				.sort(null).startAngle(-0.8 * Math.PI).endAngle(0.8 * Math.PI)
+				.value(d => d.value);
+				
+			function arcLabel () {
+				var radius = Math.min(width, height) / 2 * 0.8;
+				return d3.arc().innerRadius(radius).outerRadius(radius);
+			}
+			
+			function arc () {
+				return d3.arc()
+					.innerRadius(150)
+					.outerRadius(Math.min(width, height) / 2 - 1)
+			}
+			
+			var arcs = pie(data);
+
+			//////////////////////////////
+			//// DONUT
+			//////////////////////////////
+			const svg1 = d3.create("svg")
+				.attr("viewBox", [-width / 2, -height / 2, width, height])
+				.attr('id', 'npsdonut')
+				.attr('style', 'height: ' + svgheight + 'px;width:100%;');
+				
+			svg1.append("g")
+				.selectAll("path")
+				.data(arcs)
+				.join("path")
+					.attr("fill", d => d.data.color)
+					.attr("d", arc())
+				.append("title")
+					.text(d => d.data.value);
+			
+			svg1.append("g")
+				.attr("font-family", "sans-serif")
+				.attr("font-size", 15)
+				.attr("text-anchor", "middle")
+			.selectAll("text")
+			.data(arcs)
+			.join("text")
+				.attr("transform", d => 'translate(' + arcLabel().centroid(d) + ')')
+				.call(text => text.append("tspan")
+					.attr("y", "-0.4em")
+					.attr("font-weight", "bold")
+					.attr("fill", d => d.data.textcolor)
+					.text(d => d.data.name))
+				.call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
+					.attr("x", 0)
+					.attr("y", "0.7em")
+					.attr("fill", d => d.data.textcolor || '#000')
+					.text(d => d.data.range));
+			
+			//////////////////////////////
+			//// Dial needle with MOE
+			//////////////////////////////
+			const arcs2 = pie(data2);
+			const svg2 = d3.create("svg")
+				.attr("viewBox", [-width / 2, -height / 2, width, height])
+				.attr('id', 'npsDial')
+				.attr('style', 'height: ' + svgheight + 'px;width:100%;');
+			
+			svg2.append("g")
+			.selectAll("path")
+			.data(arcs2)
+			.join("path")
+				.attr("fill", d => d.data.color)
+				.attr("d",d3.arc().innerRadius(0).outerRadius(Math.min(width, height) / 2 - 1));
+			
+			//////////////////////////////
+			document.getElementById('npschart-donut').appendChild(svg1.node());
+			document.getElementById('npschart-dial').appendChild(svg2.node());
+			document.getElementById('npschart').classList.remove('bo-fadeout');
+			document.getElementById('npschart-text').classList.remove('bo-fadeout');
+		}
+		createNpsDonut();
+			
+			
+
+		// UMUX donut and dial chart.	
+		function createUmuxDonut () {
+			if (!document.getElementById('umuxchart')) {
+				return;
+			}
+			
+			var width = 500,
+				height = Math.min(width, 500),
+				svgheight = 330,
+				data = [
+					{% for cat in umuxScoreCategories %}
+						{
+							name:'{% if '-' in cat.name or '+' in cat.name %}{% else %}{{ cat.name }}{% endif %}', 
+							range:'' ,
+							color:'{{ cat.color_code }}',
+							textcolor: '{{ cat.text_color_code|default:'#000' }}',
+							value: ({{ cat.max_score_range }} - {{ cat.min_score_range }}+.4),
+						},
+					{% endfor %}
+				];			
+				
+			var umux = {{ projectSnapshot.umux_score|default:0 }},
+				moe = {{ projectSnapshot.umux_margin_error|default:0 }},
+				moeLower = {{ projectSnapshot.umux_margin_error_lower|default:0 }},
+				moeUpper = {{ projectSnapshot.umux_margin_error_upper|default:0 }};
+				
+			var data2 = [
+				{name: "moeBelowSpace", color: 'transparent', value: (moeLower)}, 
+				{name: "moeBelow", color: 'rgba(0,0,0,.3)', value: moe}, 
+				{name: "umuxScore", color: 'black', value: .25}, // Always
+				{name: "moeAbove", color: 'rgba(0,0,0,.3)', value: moe}, 
+				{name: "moeBelowSpace", color: 'transparent', value: (100-(moeLower)-(moe*2))},
+			];				
+			
+			var pie = d3.pie()
+				.sort(null).startAngle(-0.8 * Math.PI).endAngle(0.8 * Math.PI)
+				.value(d => d.value);
+			
+			var pieDial = d3.pie()
+				.sort(null).startAngle(-0.84 * Math.PI).endAngle(0.8 * Math.PI)
+				.value(d => d.value);
+				
+			function arcLabel () {
+				var radius = Math.min(width, height) / 2 * 0.8;
+				return d3.arc().innerRadius(radius).outerRadius(radius);
+			}
+			
+			function arc () {
+				return d3.arc()
+					.innerRadius(150)
+					.outerRadius(Math.min(width, height) / 2 - 1)
+			}
+			
+			var arcs = pie(data);
+
+			const svg1 = d3.create("svg")
+				.attr("viewBox", [-width / 2, -height / 2, width, height])
+				.attr('id', 'umuxdonut')
+				.attr('style', 'height: ' + svgheight + 'px;width:100%;');
+				
+			svg1.append("g")
+				.selectAll("path")
+				.data(arcs)
+				.join("path")
+					.attr("fill", d => d.data.color)
+					.attr("d", arc())
+				.append("title")
+					.text(d => d.data.value);
+			
+			svg1.append("g")
+				.attr("font-family", "sans-serif")
+				.attr("font-size", 24)
+				.attr("text-anchor", "middle")
+			.selectAll("text")
+			.data(arcs)
+			.join("text")
+				.attr("transform", d => 'translate(' + arcLabel().centroid(d) + ')')
+				.call(text => text.append("tspan")
+					.attr("y", ".4em")
+					.attr("font-weight", "bold")
+					.attr("fill", d => d.data.textcolor)
+					.text(d => d.data.name))
+				.call(text => text.filter(d => (d.endAngle - d.startAngle) > 0.25).append("tspan")
+					.attr("x", 0)
+					.attr("y", "0.7em")
+					.attr("fill", d => d.data.textcolor || '#000')
+					.text(d => d.data.range));
+			
+			//////////////////////////////
+			//// Dial needle with MOE
+			//////////////////////////////
+			
+			const arcs2 = pieDial(data2);
+			const svg2 = d3.create("svg")
+				.attr("viewBox", [-width / 2, -height / 2, width, height])
+				.attr('id', 'umuxDial')
+				.attr('style', 'height: ' + svgheight + 'px;width:100%;');
+			
+			svg2.append("g")
+			.selectAll("path")
+			.data(arcs2)
+			.join("path")
+				.attr("fill", d => d.data.color)
+				.attr("d",d3.arc().innerRadius(0).outerRadius(Math.min(width, height) / 2 - 1));
+			
+			//////////////////////////////
+			document.getElementById('umuxchart-donut').appendChild(svg1.node());
+			document.getElementById('umuxchart-dial').appendChild(svg2.node());
+			document.getElementById('umuxchart').classList.remove('bo-fadeout');
+			document.getElementById('umuxchart-text').classList.remove('bo-fadeout');
+		}
+		createUmuxDonut();
+			
+			
+			
+		// Goal completion gauge chart.
+		{% if projectSnapshot.goal_completed_percent %}
+			function createGoalGauge () {
+				var goalCompleteChart = c3.generate({
+					bindto: '#goalpercentchart',
+					data: {
+						columns: [
+							['Goal completed', {{ projectSnapshot.goal_completed_percent|floatformat:1 }}]
+						],
+						type: 'gauge',
+					},
+					gauge: {
+						min: 0,
+						max: 100,
+						width: 40,
+						label: {
+							format: function (value) {
+								return null;
+							}
+						},
+					},
+					legend: { show: false },
+					color: {
+						pattern: ['{{ projectSnapshot.goal_completed_category.color_code }}'],
+					},
+					size: {
+						height: '220'
+					},
+					axis: {
+						x: { padding: 0 },
+						y: { padding: 0 }
+					},
+				});
+			}
+			createGoalGauge();
+		{% endif %}
+			
+		
+		// NPS histogram bar chart.
+		{% if npsHistogramData %}
+			function createNpsHistogram () {
+				var chart = c3.generate({
+					bindto: '#nps-histogram',
+					data: {
+						keys: {
+							x: 'npsScore',
+							value: ['npsScorePercent']
+						},
+						json: {{ npsHistogramData|safe }},
+						color: function(inColor, data) {
+							if (data.index <= 6) {
+								return '{{ npsScoreCategories.4.color_code }}';
+							}
+							else if (data.index == 7 || data.index === 8) {
+								return '{{ npsScoreCategories.3.color_code }}';
+							}
+							else if (data.index >= 9) {
+								return '{{ npsScoreCategories.0.color_code }}';
+							}
+							else {
+								return '#000000';
+							}
+						},
+						type: 'bar',
+						labels: {
+							format: function (v, id, i, j) { return v+'%'; },
+						},
+					},
+					axis: {
+						x: {
+							tick: {
+								culling: {
+									max: 12
+								},
+								outer: false,
+							}
+						},
+						y: {
+							show: false,
+							padding: 20,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					size: {
+						height: 285
+					},
+					legend: {
+						show: false
+					},
+					tooltip: {
+						show: false,
+					},
+					bar: {
+						width: {
+							ratio: .8
+						}
+					}
+				});
+				document.getElementById('nps-histogram-con').classList.remove('bo-fadeout');
+			}
+			
+			setTimeout(createNpsHistogram, timeOffset*4);
+		{% endif %}
+		
+
+		// UMUX Capabilities histogram bar chart.
+		{% if umuxCapHistogramData %}
+			function createUmuxCapHistogram () {
+				var chart = c3.generate({
+					bindto: '#umux-cap-histogram',
+					data: {
+						keys: {
+							x: 'umuxCapScore',
+							value: ['umuxCapScorePercent']
+						},
+						json: {{ umuxCapHistogramData|safe }},
+						color: function(inColor, data) {
+							var c = 'auto';
+							if (typeof(data) == 'string') {
+								//
+							}
+							else if (data.index <= 1) {
+								c = '{{ npsScoreCategories.0.color_code }}';
+							}
+							else if (data.index <= 3) {
+								c = '{{ npsScoreCategories.3.color_code }}';
+							}
+							else if (data.index >= 4) {
+								c = '{{ npsScoreCategories.4.color_code }}';
+							}
+							return c;
+						},
+						type: 'bar',
+						labels: {
+							format: function (v, id, i, j) { return v+'%'; },
+						},
+					},
+					axis: {
+						rotated: true,
+						x: {
+							type: 'category',
+							tick: {
+								culling: {
+									max: 8
+								},
+								outer: false,
+							}
+						},
+						y: {
+							show: false,
+							padding: 35,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					size: {
+						height: 170
+					},
+					legend: {
+						show: false
+					},
+					tooltip: {
+						show: false,
+					},
+					bar: {
+						width: {
+							ratio: .8
+						}
+					}
+				});
+			}
+			setTimeout(createUmuxCapHistogram, timeOffset*5);
+		{% endif %}
+
+
+		
+		// UMUX Ease of use histogram bar chart.
+		{% if projectSnapshot.umux_count > 0 %}
+			function createUmuxEaseHistogram () {
+				var chart = c3.generate({
+					bindto: '#umux-ease-histogram',
+					data: {
+						keys: {
+							x: 'umuxEaseScore',
+							value: ['umuxEaseScorePercent']
+						},
+						json: {{ umuxEaseHistogramData|safe }},
+						color: function(inColor, data) {
+							var c = '#000000';
+							if (typeof(data) == 'string') {
+								c = '#000000';
+							}
+							else if (data.index <= 1) {
+								c = '{{ npsScoreCategories.0.color_code }}';
+							}
+							else if (data.index <= 3) {
+								c = '{{ npsScoreCategories.3.color_code }}';
+							}
+							else if (data.index >= 4) {
+								c = '{{ npsScoreCategories.4.color_code }}';
+							}
+							return c;
+						},
+						type: 'bar',
+						labels: {
+							format: function (v, id, i, j) { return v+'%'; },
+						},
+					},
+					axis: {
+						rotated: true,
+						x: {
+							type: 'category',
+							tick: {
+								culling: {
+									max: 8
+								},
+								outer: false,
+							}
+						},
+						y: {
+							show: false,
+							padding: 35,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					size: {
+						height: 170
+					},
+					legend: {
+						show: false
+					},
+					tooltip: {
+						show: false,
+					},
+					bar: {
+						width: {
+							ratio: .8
+						}
+					}
+				});
+				document.getElementById('umux-histogram-charts').classList.remove('bo-fadeout');
+			}
+			setTimeout(createUmuxEaseHistogram, timeOffset*5.1);
+		{% endif %}
+
+
+
+		// Goal completion histogram bar chart
+		{% if goalHistogramData %}
+			function createGoalHistogram () {
+				var goalHistogramData = {{ goalHistogramData|safe }},
+					histogramHeight = 260;
+					
+				if (goalHistogramData.length > 15) {
+					histogramHeight = 500;
+				}
+				else if (goalHistogramData.length > 10) {
+					histogramHeight = 400;
+				}
+				
+				var chart = c3.generate({
+					bindto: '#goal-histogram',
+					data: {
+						keys: {
+							x: 'goalName',
+							value: ['No', 'Partially', 'Yes']
+						},
+						json: goalHistogramData,
+						order: null,
+						type: 'bar',
+						groups: [
+							['Yes', 'Partially', 'No']
+						],
+						colors: {
+							'Yes': '{{ npsScoreCategories.0.color_code }}',
+							'Partially': '{{ npsScoreCategories.3.color_code }}',
+							'No': '{{ npsScoreCategories.4.color_code }}',
+						},					
+						labels: {
+							format: {
+								'No': function () { return '';},
+								'Partially': function () { return '';},
+								'Yes': function (v, id, i, j) {
+									if (goalHistogramData[i]['goalPercent'] > 11 && (goalHistogramData[i]['goalPercent'] + goalHistogramData[i]['YesPercent'] > 60)) {
+										return goalHistogramData[i]['YesPercent'] + '%';
+									}
+								},
+							},
+						},
+					},
+					axis: {
+						rotated: true,
+						x: {
+							type: 'category',
+							tick: {
+								outer: false,
+							}
+						},
+						y: {
+							show: false,
+							padding: 0,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					size: {
+						height: histogramHeight
+					},
+					legend: {
+						show: false
+					},
+					tooltip: {
+						show: true,
+						format: {
+							value: function (value, ratio, id, index) {
+								var prop = id + 'Percent';
+								return goalHistogramData[index][prop] + '%';
+							},
+							title: function (i) {
+								return goalHistogramData[i]['goalName'] + ' &nbsp;&nbsp;(' + goalHistogramData[i]['goalPercent'] + '%)';
+							},
+						}
+					},
+					bar: {
+						width: {
+							ratio: .8
+						}
+					}
+				});
+				document.getElementById('goal-completion-histogram-con').classList.remove('bo-fadeout');
+			}
+			setTimeout(createGoalHistogram, timeOffset*6);
+		{% endif %}
+		
+		
+		
+		// NPS historical line chart.
+		{% if npsChartDataArr.actual %}
+			function createNpsHistoryChart () {
+				var chartNpsHistory = c3.generate({
+					bindto: '#nps-historical-chart',
+					point: {r: historyDotSize},
+					data: {
+						type: 'spline',
+						x: 'x',
+						columns: [
+							{{ npsChartDataArr.xaxis|safe }},
+							{{ npsChartDataArr.actual|safe }},
+							{{ npsChartDataArr.target|safe }},
+							{{ npsChartDataArr.targetExceed|safe }},
+						],
+						colors: {
+							Actual: '#4178be',
+							Target: '#be9b00',
+							Exceed: '#144D14',
+						},
+					},
+					axis: {
+						x: {
+							padding: 0,
+							type: 'category',
+							tick: {
+								outer: false,
+							},
+						},
+						y: {
+							padding: 0,
+							min: -100,
+							max: 100,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					tooltip: {
+						format: {
+							name: function (name, ratio, id, index) {
+								var scoreDatesArr = {{ npsChartDataArr.scoreDates|safe }},
+									targetYearsArr = {{ npsChartDataArr.targetYears|safe }},
+									nameVal = name;
+									
+								if (nameVal == 'Actual' && scoreDatesArr[index]) {
+									nameVal = nameVal + ' (as of ' + scoreDatesArr[index] + ')';
+								}
+								if (nameVal == 'Target' && targetYearsArr[index]) {
+									nameVal = targetYearsArr[index] + ' target';
+								}
+								if (nameVal == 'Exceed' && targetYearsArr[index]) {
+									nameVal = targetYearsArr[index] + ' exceed';
+								}
+								return nameVal;
+							}
+						}
+					},
+					size: {
+						height: 320
+					},
+					legend: {
+						show: true
+					},
+					line: {
+						connectNull: true
+					},
+				});
+				document.getElementById('nps-historical-chart-con').classList.remove('bo-fadeout');
+			}
+			setTimeout(createNpsHistoryChart, timeOffset*7);
+		{% endif %}	
+		
+		
+		// UMUX historical line chart.	
+		{% if umuxChartDataArr.actual %}
+			function createUmuxHistoryChart () {
+				var chartUmuxHistory = c3.generate({
+					bindto: '#umux-historical-chart',
+					point: {r: historyDotSize},
+					data: {
+						type: 'spline',
+						x: 'x',
+						columns: [
+							{{ umuxChartDataArr.xaxis|safe }},
+							{{ umuxChartDataArr.actual|safe }},
+							{{ umuxChartDataArr.target|safe }},
+							{{ umuxChartDataArr.targetExceed|safe }},
+						],
+						colors: {
+							Actual: '#4178be',
+							Target: '#be9b00',
+							Exceed: '#144D14',					
+						},
+					},
+					axis: {
+						x: {
+							padding: 0,
+							type: 'category',
+							tick: {
+								outer: false,
+							},
+						},
+						y: {
+							padding: 0,
+							min: 0,
+							max: 100,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					tooltip: {
+						format: {
+							name: function (name, ratio, id, index) {
+								var scoreDatesArr = {{ umuxChartDataArr.scoreDates|safe }},
+									targetYearsArr = {{ umuxChartDataArr.targetYears|safe }},
+									nameVal = name;
+									
+								if (nameVal == 'Actual' && scoreDatesArr[index]) {
+									nameVal = nameVal + ' (as of ' + scoreDatesArr[index] + ')';
+								}
+								if (nameVal == 'Target' && targetYearsArr[index]) {
+									nameVal = targetYearsArr[index] + ' target';
+								}
+								if (nameVal == 'Exceed' && targetYearsArr[index]) {
+									nameVal = targetYearsArr[index] + ' exceed';
+								}
+								return nameVal;
+							}
+						}
+					},
+					size: {
+						height: 320
+					},
+					legend: {
+						show: true
+					},
+					line: {
+						connectNull: true
+					},
+				});
+				document.getElementById('umux-historical-chart-con').classList.remove('bo-fadeout');
+			}
+			setTimeout(createUmuxHistoryChart, timeOffset*7);
+		{% endif %}		
+
+		
+		
+		// Goal completion historical line chart.	
+		{% if goalCompletionChartDataArr.actual %}
+			function createGoalCompletionHistoryChart () {
+				var chartcompletionHistory = c3.generate({
+					bindto: '#goal-completion-historical-chart',
+					point: {r: historyDotSize},
+					data: {
+						type: 'spline',
+						x: 'x',
+						columns: [
+							{{ goalCompletionChartDataArr.xaxis|safe }},
+							{{ goalCompletionChartDataArr.actual|safe }},
+						],
+						colors: {
+							'Goal completion %' : '#0072C3',				
+						},				
+					},
+					axis: {
+						x: {
+							type: 'category',
+							tick: {
+								outer: false,
+							},
+						},
+						y: {
+							padding: 10,
+							min: 0,
+							max: 100,
+							tick: {
+								outer: false,
+							},
+						}
+					},
+					tooltip: {
+						format: {
+							name: function (name, ratio, id, index) {
+								var scoreDatesArr = {{ goalCompletionChartDataArr.scoreDates|safe }},
+									nameVal = name;
+									
+								if (scoreDatesArr[index]) {
+									nameVal = nameVal + ' (as of ' + scoreDatesArr[index] + ')';
+								}
+								return nameVal;
+							}
+						}
+					},
+					size: {
+						height: historyHeight
+					},
+					legend: {
+						show: false
+					},
+					line: {
+						connectNull: true
+					},
+				});
+				document.getElementById('goal-completion-historical-chart-con').classList.remove('bo-fadeout');
+			}
+			
+			if ({{ goalCompletionChartDataArr.actual|safe }}.filter(item => item !== 'null').length > 1) {
+				setTimeout(createGoalCompletionHistoryChart, timeOffset*9);
+			}
+		{% endif %}
+
+	</script>
+	
+
+	<div class="common-modal" id="project-event-modal" aria-hidden="true">
+		<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+			<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+				<header class="fr">
+					<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+				</header>
+				<div class="custom-modal-content"></div>
+			</div>
+		</div>
+	</div>
+	
+	
+	{% if projectSnapshot.date_period == 'last90' %}
+		<div class="common-modal" id="project-targets-modal" aria-hidden="true">
+			<div class="z-3 fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+				<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+					<header class="fr">
+						<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+					</header>
+					<div class="custom-modal-content">
+						<div class="f4 b mt2 mb4">{{ project.current_year_settings.year }} {{ project.name }} targets</div>
+						
+						<div class="flex-ns mb2">
+							<div class="mb4 mb0-ns w-50-ns">
+								<div class="b mb2">NPS</div>
+								
+								<div class="flex w5 pv2 bb custom-border-color">
+									<div class="" style="width: 9rem;">Baseline score</div>
+									<div class="w3 tr">{{ project.current_year_settings.nps_baseline|floatformat:1 }}</div>
+								</div>
+								<div class="flex w5 pv2 bb custom-border-color">
+									<div class="" style="width: 9rem;">"Achieves" target</div>
+									<div class="w3 tr">{{ project.current_year_settings.nps_target|floatformat:1 }}</div>
+								</div>
+								<div class="flex w5 pv2">
+									<div class="" style="width: 9rem;">"Exceeds" target</div>
+									<div class="w3 tr">{{ project.current_year_settings.nps_target_exceed|floatformat:1 }}</div>
+								</div>
+							</div>
+							<div class="w-50-ns">
+								<div class="b mb2">Ease &amp; capabilities</div>
+								
+								<div class="flex w5 pv2 bb custom-border-color">
+									<div class="" style="width: 9rem;">Baseline score</div>
+									<div class="w3 tr">{{ project.current_year_settings.umux_baseline|floatformat:1 }}</div>
+								</div>
+								<div class="flex w5 pv2 bb custom-border-color">
+									<div class="" style="width: 9rem;">"Achieves" target</div>
+									<div class="w3 tr">{{ project.current_year_settings.umux_target|floatformat:1 }}</div>
+								</div>
+								<div class="flex w5 pv2">
+									<div class="" style="width: 9rem;">"Exceeds" target</div>
+									<div class="w3 tr">{{ project.current_year_settings.umux_target_exceed|floatformat:1 }}</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+	
+	{% include 'metrics/partials/project_scoring_modal.html' %}
+
+
+{% endblock %}
+

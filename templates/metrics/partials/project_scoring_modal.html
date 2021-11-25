@@ -1,0 +1,82 @@
+<div class="common-modal" id="scoring-legends-modal" aria-hidden="true">
+<div class="z-3 fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+	<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+		<header class="fr">
+			<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+		</header>
+		<div class="custom-modal-content">
+			<div class="f4 b mt2 mb4">Scoring legends</div>
+			
+			<div class="flex-ns justify-between">
+				
+				<div class="mw5-ns mb4">
+					<div class="b mb3">NPS</div>
+					<table cellpadding="0" cellspacing="0">
+						<thead>
+							<tr>
+								<th class="w1 {{ templateHelpers.classes.tableListCellSmall }}"></th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Grade</th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Range</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for category in legendModalNpsScoreCategories %}
+								<tr>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}"><span class="w1 h1 br-100 dib" style="background-color: {{ category.color_code }};">&nbsp;</span></td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.name }}</td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.min_score_range }} - {{ category.max_score_range }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="mw5-ns mb4 mb3-ns">
+					<div class="b mb3">Ease &amp; capabilities</div>
+					<table cellpadding="0" cellspacing="0">
+						<thead>
+							<tr>
+								<th class="w1 {{ templateHelpers.classes.tableListCellSmall }}"></th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Grade</th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Range</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for category in legendModalUmuxScoreCategories %}
+								<tr>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}"><span class="w1 h1 br-100 dib" style="background-color: {{ category.color_code }};">&nbsp;</span></td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.name }}</td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.min_score_range }} - {{ category.max_score_range }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				
+				<div class="mw5-ns mb4 mb0-ns">
+					<div class="b mb3">Goal completion</div>
+					<table cellpadding="0" cellspacing="0">
+						<thead>
+							<tr>
+								<th class="w1 {{ templateHelpers.classes.tableListCellSmall }}"></th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Grade</th>
+								<th class="{{ templateHelpers.classes.tableListCellSmall }}">Range</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for category in legendModalGoalCompletedCategories %}
+								<tr>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}"><span class="w1 h1 br-100 dib" style="background-color: {{ category.color_code }};">&nbsp;</span></td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.name }}</td>
+									<td class="{{ templateHelpers.classes.tableListCellSmall }}">{{ category.min_score_range }} - {{ category.max_score_range }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			
+		</div>
+	</div>
+</div>

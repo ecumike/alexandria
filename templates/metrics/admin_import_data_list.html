@@ -1,0 +1,59 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center{% endblock %}
+
+{% block pageTitle %} {{ modelName }}{% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		.columnlist {
+			column-count: 1;
+			column-gap: 32px;
+		}
+		.columnlist li {
+			word-wrap: break-word;
+		}
+		
+		@media only screen and (min-width: 500px) {
+			.columnlist {
+				column-count: 3;
+			}
+		}
+
+		@media only screen and (min-width: 1000px) {
+			.columnlist {
+				column-count: 4;
+			}
+		}
+
+		@media only screen and (min-width: 1500px) {
+			.columnlist {
+				column-count: 5;
+			}
+		}		
+	
+	</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<div class="pa4 bg-white">
+			<ol class="columnlist lh-copy">
+				{% for item in items %}
+				<li>{{ item.name }}</li>
+				{% endfor %}
+			</ol>
+		</div>
+	</div>
+	
+		
+
+{% endblock %}

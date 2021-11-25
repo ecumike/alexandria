@@ -1,0 +1,24 @@
+{% extends "page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% block browserTitle %}{{ block.super}} Sign in{% endblock %}
+
+{% block pageTitle %} Sign in {% endblock  %}
+{% block pageSubtitle %}<div class="mv2">The UXRA suite of tools require authentication before use.</div>{% endblock %}
+{% block content %}
+
+    <div class="{{ templateHelpers.classes.grid }} mt4" style="">
+		{% if error %}
+            <div class="mb3 dark-red">{{ error|safe }}</div>
+        {% endif %}
+        
+        <div class="mw6">
+            {% include "partials/auth_form.html" %}
+        </div>
+    </div>
+
+{% endblock %}

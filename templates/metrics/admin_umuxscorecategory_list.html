@@ -1,0 +1,54 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - UMUX score category {% endblock %}
+
+{% block pageTitle %} UMUX score category {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{{ newItemUrl }}"><span class="mr1">add a new {{ modelMeta.verbose_name }}</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+		
+		<p class="mw7 lh-copy"><strong>Note</strong>: If you change the category min or max score #, you <strong>must</strong> contact Santelia to run a script to re-categorize the quarter snapshots.</p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw7">
+		
+		<table {{ templateHelpers.html.tableWidget.sortOnly|safe }} data-order='[[1, "desc"]]'>
+			<thead>
+				<tr>
+					<th class="tl">Name</th>
+					<th class="tl">Min score (inclusive)</th>
+					<th class="tl">Max score (inclusive)</th>
+					<th class="tl pl2">Color code</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for grade in listItems %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_umuxscorecategory_edit' id=grade.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="pv2 pl2 pr3">{{ grade.name }}</td>
+						<td class="pv2 pl2 pr3">{{ grade.min_score_range }}</td>
+						<td class="pv2 pl2 pr3">{{ grade.max_score_range }}</td>
+						<td class="pv2 pl2 pr3 code f6">{{ grade.color_code }} <span class="dib w2 h1" style="background:{{ grade.color_code }}"></span></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

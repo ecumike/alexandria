@@ -1,0 +1,422 @@
+:root {
+	--field-border-color: var(--silver);
+}
+
+
+/**
+	Default styling
+**/
+
+html, body, button, input, select, textarea, .textcolor {
+	color: var(--textcolor);
+}
+
+a, 
+.linkcolor {
+	color: var(--link-color);
+}
+
+.underline, 
+.linkcolor.underline {
+	text-decoration: underline;
+}
+
+
+/* Allow any link-colored text to behave like a link, automatically, and set at a container level */
+.linkcolor:focus,
+.linkcolor:hover,
+.custom-hover-linkcolor-underline:focus .linkcolor,
+.custom-hover-linkcolor-underline:hover .linkcolor {
+	text-decoration: underline;
+	color: var(--dark-blue);
+}
+
+.link:focus {
+	outline-width: 2px;
+}
+
+.link:focus:hover {
+	outline: none;
+}
+
+.custom-border-color {
+	border-color: var(--moon-gray);
+}
+
+/** Icon colors **/
+.icon {
+	fill: var(--link-color);
+	display: block;
+}
+
+.hover .icon:focus,
+.hover .icon:hover {
+	fill: var(--dark-blue);
+}
+
+.fill-textcolor .icon {
+	fill: var(--textcolor);
+}
+
+.fill-white .icon {
+	fill: #fff;
+}
+
+.hover-fill-white:focus .icon,
+.hover-fill-white:hover .icon {
+	fill: #fff;
+}
+
+.yellow .icon {
+	fill: #d6ab00;
+}
+
+.brown .icon {
+	fill: #8b4513;
+}
+
+
+.icon {
+	width: 24px;
+}
+
+.tinyicon .icon {
+	width: 16px;
+}
+
+.smallicon .icon {
+	width: 20px;
+}
+
+.mediumicon .icon {
+	width: 32px;
+}
+
+.mediumicon .icon.table {
+	width: 28px;
+}
+
+.icon-after .icon {
+	margin-left: .5rem;
+}
+
+.hasicon {
+	position: relative;
+	padding-left: 25px;
+}
+.hasicon-smalltext {
+	padding-left: 21px;
+}
+.hasicon a {
+	display: inline-block;
+}
+.hasicon svg {
+	position: absolute;
+	top: -5px;
+	left: 0;
+}
+.hasiconNoTop svg {
+	top: 0px;
+}
+
+a.animate .icon {
+	transition: transform .4s var(--animation-curve);
+}
+a.animate:focus .icon,
+a.animate:hover .icon {
+	transform: translate3d(4px,0,0);
+}
+
+
+.custom-form-horizontal-label {
+	width: 200px;
+}
+
+
+/** Button w3ds **/
+.custom-standard-button {
+	padding-left: 24px;
+	padding-right: 24px;
+}
+
+
+/**
+	Site navigation bar
+**/
+.custom-header a:focus,
+.custom-header a:hover {
+	background-color: var(--near-white);
+}
+
+.custom-header a:focus .icon,
+.custom-header a:hover .icon {
+	fill: var(--dark-blue);
+}
+
+.custom-header .custom-highlight {
+	background-color: var(--near-white);
+}
+
+.custom-header .custom-highlight::after {
+	background: var(--link-color);
+	bottom: 0;
+	content: '';
+	display: block;
+	height: 4px;
+	left: 0;
+	position: absolute;
+	width: 100%;
+}
+
+.no-shadow .custom-header {
+	box-shadow: none;
+}
+
+/**
+	Local app menu nav 
+**/
+.custom-menunav .custom-menunav-item {
+	height: 40px;
+	line-height: 40px;
+}
+
+/**
+	Left nav
+**/
+.custom-leftnav-item::after {
+	background: transparent;
+	bottom: 0;
+	content: '';
+	display: block;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	width: 4px;
+}
+
+.custom-leftnav-item.custom-highlight {
+	background-color: var(--near-white);
+}
+.custom-leftnav-item.custom-highlight::after {
+	background: var(--link-color);
+}
+
+
+
+/**
+	Tabs
+**/
+.custom-tab {
+	margin-right: 1px;
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.custom-tab.bo-active {
+	background: #fff;
+}
+.custom-tab.bo-active:after {
+	display: block;
+	content: '';
+	height: .25rem;
+	width: 100%;
+	background: var(--link-color);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+.custom-tab:focus {
+	outline: 1px solid var(--link-color);
+}
+
+
+/**
+	Effects
+**/
+
+
+/* Matches animates all color changes together */
+.custom-animate-all,
+.custom-animate-all::before,
+.custom-animate-all::after {
+	transition: all .3s;
+}
+
+
+/**
+	Form styling. w3ds is slightly smaller fields than tachyons.
+**/
+
+/*  HEIGHT ADJUSTMENT
+This pretty much mimics what bo-common.css does.
+Resize to smaller to match text fields.
+*/
+
+.select2-container:hover .select2-selection {
+	border-color: var(--link-color) !important;
+	box-shadow: 0 0 0 1px var(--link-color) inset;
+}
+
+.select2 .select2-selection {
+	border-radius: .25rem;
+}
+
+.select2-results__option--highlighted {
+	background-color: var(--link-color) !important;
+}
+
+
+.select2-container .select2-selection--single {
+	height: 40px !important;
+}
+
+.select2-selection__rendered {
+	line-height: 23px !important;	
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	line-height: 36px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	top: 7px;
+}
+
+
+.select2-container .select2-selection--multiple {
+	min-height: 40px !important;
+}
+
+.select2-search select2-search--inline {
+	line-height: 33px !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+	margin-top: 4px;
+	line-height: 28px !important;
+}
+
+input:not([type=checkbox]),
+input:not([type=radio]),
+textarea,
+select {
+	border-radius: .25rem;
+	padding: 6px;
+	width: 100%;
+}
+
+input[type=checkbox],
+input[type=radio] {
+	height: 20px;
+	width: 20px;
+}
+
+input[type="date"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="text"],
+input[type="url"] {
+	height: 40px;
+}
+
+/* Reverse BO default. w3ds is light default, hover/focus dark **/
+.bo-checkboxradio input:checked + label::before {
+	background: var(--link-color);
+	border-color: var(--link-color);
+}
+.bo-checkboxradio input:checked:focus + label::before, 
+.bo-checkboxradio input:checked:hover + label::before {
+	background: var(--dark-blue);
+	border-color: var(--dark-blue);
+}
+
+/* Radio has "after" as the main blue color to change. Opposite of checkbox. */
+.bo-checkboxradio input[type="radio"]:checked + label::after {
+	background: var(--link-color);
+	border-color: var(--link-color);
+}
+.bo-checkboxradio input[type="radio"]:checked:focus + label::after, 
+.bo-checkboxradio input[type="radio"]:checked:hover + label::after {
+	background: var(--dark-blue);
+	border-color: var(--dark-blue);
+}
+
+.custom-standard-button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 2px dotted var(--gray);
+	outline-offset: 2px;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+	border-color: var(--link-color);
+	box-shadow: 0 0 0 1px var(--link-color) inset;
+}
+
+select[multiple] {
+	height: 100px;
+}
+
+input[readonly] {
+    background: #eee;
+    color: #666;
+}
+
+
+.custom-core-project-corner {
+	background: var(--link-color);
+	height: 4rem;
+	position: absolute;
+	left: -34px;
+	top: -34px;
+	transform: rotate(45deg);
+	width: 4rem;
+}
+
+.common-modal [role="dialog"] {
+	overflow: auto;
+	max-height: 100vh;
+}
+
+.common-tag .icon.close {
+	fill: var(--textcolor);
+	width: 16px;
+}
+
+a.common-tag:focus .icon,
+a.common-tag:hover .icon {
+	fill: #fff;
+}
+
+
+.custom-altrow-white tr:nth-child(odd) {
+	background: var(--near-white);
+}
+
+
+
+/* datatables tweaks to match w3ds */
+.dt-buttons button {
+	border-radius: .25rem;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	background: var(--link-color);
+	border: none;
+	line-height: 1.25;	
+}
+.dt-buttons button:focus,
+.dt-buttons button:hover {
+	background: var(--dark-blue);
+}
+
+.dataTables_filter input {
+	height: 40px;
+}
+
+
+

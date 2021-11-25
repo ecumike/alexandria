@@ -1,0 +1,51 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center - Activity log{% endblock %}
+
+{% block pageTitle %} Activity log {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		<div class="mb4 lh-copy">Changes to key items of note. Displaying only the latest 2,000 entries.
+			<br>If you need something older, contact Michael Santelia.
+		</div>
+			
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0, "desc"]]'>
+			<thead>
+				<th class="w4">Date</th>
+				<th class="w4">User</th>
+				<th class="w4">Content type</th>
+				<th class="w-20">Item</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Comment</th>
+			</thead>
+			
+			<tbody>
+				{% for item in activityLogs %}
+					<tr>
+						<td data-order="{{ item.timestamp|date:'U' }}" class="w4">{{ item.timestamp }}</td>
+						<td class="">{{ item.userName }}</td>
+						<td class="">{{ item.content_type }}</td>
+						<td class="">{{ item.content_object }}</td>
+						<td class="">{{ item.comments|linebreaks }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+			
+		</table>				
+	</div>
+	
+		
+
+{% endblock %}

@@ -1,0 +1,8 @@
+
+<div class="mb4">
+	{{ field }}
+	<div class="w-100 b mb2">{{ field.label_tag }} {% if field.help_text %}<span style="top:2px;" class="hint--top-right hint--large relative db small tinyicon normal" aria-label="{{ field.help_text|safe }}">{{ templateHelpers.html.icons.info|safe }}</span>{% endif %}</div>
+	<div class="w-100">
+		<div class="pa2 w5 bg-light-gray">{{ field.value }}</div>
+	</div>
+</div>

@@ -1,0 +1,34 @@
+{% extends "metrics/admin_campaign_add.html" %}
+
+{% block browserTitle %}Admin - Edit: {{ campaign.key|default:campaign.uid }}{% endblock %}
+
+{% block pageTitle %} Edit: <span class="{{ templateHelpers.classes.pageTitleSecondary }}">{{ campaign.key|default:campaign.uid }}</span> {% endblock %}
+
+
+{% block deleteButton %}
+
+	<div class="bg-white pa4 mb4">
+		<form class="w-100" action="{% url 'metrics:admin_campaign_delete_all_responses' %}" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="id" value="{{ campaign.id }}">
+			<div class="mb2 red">"Delete all responses" is <strong>IRREVERSIBLE</strong> and will:</div>
+				<ul class="mt2 lh-copy">
+					<li>Delete all stored responses for this campaign</li>
+					<li>Reset the date so the next import will re-pull all responses from Usabilla</li>
+					<li>Cause all this project's snapshots to be updated and recalculated</li>
+					<li>Cause this project's domain's year settings and metrics to be updated and recalculated</li>
+				</ul>
+			<div><button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.redSecButton }} ">Delete all responses</button></div>
+		</form>
+	
+		{% if campaign.numResponses == 0 %}
+			<form class="w-100 mt4" action="{% url 'metrics:admin_campaign_delete' %}" method="post">
+				{% csrf_token %}
+				<input type="hidden" name="id" value="{{ campaign.id }}">
+				<div class="mt4 mw6 lh-copy">This will permanently delete this campaign and it's association to any project from OM.<br><strong class="red">This is IRREVERSIBLE</strong>.</div>
+				<div class="mt3"><button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.redSecButton }} ">Delete campaign</button></div>
+			</form>
+		{% endif %}
+	</div>
+	
+{% endblock %}

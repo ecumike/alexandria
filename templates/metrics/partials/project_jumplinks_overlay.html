@@ -1,0 +1,136 @@
+
+<div id="custom-project-jumplinks-overlay" class="common-modal" aria-hidden="true">
+	<div class="fixed flex justify-center items-center bg-black-60 top-0 left-0 z-4 h-100 w-100" tabindex="-1" data-micromodal-close>
+		<div class="mw9 {{ templateHelpers.classes.overlayContent }}" style="height: 92vh;" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+			
+			<header class="fr ml3">
+				<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+			</header>
+			
+			<div class="flex-ns items-center flex-wrap">
+				<div class="f4 b mr4-ns mb3">Tools &amp; services</div>
+				<div class="mw5 mr5-ns mb3"><input id="project-jumplinks-filter" type="text" value="" placeholder="Filter the list"></div>
+			</div>
+			
+			<div class="mt3 custom-modal-content bg-white columnlist list"></div>				
+			
+		</div>
+	</div>
+</div>
+
+
+<style>
+	
+	.columnlist {
+		column-count: 1;
+		column-gap: 32px;
+	}
+	
+	@media only screen and (min-width: 500px) {
+		.columnlist {
+			column-count: 2;
+		}
+	}
+	
+	@media only screen and (min-width: 900px) {
+		.columnlist {
+			column-count: 3;
+		}
+	}
+	
+	@media only screen and (min-width: 1200px) {
+		.columnlist {
+			column-count: 4;
+		}
+	}
+	
+	@media only screen and (min-width: 1500px) {
+		.columnlist {
+			column-count: 5;
+		}
+	}		
+
+</style>
+
+<script>
+	
+	(function ($) {
+		
+		var projectList = document.querySelector('.custom-modal-content'),
+			fetched = false;
+		
+		function setupFilterList () {
+			document.querySelector('#project-jumplinks-filter').addEventListener('input', function (evt) {
+				var v = this.value,
+					filterText = v.trim().toLowerCase();
+					
+				projectList.querySelectorAll('a').forEach(function (item) {
+					if (item.text.toLowerCase().indexOf(filterText) == -1) {
+						item.classList.add('dn');
+						item.classList.remove('db');
+					}
+					else {
+						item.classList.add('db');
+						item.classList.remove('dn');
+					}
+				});
+				
+				if (filterText === '') {
+					$(projectList).find('a').addClass('dn').removeClass('dn');
+					
+				}
+			});
+			document.querySelector('#project-jumplinks-filter').value = '';
+		}
+		
+		
+		function populateAndShowOverlay (arr) {
+			// Create list.
+			var html = '';
+			
+			arr.forEach(function (item) {
+				html += '<a class="{{ templateHelpers.classes.link }} mb3 db" href="{% url 'metrics:projects_detail' %}?project=' + item[1] + '&reportperiod=last90">' + item[0] +'</a>';
+			});
+			
+			$('.custom-modal-content').append(html);
+			MicroModal.show('custom-project-jumplinks-overlay');
+			
+			$.ajax({
+				url: '{% url 'research:api_page_view_tracker' %}',
+				type: 'post',
+				data: {
+					'csrfmiddlewaretoken': '{{ csrf_token }}',
+					'page': '/tool-jumplink-overlay',
+				}
+			});
+		}
+		
+		
+		function showProjectJumplinksOverlay () {
+			if (!fetched) {
+				$.ajax({
+					url: "{% url 'metrics:api_projects_links' %}",
+					dataType: 'json',
+					success: function (data) {
+						populateAndShowOverlay(data.results);
+						fetched = true;
+					},
+					error: function () {
+						// Don't care.
+					}
+				});
+			}
+			else {
+				MicroModal.show('custom-project-jumplinks-overlay');
+			}
+		}
+		
+		BO.showProjectJumplinksOverlay = showProjectJumplinksOverlay;
+		setupFilterList();
+		
+		
+		
+	})(jQuery);
+	
+	
+</script>

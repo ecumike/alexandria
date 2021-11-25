@@ -1,0 +1,34 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center{% endblock %}
+
+{% block pageTitle %} Admin center{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+
+{% block content %}
+
+	<div class="bg-near-white">
+
+	{% if request.user.hasAdminAccess %}
+		{% include 'metrics/admin_home_admin.html' %}
+		
+	{% elif request.user.isAnyDomainAdmin %}
+		{% include 'metrics/admin_home_domainadmin.html' %}
+		
+	{% elif request.user.isAnyProjectAdmin %}
+		{% include 'metrics/admin_home_projectadmin.html' %}
+		
+	{% elif request.user.isAnyProjectEditor %}
+		{% include 'metrics/admin_home_projecteditor.html' %}
+		
+	{% endif %}
+	
+	</div>
+	
+{% endblock %}

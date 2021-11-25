@@ -1,0 +1,38 @@
+{% extends "research/page_template.html" %}
+
+{% block browserTitle %} {{ block.super}} Archive {{ artifact.name }}{% endblock %}
+
+{% block pageTitle %} Archive: {{ artifact.name }} {% endblock %}
+
+{% block contentClasses %}bg-near-white{% endblock %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="bg-white pa4 pt3">
+			<form action="" method="post">
+				{% csrf_token %}
+				<input type="hidden" name="do" value="delete">
+				
+				<p>This research item has been viewed <span class="b">{{ pageViews|default:0 }}</span> times.</p>
+					
+				{% if childrenArtifacts %}
+					<p>It has <span class="b">{{ childrenArtifacts.count }}</span> other artifacts related to it:</p>
+					<ul class="lh-copy">
+						{% for artifact in childrenArtifacts %}
+						<li class="">{{ artifact.name }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+				
+				<p class="mw7 lh-copy">By archiving this research artifact, it will not show up in search results nor any lists. It can be un-archived from the "My research" page.</p>
+				
+				<div class="mt4 mb4 dib"><button class="link db mr3 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.redPriButton }}"><span class="flex items-center ph2 fill-white">Yes, archive it</span></button></div>
+					
+			</form>
+		</div>
+	</div>
+	
+	
+{% endblock %}
+

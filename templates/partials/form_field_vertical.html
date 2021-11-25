@@ -1,0 +1,11 @@
+
+<div class="mb4">
+	<div class="w-100 b mb2">{{ field.label_tag }} {% if field.help_text %}<span style="top:2px;" class="hint--top-right hint--medium relative db small tinyicon normal" aria-label="{{ field.help_text|safe }}">{{ templateHelpers.html.icons.info|safe }}</span>{% endif %}</div>
+	<div class="w-100">
+		{{ field }}
+		{% if showCharcount %}
+			<div class="custom-charsremaining mt2 f6" data-field="id_{{ field.name }}" data-maxchars="{{ maxChars }}">Characters remaining: <span class="">{{ maxChars }}</span></div>
+		{% endif %}
+		<div class="dark-red">{{ field.errors.as_text }}</div>
+	</div>
+</div>

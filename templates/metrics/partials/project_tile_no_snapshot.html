@@ -1,0 +1,21 @@
+{% load humanize %}
+
+
+<a class="link bg-white mr4-ns mb4 w5-ns w-100 shadow-hover {{ project.classes }}" href="{% url 'metrics:projects_detail' %}?project={{ project.id }}&reportperiod={% if snapshot.date_quarter %}{{ snapshot.date_quarter }}q{{ snapshot.date.year }}{% else %}last90{% endif %}">
+	<div class="ba custom-border-color hover-b--dark-blue ph3 pv4 h-100 tc relative overflow-hidden textcolor">
+		{% if project.core_project %}
+			<div title="This is a priority 1-3 project" class="custom-core-project-corner"></div>
+			<div title="This is a priority 1-3 project" class="absolute white fill-white tinyicon top-0 left-0 ml1 mt1">{{ templateHelpers.html.icons.star|safe }}</div>
+		{% endif %}
+		
+		<p class="gray">No {{ scoreType }} data for<br>this period</p>
+		<div class="f3 mv3">{{ project.name }}</div>
+		<div class="f7 dark-gray lh-copy">{{ project.domain.name }}</div>
+		<div class="f7 dark-gray lh-copy">{{ project.contact.profile.full_name }}</div>
+		
+		{% if project.designer_assigned == 'yes' %}
+			<div title="Project has a UX specialist assigned" class="absolute bottom-0 left-0 ml2 mb1">{{ templateHelpers.html.icons.userRole|safe }}</div>
+		{% endif %}
+
+	</div>
+</a>

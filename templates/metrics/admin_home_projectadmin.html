@@ -1,0 +1,21 @@
+
+	<div class="{{ templateHelpers.classes.grid }} mt0">
+		
+		<h3 class="pt4 b mb2 mt0">Things to manage</h3>
+		<div class="mb4">Content and settings you can add and edit</div>
+		
+		<div class="flex flex-wrap mb2">	
+			{% url 'metrics:admin_project_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Tools/services' totalNum=counts.projects description='' %}
+			
+			{% url 'metrics:admin_project_keyword_tagging' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Tools/services keyword tagging' description='Tag projects with keywords' %}
+			{% url 'metrics:admin_projectsnapshot_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Tool/service snapshots' totalNum=counts.projectSnapshots description='' %}
+			
+			{% url 'metrics:admin_projectevent_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Tool/service events' totalNum=counts.projectEvents description='' %}
+		</div>
+		
+	</div>
+

@@ -1,0 +1,10 @@
+{% load humanize %}
+
+<div class="f7 lh-copy gray">{{ responseCount|intcomma|default:0 }} responses</div>
+{% if moe %}
+	<div class="f7 lh-copy relative"><span class="gray">Margin of error: {{ moe|floatformat:1|default:0 }}</span>
+		{% if moeWarning %}
+		<span class="hint--top hint--medium ml1 yellow smallicon" style="position;position: absolute;top: -3px;" aria-label="{{ moeWarning }}" class="yellow smallicon">{{ templateHelpers.html.icons.warn|safe }}</span>{% endif %}
+	</div>
+{% endif %}
+<div class="f7 lh-copy gray">As of {{ date|date:'M d, Y' }}</div>

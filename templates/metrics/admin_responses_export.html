@@ -1,0 +1,106 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Campaign responses CSV {% endblock %}
+
+{% block pageTitle %} Campaign responses CSV {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+	
+	<script>
+		
+		(function ($) { 
+			
+			function setupCheckboxes () {
+				$('table').on('change', 'input', function (evt) {
+					var checkbox = evt.target,
+						$thisRow = $(checkbox).closest('tr'),
+						selValue = $thisRow.find('td')[1].innerHTML,
+						idValue = selValue.replace(/ /g ,'');
+					
+					if (checkbox.checked) {
+						$('#custom-selected-campaigns').append('<div id="' + idValue + '">' + selValue + '</div>')
+					}
+					else {
+						$('#' + idValue).remove();
+					}
+					
+					if ($('table').find('input:checkbox:checked').length > 0) {
+						document.getElementById('custom-selected-campaigns-none').classList.add('dn');
+						document.getElementById('custom-export-button').classList.remove('dn');
+					} 
+					else {
+						document.getElementById('custom-selected-campaigns-none').classList.remove('dn');
+						document.getElementById('custom-export-button').classList.add('dn');
+					}
+				});
+			}
+			
+			$(setupCheckboxes);
+			
+		})(jQuery);
+		
+		
+	</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<form method="post" action="{% url 'metrics:admin_responses_as_csv' %}">
+	{% csrf_token %}
+	
+	<div class="{{ templateHelpers.classes.grid }} mt4 flex">
+		<div class="">
+			<div class="b mb3">Selected campaigns</div>
+			
+			<div id="custom-selected-campaigns" class="mb3 lh-copy">
+				<div id="custom-selected-campaigns-none">(None selected)</div>
+			</div>
+				
+			<div id="custom-export-button" class="dn mb4">
+				<button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }} ">Get responses as CSV</button>
+			</div>
+		</div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<tr>
+					<th class="tl w1"></th>
+					<th class="tl bo-word-break-all">Key</th>
+					<th class="tl w2">Resp #</th>
+					<th class="tl w2">"Other"s</th>
+					<th class="tl">Project</th>
+					<th class="tl">Latest response</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for campaign in campaigns %}
+					<tr tabindex="0" class="bg-animate hover-bg-lightest-blue">
+						<td class="w1 pv1 pr2 v-top"><input type="checkbox" name="campaigns" value="{{ campaign.id }}"></td>
+						<td class="pv1 pr2 v-top">{{ campaign.key|default:'' }}</td>
+						<td class="pv1 pr2 v-top">{{ campaign.numResponses }}</td>
+						<td class="pv1 pr2 v-top">{{ campaign.numOthers }}</td>
+						<td class="pv1 pr2 v-top">{{ campaign.project|default:'' }}</td>
+						<td data-order="{{ campaign.latest_response_date|date:'U' }}"  class="pv1 pr2 v-top">{{ campaign.latest_response_date }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	</form>
+	
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% load humanize %}
+
+
+<a href="{{ url }}" class="link mr4-ns mb4 w5-ns w-100 shadow-hover bg-white">
+    <div class="ba custom-border-color hover-b--dark-blue pa3 h-100">
+        <div class="mb2 tc b f4 ma0">{{ title }}</div>
+        {% if description %}<div class="mb2 tc f6 lh-copy dark-gray">{{ description }}</div>{% endif %}
+        {% if totalNum %}<div class="mb2 f4 tc lh-copy dark-green">{{ totalNum|intcomma }}</div>{% endif %}
+    </div>
+</a>

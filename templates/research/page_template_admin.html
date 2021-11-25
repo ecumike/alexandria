@@ -1,0 +1,16 @@
+{% extends "page_template.html" %}
+{% load static %}
+
+{% block headerResearchClass %}{% endblock %}
+{% block headerAdminClass %}custom-highlight{% endblock %}
+
+{% block breadcrumbs %}
+
+	<div class="f6 mb3">
+		<a class="{{ templateHelpers.classes.link }} mr2" href="{% url 'metrics:admin_home' %}">Admin</a><span class="mr2">/</span>
+		{% for link in breadcrumbs %}<a class="{{ templateHelpers.classes.link }} mr2" href="{{ link.url }}">{{ link.text|safe }}</a><span class="mr2">/</span>{% endfor %}
+	</div>
+
+{% endblock %}
+
+{% block contentClasses %}bg-near-white{% endblock %}

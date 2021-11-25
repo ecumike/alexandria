@@ -1,0 +1,382 @@
+{% extends "research/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Add a new research artifact{% endblock %}
+
+{% block pageTitle %}Add a new research artifact {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		.mb45 {
+			margin-bottom: 2.5rem;
+		}
+	</style>
+	
+	<script>
+		(function ($) {
+			function setupFieldCharCountDisplay () {
+				$('.custom-charsremaining').each(function () {
+					var $this = $(this),
+						$field = $('#'+$this.data('field')),
+						$remainingCharsCon = $this.find('span'),
+						maxCharCount = $this.data('maxchars');
+					
+					adjustCharsRemaining($field, $remainingCharsCon, maxCharCount);
+					
+					$field.on('input', function () {
+						adjustCharsRemaining($field, $remainingCharsCon, maxCharCount);
+					});
+				});
+			}
+			
+			
+			function adjustCharsRemaining ($field, $displayCon, maxChars) {
+				$displayCon.html(maxChars - $field.val().length);
+			}
+			
+			
+			function setupFindingsReturn () {
+				$('#custom-findings-con').on('keypress', 'input', function (evt) {
+					if (evt.keyCode === 13) {
+						evt.preventDefault();
+						$(evt.delegateTarget).find('.dynamic-fields-add').trigger('click');
+					}
+				});
+			}
+			
+			
+			function showHideOnStatusChange () {
+				var v = $('[name="status"]:checked').val();
+				
+				if (v === '1') {
+					$('#research-completed-fields').show();
+				}
+				else {
+					$('#research-completed-fields').hide()
+				}
+			}
+			
+			
+			$(function () {
+				setupFieldCharCountDisplay();
+				setupFindingsReturn();
+				
+				$('[name="status"]').on('change', showHideOnStatusChange);
+				showHideOnStatusChange();
+				
+			});
+			
+			{% block addResearchJs %}
+				
+				function setupSaveNoPrompt () {
+					$('#custom-artifact-edit-form').on('submit', function () {
+						window.thoushallpass = true;
+					});
+				}
+				
+				function setupTagPreselect () {
+					$("#id_abstract, #id_description, #id_hypothesis").on('blur', function () {
+						var uniqueWords = [];
+						
+						$("#id_abstract, #id_description, #id_hypothesis").each(function () {
+							var thisval = this.value.replace(/\.|,|:|;/gi,' ');
+							uniqueWords = [...new Set([...uniqueWords ,...thisval.split(' ')])];
+						});
+						
+						uniqueWords.forEach(function (word) {
+							if (word !== '') {
+								$.ajax({
+									url: "{% url 'research:api_get_tag' %}",
+									dataType: 'json',
+									data: {name: word},
+									success: function (data) {
+										if (data.id) {
+											var selectionsArr = $('#id_tags').val() || [];
+											selectionsArr.push(data.id);
+											$('#id_tags').val(selectionsArr).trigger('change');
+										}
+									},
+									error: function (a,b,c) {
+										// Do nothing.
+									}
+								});
+							}
+						});
+					});
+				}
+				
+				$(function () {
+					setupTagPreselect();
+					setupSaveNoPrompt();
+				});
+				
+				window.addEventListener('beforeunload', (event) => {
+					if (!window.thoushallpass) {
+						event.preventDefault();
+						event.returnValue = ' ';
+					}
+				});
+			
+			{% endblock %}
+		
+		})(jQuery);
+		
+		
+	</script>
+
+	{% if request.GET.showwalkthru == 'y' %}
+		{% include 'research/partials/walkthru_entry_template.inc' %}
+	{% endif %}
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<form id="custom-artifact-edit-form" class="w-100 overflow-hidden" action="" method="post">
+	
+		<div class="mv4 {{ templateHelpers.classes.grid }}">
+
+			<div class="flex-l">
+				
+				<div class="w-100 bg-near-white relative mb0-l mb4">
+					
+					{# form posts to same URL displaying it. #}
+					{% include 'partials/form_error_messages.html' with form=form %}
+				
+					{% csrf_token %}
+				
+					<div class="pa4 pb2 mb4 bg-white">
+						<div class="mb4">
+							<div class="w-100 b mb2">{{ form.status.label_tag }}</div>
+							<div class="w-100 bo-checkboxradio-pads">
+									{% for status in statuses %}
+									<div class="dib mr2 mb2 relative">
+										<input class="" type="radio" name="{{ form.status.name }}" value="{{ status.id }}" id="id_status_{{ status.id }}" {% ifequal form.status.value|stringformat:"s" status.id|stringformat:"s" %}checked{% endifequal %}>
+										<label class="" for="id_status_{{ status.id }}">{{ status.name }}</label>
+									</div>
+									{% endfor %}
+								<div class="dark-red">{{ form.status.errors.as_text }}</div>
+							</div>
+						</div>						
+	
+						<div id="step-name">{% include 'partials/form_field_vertical.html' with field=form.name showCharcount=True maxChars=255 %}</div>
+					
+						<div id="step-abstract">{% include 'partials/form_field_vertical.html' with field=form.abstract showCharcount=True maxChars=255 %}</div>
+						<div id="step-description">{% include 'partials/form_field_vertical.html' with field=form.description %}</div>
+	
+						<div class="mb3">
+							<div class="w-100 b mb2">{{ form.source.label_tag }}</div>
+							<div class="w-100 bo-checkboxradio-pads">
+								{% for source in sources %}
+									<div class="dib mr2 mb2 relative">
+										<input class="pa0 ma0 ba0 absolute" style="opacity:0" type="radio" name="{{ form.source.name }}" value="{{ source.id }}" id="id_source_{{ source.id }}" {% ifequal form.source.value|stringformat:"s" source.id|stringformat:"s" %}checked{% endifequal %}>
+										<label class="pointer dib br2 pa2 ba b--navy bg-near-white" for="id_source_{{ source.id }}">{{ source.name }}</label>
+									</div>
+								{% endfor %}
+								<div class="dark-red">{{ form.source.errors.as_text }}</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="pa4 pb2 mb4 bg-white">
+						<div id="step-hypothesis">{% include 'partials/form_field_vertical.html' with field=form.hypothesis %}</div>
+	
+						<div id="step-basic-tagging">
+						
+							<div class="mb4">
+								 <div class="w-100 b mb2">{{ form.methods.label_tag }}</div>
+								 <div class="w-100 bo-checkboxradio-pads">
+									{% for method in methods %}
+										<div class="dib mr2 mb2 relative">
+											<input class="pa0 ma0 ba0 absolute" style="opacity:0" type="checkbox" name="{{ form.methods.name }}" value="{{ method.id }}" id="id_method_{{ method.id }}" {% if method.id in form.methods.value %}checked{% endif %}>
+											<label class="pointer dib br2 pa2 ba b--navy bg-near-white" for="id_method_{{ method.id }}">{{ method.name }}</label>
+										</div>
+									{% endfor %}
+									<div class="dark-red">{{ form.methods.errors.as_text }}</div>
+								</div>
+							</div>
+						</div>
+						
+						
+						<div id="step-target_audience">{% include 'partials/form_field_vertical.html' with field=form.target_audience showCharcount=True maxChars=255 %}</div>
+					</div>	
+					
+	
+					<div id="research-completed-fields" class="pa4 pb2 mb3 bg-white">
+						<div class="w5" id="step-research_date">{% include 'partials/form_field_vertical.html' with field=form.research_date %}</div>
+						
+						<div class="w5"><div>{% include 'partials/form_field_vertical.html' with field=form.alchemer_survey_id %}</div></div>
+						
+						
+						<div class="mb3" id="step-findings">
+							<div class="w-100 b mb2">{{ form.findings.label_tag }} <span style="top:2px;" class="hint--top-right hint--large relative db small tinyicon normal" aria-label="Findings as a result of the research. Keep each item clear and concise">{{ templateHelpers.html.icons.info|safe }}</span></div>
+							<div class="dark-red mb2">{{ form.findings.errors.as_text }}</div>
+							<div id="custom-findings-con" class="w-100 relative" data-widget="dynamic-fields">
+								{% if form.findings.value %}
+									{% for itemValue in form.findings.value|toJson %}
+										{% include 'research/partials/dynamic_textarea_field.html' with fieldId='findings' fieldValue=itemValue %}
+									{% endfor %}
+								{% endif %}
+								
+								{# Always add empty one for new value input. #}
+								{% include 'research/partials/dynamic_textarea_field.html' with fieldId='findings' %}
+								
+								<span class="db hint hint--right" style="top:-10px;" aria-label="Add another"><a class="dib f2 relative green hover-dark-green dynamic-fields-add" href="#">+</a></span>
+							</div>
+						</div>	
+						
+						
+						{% if form.study_plan_urls.value %}
+						<div class="mb4" id="step-study_plan_urls">
+							<div class="w-100 b mb2">{{ form.study_plan_urls.label_tag }} <span class="red">(deprecated)</span></div>
+							<div class="w-100 red mb2">Please attach study plan files and remove links</div>
+							<div class="dark-red mb2">{{ form.study_plan_urls.errors.as_text|linebreaks }}</div>
+							<div class="w-100 relative" data-widget="dynamic-fields">
+								{% if form.study_plan_urls.value %}
+									{% for itemValue in form.study_plan_urls.value|split:',' %}
+										{% include 'research/partials/dynamic_text_field.html' with fieldId='study_plan_urls' fieldValue=itemValue %}
+									{% endfor %}
+								{% endif %}
+							</div>
+						</div>
+						{% endif %}
+						
+						<div class="mb4">
+							<div class="w-100 b mb2">{{ form.study_plan_files.label_tag }}</div>
+							<div class="dark-red mb3">{{ form.study_plan_files.errors.as_text }}</div>
+							{% include 'partials/upload_file_field_widget_multiple.html' with fieldName='study_plan_files' attachments=artifact.study_plan_files.all %}
+						</div>	
+										
+						{% if form.final_report_urls.value %}
+						<div class="mb4" id="step-final_report_urls">
+							<div class="w-100 b mb2">{{ form.final_report_urls.label_tag }} <span class="red">(deprecated)</span></div>
+							<div class="w-100 red mb2">Please attach research files and remove links</div>
+							<div class="dark-red mb2">{{ form.final_report_urls.errors.as_text }}</div>
+							<div class="w-100 relative" data-widget="dynamic-fields">
+								{% if form.final_report_urls.value %}
+									{% for itemValue in form.final_report_urls.value|split:',' %}
+										{% include 'research/partials/dynamic_text_field.html' with fieldId='final_report_urls' fieldValue=itemValue %}
+									{% endfor %}
+								{% endif %}
+							</div>
+						</div>
+						
+						<script>
+							document.querySelector('#step-final_report_urls').addEventListener('keyup', function (evt) {
+								if (evt.target.hasAttribute('name') && evt.target.value.indexOf('box.com') > 0) {
+									alert('Please upload your report instead of linking to Box.');
+								}
+							});
+						</script>
+						{% endif %}
+						
+						<div class="mb4">
+							<div class="w-100 b mb2">{{ form.final_report_files.label_tag }}</div>
+							<div class="dark-red mb3">{{ form.final_report_files.errors.as_text }}</div>
+							{% include 'partials/upload_file_field_widget_multiple.html' with fieldName='final_report_files' attachments=artifact.final_report_files.all %}
+						</div>
+						
+						
+						<div class="mb4">
+							<div class="w-100 b mb2">{{ form.external_research_urls.label_tag }} {% if form.external_research_urls.help_text %}<span style="top:2px;" class="hint--top-right hint--medium relative db small tinyicon normal" aria-label="{{ form.external_research_urls.help_text|safe }}">{{ templateHelpers.html.icons.info|safe }}</span>{% endif %}</div>
+							<div class="dark-red mb2">{{ form.external_research_urls.errors.as_text }}</div>
+							<div class="w-100 relative" data-widget="dynamic-fields">
+								{% if form.external_research_urls.value %}
+									{% for itemValue in form.external_research_urls.value|split:',' %}
+										{% include 'research/partials/dynamic_text_field.html' with fieldId='external_research_urls' fieldValue=itemValue %}
+									{% endfor %}
+								{% endif %}
+									
+								{# Always add empty one for new value input. #}
+								{% include 'research/partials/dynamic_text_field.html' with fieldId='external_research_urls' %}
+								
+								<span class="db hint hint--right" style="top:-10px;" aria-label="Add another"><a class="dib f2 relative green dynamic-fields-add" href="#">+</a></span>
+							</div>
+						</div>	
+						
+						
+					</div>
+						
+				</div>
+						
+				<div class="bg-near-white w-100 w-40-l pl4-l">
+					
+					<div class="b mb3 ">Research info</div>
+						
+					<div class="mt4 pa4 pb2 bg-white">
+						
+						{% block editHistory %}{% endblock %}
+						
+						<div id="step-access-control">
+							<div class="">
+								<div class="w-100 b mb2">{{ form.owner.label_tag }} <span style="top:2px;" class="hint--top-right hint--medium relative db small tinyicon normal" aria-label="Select the owner (if not you) and any additional editors for this research item">{{ templateHelpers.html.icons.info|safe }}</span></div>
+								<div class="w-100 relative">
+									{{ form.owner }}										
+									<div class="dark-red">{{ form.owner.errors.as_text }}</div>
+								</div>
+							</div>
+							
+							{% if not artifact.id %}
+								<div class="lh-copy mt3">
+									<div class="bo-checkboxradio f6">
+										<input type="checkbox" name="notify_owner_new" value="yes" id="id_notify_owner_new">
+										<label class="db" for="id_notify_owner_new">Notify owner that research was entered on their behalf</label>
+									</div>
+								</div>
+							{% endif %}
+			
+							<div class="mt4">
+								<div class="w-100 b mb2">{{ form.editors.label_tag }}</div>
+								<div class="w-100 relative">
+									{{ form.editors }}
+									<div class="dark-red">{{ form.editors.errors.as_text }}</div>
+								</div>
+							</div>
+							
+							<div class="mt4">
+								<div id="step-tags">{% include 'partials/form_field_vertical.html' with field=form.tags %}</div>
+							
+								<div id="step-related_artifacts">{% include 'partials/form_field_vertical.html' with field=form.related_artifacts %}</div>
+							
+								<div id="step-related_projects">{% include 'partials/form_field_vertical.html' with field=form.projects %}</div>
+							</div>
+						</div>
+						
+					</div>
+	
+				</div>
+			</div>
+			
+		</div>	
+		
+		<div class="left-0 pl4 fixed z-4 bottom-0 w-100 bg-white shadow-2">
+			<div class="pv3 flex items-center flex-wrap">
+				<button class="mr4 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Save</button>
+				{% if artifact.id %}
+					{% if artifact.archived %}
+						<div class="mr4 "><span class="hint--top-right" aria-label="Republish this research artifact"><a href="{% url 'research:artifacts_unarchive' id=artifact.id %}" class="{{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.unarchive|safe }}</a></span></div>
+					{% else %}
+						<div class="mr4 "><span class="hint--top-right" aria-label="Archive this research artifact"><a href="{% url 'research:artifacts_archive' id=artifact.id %}" class="{{ templateHelpers.classes.link }} underline-hover">{{ templateHelpers.html.icons.archive|safe }}</a></span></div>
+					{% endif %}
+				
+					{% if request.user.hasAdminAccess %}
+						<div class="mr4 "><span class="hint--top-right" aria-label="Delete this research artifact"><a href="{% url 'research:artifacts_delete' id=artifact.id %}" class="{{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.trash|safe }}</a></span></div>
+					{% endif %}
+				{% endif %}
+			</div>
+		</div>
+	
+	</form>
+	
+	{% include 'partials/add_user_overlay.html' %}
+	
+{% endblock %}
+

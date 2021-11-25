@@ -1,0 +1,172 @@
+{% comment %}
+	No logic in here. This gets included only if the user has updates they haven't seen. Assume this automatically runs.
+{% endcomment %}
+
+<style>
+
+	#custom-toast {
+		transform: translate3d(110%,0,0);
+		transition: transform .5s var(--animation-curve);
+	}
+	
+	#custom-toast.show {
+		transform: translate3d(0,0,0);
+	}
+
+</style>
+
+<div id="custom-toast" class="absolute right-1 top-1 z-3 ba b--blue">
+	<div class="relative bg-washed-blue hover-bg-white bl bw2 b--blue" style="width:285px;">
+		<a id="custom-toast-close" class="fr relative db pa1 f4 pointer mt2 mr2 hover-fill-white hover-bg-blue br3 smallicon" style="top:2px;" href="#" title="Close notification"><span>{{ templateHelpers.html.icons.close|safe }}</span></a>
+		<a id="custom-toast-content" class="f6 pa3 db w-100 textcolor pointer" href="#">
+			<div id="custom-toast-count" class=" fl relative bg-blue white br-100 tc mr2" style="width:22px; height:22px; padding: 3px; top:-3px;"></div>
+			<div class="pl4">
+				<div class="b mb1">What’s new</div>
+				<div id="custom-whatsnew-heading" class="mb1"></div>
+				<div class="linkcolor">Read more</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+
+<div id="custom-whatsnew-overlay" class="common-modal" aria-hidden="true">
+	<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+		<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+			
+			<header class="fr ml3">
+				<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
+			</header>
+			
+			<div class="relative flex justify-between items-center">
+				<div class="f2 fw4">What’s new</div>
+				<div class="pr2 mt1 bo-checkboxradio"><input id="custom-overlay-whatsnew-email-subscription" type="checkbox" {% if request.user.profile.whats_new_email %}checked{% endif %} value="1" name="notify-whatsnew-email" class="relative mr2 pointer" style="top:2px;"><label class="pointer" for="custom-overlay-whatsnew-email-subscription">Notify me about updates via email</label></div>
+				<div id="custom-emailsub-msg" style="background-color: #fff7aa;right: 9px;top: 45px;" class="absolute ml2 mb4 bo-fadein bo-fadeout ph2 pv1">Your subscription has been updated</div>
+			</div>
+			
+			<div class="custom-modal-content mt3 bg-white"></div>
+			
+			<template id="custom-whatsnew-overlay-item-template">
+				<div class="custom-whatsnew-date dark-gray bt custom-border-color pt4 mb3"></div>
+				<div class="custom-whatsnew-heading b mb3"></div>
+				<div class="custom-whatsnew-description lh-copy mb4"></div>
+			</template>
+			
+			<div class="mv3 lh-copy hasicon hasicon-smalltext"><a class="{{ templateHelpers.classes.link }} animate"  href="{% url 'info:whatsnew_list' %}"><span class="">{{ templateHelpers.html.icons.chevronForward|safe }}</span>View all updates</a></div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+	
+	(function ($) {
+		
+		function showToast () {
+			setTimeout(function () {$('#custom-toast').addClass('show')}, 100);
+		}
+		
+		
+		function hideToast () {
+			$('#custom-toast').removeClass('show');
+			setTimeout(function () {$('#custom-toast').remove()}, 600);
+		}
+		
+		
+		function populateToastAndOverlay (arr) {
+			// Setup toast and show it.
+			if (arr.length > 1) {
+				toastMsg = 'We\'ve made some updates since your last visit.';
+			}
+			else {
+				toastMsg = arr[0].heading;
+			}
+			
+			$('#custom-whatsnew-heading').html(toastMsg);
+			$('#custom-toast-count').html(arr.length);
+			showToast();
+			
+			// Setup overlay.
+			arr.forEach(function (item) {
+				var template = document.querySelector('#custom-whatsnew-overlay-item-template'),
+					$clone = $(template.content.cloneNode(true));
+				
+				var date = new Date(item.date),
+					month = date.toLocaleString('default', { month: 'short' }),
+					day = date.getDate()+1,
+					year = date.getFullYear();
+								
+				$clone.find('.custom-whatsnew-date').html(month + ' ' + day + ', ' + year);
+				$clone.find('.custom-whatsnew-heading').html(item.heading);
+				$clone.find('.custom-whatsnew-description').html(item.description);
+				$('.custom-modal-content').append($clone);
+			});
+		}
+		
+		
+		function getWhatsNew () {
+			$.ajax({
+				url: '{% url 'info:api_whats_new_for_me' %}',
+				dataType: 'json',
+				success: function (data) {
+					populateToastAndOverlay(data.whatsNewItems);
+				},
+				error: function () {
+					// Doin't care.
+				}
+			});
+		}
+		
+		
+		// Don't care what happens, it can't not work.
+		function setEmailPreference () {
+			$.ajax({
+				url: '{% url 'info:api_whats_new_email_subscription' %}',
+				dataType: 'json',
+				success: function () {
+					document.getElementById('custom-emailsub-msg').classList.remove('bo-fadeout');
+					setTimeout(function () {
+						document.getElementById('custom-emailsub-msg').classList.add('bo-fadeout');
+					}, 1500);
+				}
+			});
+		}
+		
+		
+		// Don't care what happens, it can't not work.
+		function setWhatsnewRead () {
+			$.ajax({
+				url: '{% url 'info:api_whats_new_read' %}',
+				dataType: 'json'
+			});
+		}
+		
+		
+		// Run
+		
+		getWhatsNew();
+		$('#custom-toast').appendTo('.custom-leadspace');
+			
+		// Bind toast close button.
+		document.getElementById('custom-toast-close').addEventListener('click', function (evt) {
+			evt.preventDefault();
+			hideToast();
+			setWhatsnewRead();
+		});
+		
+		// Bind toast -> open overlay.
+		document.getElementById('custom-toast-content').addEventListener('click', function (evt) {
+			MicroModal.show('custom-whatsnew-overlay');
+			hideToast();
+			setWhatsnewRead();
+		});
+		
+		// Bind subscription checkbox.
+		document.getElementById('custom-overlay-whatsnew-email-subscription').addEventListener('change', function (evt) {
+			setEmailPreference();
+		});
+		
+	})(jQuery);
+	
+	
+</script>

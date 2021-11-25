@@ -1,0 +1,44 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Artifacts without tags {% endblock %}
+
+{% block pageTitle %} Research artifacts without tags{% endblock %}
+
+{% block extraFiles %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+        <p class="pb0">Click any row to edit it</p>
+	</div>
+    
+    <div class="{{ templateHelpers.classes.grid }} mt4 flex flex-wrap">
+        
+        <table data-widget="hotlinkrows" cellspacing="0" class="w-100 mw8">
+            <thead>
+                <tr>
+                    <th class="tl">Name</th>
+                    <th class="tl pl2">Owner</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for artifact in artifacts %}
+                    <tr tabindex="0" data-url="{% url 'research:artifacts_edit' id=artifact.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+                        <td class="pv2 pl2 pr3">{{ artifact.name }}</td>
+                        <td class="pv2 pl2 pr3">{{ artifact.owner.username }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+	</div>
+	
+
+{% endblock %}

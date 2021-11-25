@@ -1,0 +1,51 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Research artifact {% endblock %}
+
+{% block pageTitle %} Research artifacts {% endblock %}
+
+{% block extraFiles %}
+	
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+        <p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'research:artifacts_add' %}"><span class="mr1">add a new artifact</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+    
+    <div class="{{ templateHelpers.classes.grid }} mv4">
+        
+       <table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[0, "desc"]'>
+            <thead>
+                <tr>
+                    <th class="w4 tl">Last updated</th>
+                    <th class="tl">Name</th>
+                    <th class="tl">Owner</th>
+                    <th class="tl">Status</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for artifact in artifacts %}
+                    <tr tabindex="0" data-url="{% url 'research:artifacts_edit' id=artifact.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+                        <td data-order="{{ artifact.sort_date|date:'U' }}" class="">{{ artifact.sort_date }}</td>
+                        <td class="">{{ artifact.name }}</td>
+                        <td class="">{{ artifact.owner.username }}</td>
+                        <td class="">{{ artifact.status.name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+	</div>
+	
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{% load static %}
+{% load common_templatetags %}
+{% getTemplateHelpers as templateHelpers %}
+
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+
+		<script>
+			window.Omnia = {};
+			document.documentElement.classList.add('js');
+		</script>
+		
+		{% include 'partials/base_design_css_files.inc' %}
+				
+		{% include 'partials/base_design_js_files.inc' %}
+		
+		{% block extraFiles %} {% endblock %}
+
+		<script>
+			(function ($) {
+				// TEST
+				/**
+			 	function handleEvent (d) {
+			 		console.log(d);
+				}
+				window.document.addEventListener("add-success", handleEvent, false);
+				**/
+				
+				function bindForm () {
+					$("form").prepend('<input type="hidden" name="returntype" value="json">').on("submit", function (evt) {
+						evt.preventDefault();
+						
+						var $form = $(this);
+						
+						$.ajax({
+							url: $form.attr("action"),
+							type: "POST",
+							data: $form.serialize(),
+							dataType: "json",
+							success: function (returnData) {
+								var event = new CustomEvent('add-success', {detail:returnData});
+								window.parent.document.dispatchEvent(event);
+							}
+						});
+					});
+				}
+				
+				$(function () {
+					bindForm();
+					BO.initSelectWidgets();
+				});
+						  		
+			})(jQuery);
+			
+		</script>
+		
+		<style>
+			.yellow {
+				font-weight: normal;
+				color: #000;
+			}
+		 </style>
+	
+	</head>
+
+	<body class="plex">
+		<div class="b f4">{% block pageTitle %}{% endblock %}</div>
+		{% block content %} {% endblock %}
+	</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "info/page_template_admin.html" %}
+{% load static %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - FAQs {% endblock %}
+
+{% block pageTitle %} FAQs {% endblock %}
+
+{% block extraFiles %}
+	
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'info:admin_faq_add' %}"><span class="mr1">add a new FAQ</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<tr>
+					<th class="w4 mw4 tl pl2">Category(s)</th>
+					<th class="w4 mw4 tl">Question</th>
+					<th class="w-40 tl pl2">Answer</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for faq in listItems %}
+					<tr tabindex="0" data-url="{% url 'info:admin_faq_edit' id=faq.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="pv2 pl2 pr3">{{ faq.categories.all|join:', ' }}</td>
+						<td class="pv2 pl2 pr3">{{ faq.question }}</td>
+						<td class="pv2 pl2 pr3">{{ faq.answer|safe }}</td>
+						
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

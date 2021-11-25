@@ -1,0 +1,38 @@
+{% extends "info/page_template_admin.html" %}
+{% load static %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Add a new What's new {% endblock %}
+
+{% block pageTitle %} Add a new What's new {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %} {% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} flex-ns mt4">
+		
+		<script>
+			function previewMessage () {
+				document.getElementById('custom-preview-message').innerHTML = document.getElementById('id_description').value;
+			}
+		</script>
+		
+		<div class="w-60-ns w-100 mb4">
+			{% include 'partials/form_complete_horizontal.html' with form=form %}
+		
+			{% block deleteButton %}{% endblock %}
+		</div>
+		
+		<div class="w-40-ns w-100 pl4-ns">
+			<button onclick="previewMessage();return false;" class="mb4 w4 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.greenPriButton }} ">Preview</button>
+			<div id="custom-preview-message"></div>
+		</div>
+		
+	</div>
+		
+{% endblock %}
+

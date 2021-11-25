@@ -1,0 +1,62 @@
+{% extends "metrics/page_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Monthly response counts {% endblock %}
+
+{% block pageTitle %} Monthly response counts {% endblock %}
+
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+	
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<th class="mw5">Project</th>
+				<th class="mw4">Domain</th>
+				<th class="mw4">Lead</th>
+				{% for monthName in monthNames %}
+					<th class="">{{ monthName }}</th>
+				{% endfor %}
+			</thead>
+			
+			<tbody>
+				{% for domain in domains %}
+					<tr>
+						<td></td>
+						<td>{{ domain.name }}</td>
+						<td>{{ domain.lead.profile.full_name }}</td>
+						{% for monthCount in domain.monthCounts %}
+							<td>{{ monthCount }}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+				{% for project in projects %}
+					<tr>
+						<td>{{ project.name }}</td>
+						<td>{{ project.domain.name }}</td>
+						<td>{{ project.domain.lead.profile.full_name }}</td>
+						{% for monthCount in project.monthCounts %}
+							<td>{{ monthCount }}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		
+	</div>
+
+
+{% endblock %}
+

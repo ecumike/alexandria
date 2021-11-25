@@ -1,0 +1,156 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Admin access{% endblock %}
+
+{% block pageTitle %} Admin access{% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		.custom-current-admins .custom-removeuser {
+			opacity: 0;
+			transition: opacity .4s var(--animation-curve);
+		}
+		
+		.custom-current-admins .flex:hover .custom-removeuser,
+		.custom-current-admins .custom-removeuser:focus,
+		.custom-current-admins .custom-removeuser:hover {
+			opacity: 1;
+		}
+		
+	</style>
+	
+	
+	<script>
+
+		(function ($) {
+			var $newUserForm;
+			
+			function addRemoveUser (action, email) {
+				$.ajax({
+					url: "{% url 'research:api_adminaccess' %}",
+					type: 'post',
+					dataType: 'json',
+					data: {
+						'csrfmiddlewaretoken': '{{ csrf_token }}',
+						'email': email.toLowerCase(),
+						'action': action
+					},
+					success: function (data) {
+						window.location.href = '?n=' + new Date().getMilliseconds();
+					},
+					error: function (data) {
+						alert('There was an error managing the user.\nContct Michael Santelia with this message:\n' + data.responseJSON.results.message);
+					},
+				});
+			}
+			
+
+			function setupRemoveUserButtons () {
+				$('.custom-current-admins').on('click', 'a', function (evt) {
+					evt.preventDefault();
+					addRemoveUser('remove', $(evt.currentTarget).data('email'));
+				});
+			}
+			
+
+			function setupNewuserForm () {
+				$('#custom-new-user-form').on('submit', function (evt) {
+					evt.preventDefault();
+					
+					var email = document.getElementById('custom-employee-search').value;
+					
+					if (!email) {
+						alert('You can\'t add a ghost as an editor.');
+						return;
+					}
+					
+					$.ajax({
+						url: '{% url 'research:api_users_add' %}',
+						type: 'post',
+						dataType: 'json',
+						data: {
+							'csrfmiddlewaretoken': '{{ csrf_token }}',
+							'email': email,
+						},
+						success: function (data) {
+							addRemoveUser('add', data.username);
+						},
+						error: function (data) {
+							console.log('There was a problem');
+						},
+					});
+				});
+			}
+			
+			
+			$(function () {
+				$newUserForm = $('#custom-new-user-form');
+				setupRemoveUserButtons();
+				setupNewuserForm();
+			});
+			
+		})(jQuery);
+		
+	</script>
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="pa4 bg-white mb4">
+			<div class="mb3 red">If you remove yourself, you will lock yourself out and require another admin to re-add you.</div>
+		
+			<div class="flex-ns">
+				<div class="w-100 mw5-l">
+					<p>There are <code class="b dark-green">{{ adminUsers.count|default:0 }}</code> users that have admin access:</p>
+					<div class="custom-current-admins">
+						{% for user in adminUsers %}
+							<div class="flex">
+								<a title="Revoke user's admin access" class="dark-red custom-removeuser" data-email="{{ user.username }}" href="#" >{{ templateHelpers.html.icons.close|safe }}</a>
+								<div>{{ user.username }}</div>
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+				
+				<div class="w4-ns mb4"></div>
+				
+				<div class="w-100 mw6-l">
+					<p class="b">Grant admin access to a user</p>
+					
+					<form id="custom-new-user-form" method="post" action="{% url 'research:api_users_add' %}">
+						{% csrf_token %}
+						<div class="mt3 mb4 relative">
+							<input aria-label="Enter email address" id="custom-employee-search" data-width="100%" class="w-100" data-placeholder="joe@domain.com">
+						</div>
+						
+						<div>
+							<button type="submit" class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }} ">Add</button>
+						</div>
+					</form>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

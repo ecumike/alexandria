@@ -1,0 +1,66 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Campaigns {% endblock %}
+
+{% block pageTitle %} Campaigns {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<p class="pb0">Click any row to edit it or <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_campaign_add' %}"><span class="mr1">add a new campaign</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></p>
+		
+		<p class="">View all <a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_campaign_noproject_list' %}">campaigns without an associated project</a></p>
+		
+		
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }}>
+			<thead>
+				<tr>
+					<th class="w5 tl">Key</th>
+					<th class="tl">UID</th>
+					<th class="w2 tl">Inactive</th>
+					<th class="w2 tl pl2">Resps</th>
+					<th class="w2 tl pl2">"Other"</th>
+					<th class="tl pl2">Project</th>
+					<th class="w3 tl pl2">Vndr</th>
+					<th class="w3 tl pl2">Domain</th>
+					<th class="tl pl2">Latest response</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for campaign in campaigns %}
+					<tr tabindex="0" data-url="{% url 'metrics:admin_campaign_edit' id=campaign.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
+						<td class="w5 pv2 pl2 pr3 bo-word-break-all">{{ campaign.key|default:'' }}</td>
+						<td class="pv2 pl2 pr3">{{ campaign.uid }}</td>
+						<td class="w2 pv2 pl2 pr3 tc">{% if campaign.inactive %}<span class="red f6">❌</span>{% endif %}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.numResponses }}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.numOthers }}</td>
+						<td class="pv2 pl2 pr3">{{ campaign.projectName|default:'' }}</td>
+						<td class="w2 pv2 pl2 pr3 tc">{% if campaign.vendorApp == 'yes' %}✅{% elif campaign.vendorApp == 'no' %}<span class="red f6">❌</span>{% endif %}</td>
+						<td class="pv2 pl2 pr3">{{ campaign.domainName|default:'' }}</td>
+						<td class="pv2 pl2 pr3" data-order="{{ campaign.latest_response_date|date:'U' }}">{{ campaign.latest_response_date }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

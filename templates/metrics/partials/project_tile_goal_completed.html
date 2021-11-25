@@ -1,0 +1,28 @@
+{% load humanize %}
+
+{# This gets used only for each existing snapshot for the given report period. #}
+
+<a class="link bg-white mr4-ns mb4 w5-ns w-100 shadow-hover {{ snapshot.classes }}" href="{% url 'metrics:projects_detail' %}?project={{ snapshot.project.id }}&reportperiod={% if snapshot.date_quarter %}{{ snapshot.date_quarter }}q{{ snapshot.date.year }}{% else %}last90{% endif %}">
+	<div class="ba custom-border-color hover-b--dark-blue ph3 pv4 h-100 tc relative overflow-hidden textcolor">
+		{% if snapshot.project.core_project %}
+			<div title="This is a priority 1-3 project" class="custom-core-project-corner"></div>
+			<div title="This is a priority 1-3 project" class="absolute fill-white tinyicon top-0 left-0 ml1 mt1">{{ templateHelpers.html.icons.star|safe }}</div>
+		{% endif %}
+		
+		<div class="f4 br-100 ba ml-auto mr-auto flex items-center justify-center b" style="border-width: 10px;height: 100px;width: 100px; border-color:{{ snapshot.goal_completed_category.color_code }};">
+			<div>{{ snapshot.goal_completed_percent|floatformat:1 }}%</div>
+		</div>
+		<div class="f7 b regular mt3 gray">{% if snapshot.date_quarter %}{{ snapshot.date_quarter }}Q {{ snapshot.date.year }}{% else %}Last {{ snapshot.response_day_range }} days{% endif %}</div>
+		<div class="f7 regular mt1 gray">{{ snapshot.goal_completed_count|intcomma }} responses</div>
+		<div class="f7 regular mt1 gray">As of {{ snapshot.goal_completed_date|default:snapshot.date|date:'M d, Y' }}</div>
+		
+		<div class="f3 mv3 linkcolor">{{ snapshot.project.name }}</div>
+		<div class="f7 mb1">{{ snapshot.project.domain.name }}</div>
+		<div class="f7 mb1">{{ snapshot.project.contact.profile.full_name }}</div>
+		
+		{% if snapshot.project.designer_assigned == 'yes' %}
+			<div title="Project has a UX specialist assigned" class="absolute bottom-0 left-0 ml2 mb1">{{ templateHelpers.html.icons.userRole|safe }}</div>
+		{% endif %}
+
+	</div>
+</a>

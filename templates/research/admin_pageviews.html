@@ -1,0 +1,30 @@
+{% extends "research/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Page views {% endblock %}
+
+{% block pageTitle %} Page views{% endblock %}
+
+{% block extraFiles %}
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<p class="b">Page views by URL</p>
+		
+		
+			{% for page in pageviews %}
+				<div class="flex">
+					<div class="w3 tr mr3"><code>{{ page.view_count }}</code></div><div>{{ page.url }}</div>
+				</div>
+			{% endfor %}
+
+		
+	</div>
+
+{% endblock %}

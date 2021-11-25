@@ -1,0 +1,14 @@
+
+	<div class="{{ templateHelpers.classes.grid }} mt0">
+		
+		<h3 class="pt4 b mb2 mt0">Things to manage</h3>
+		<div class="mb4">Content and settings you can add and edit</div>
+		
+		<div class="flex flex-wrap mb2">	
+			{% url 'metrics:admin_projectsnapshot_list' as url %}
+			{% include 'partials/admin_home_item.html' with url=url title='Project snapshots' totalNum=counts.projectSnapshots description='' %}
+			
+		</div>
+		
+	</div>
+	

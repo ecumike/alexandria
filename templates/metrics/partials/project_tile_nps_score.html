@@ -1,0 +1,80 @@
+{% load humanize %}
+
+<a class="custom-hover-linkcolor-underline link bg-white mr4-ns mb4 w5-ns w-100 shadow-hover {{ snapshot.classes }}" href="{% url 'metrics:projects_detail' %}?project={{ snapshot.project.id }}&reportperiod={% if snapshot.date_quarter %}{{ snapshot.date_quarter }}q{{ snapshot.date.year }}{% else %}last90{% endif %}">
+	<div class="flex flex-column justify-between ba custom-border-color hover-b--dark-blue h-100 textcolor">
+		<div class="ph2 pt2 tc relative overflow-hidden">
+			{% if snapshot.project.core_project %}
+				<div title="This is a priority 1-3 project" class="custom-core-project-corner"></div>
+				<div title="This is a priority 1-3 project" class="absolute white fill-white tinyicon top-0 left-0 ml1 mt1">{{ templateHelpers.html.icons.star|safe }}</div>
+			{% endif %}
+					
+			{% if snapshot.nps_meaningful_data %}
+				<div class="br-100 ba mt3 ml-auto mr-auto flex flex-column justify-center" style="border-width: 10px;height: 135px;width: 135px; border-color:{{ snapshot.nps_score_category.color_code }};">
+						<div class="b mb2 f3">{{ snapshot.nps_score|floatformat:1 }}</div>
+						<div class="gray f7">
+							<div>{% if thisYear != snapshot.project.timePeriodSettings.year %}{{ snapshot.project.timePeriodSettings.year }}<br>{% endif %} Baseline: {{ snapshot.project.timePeriodSettings.nps_baseline|floatformat:0|default:'N/A' }}</div>
+							<div>
+								{# Only show target if it's this year (inherited from current_score) and current score report period. #}
+								{% if tileFiltersData.selectedReportPeriod == 'last90' %}
+									Target: 
+									{% if snapshot.project.timePeriodSettings.nps_target %}
+										{% if snapshot.nps_score > snapshot.project.timePeriodSettings.nps_target or snapshot.nps_score >= 26 %}
+											{% if snapshot.project.timePeriodSettings.nps_target_exceed %}
+												{{ snapshot.project.timePeriodSettings.nps_target_exceed|floatformat:0|default:'' }}+
+											{% else %}
+												{{ snapshot.project.timePeriodSettings.nps_target|floatformat:0|default:'N/A' }}
+											{% endif %}
+										{% else %}
+											{{ snapshot.project.timePeriodSettings.nps_target|floatformat:0|default:'N/A' }}
+										{% endif %}
+									{% else %}
+										N/A
+									{% endif %}
+								{% endif %}
+							</div>
+						</div>
+				</div>
+			{% else %}
+				<div class="hint--medium hint--bottom f5 tc mv4" aria-label="You must have 30+ responses and <16 margin of error to display a score.">Insufficient responses<br>to calculate NPS score</div>	
+				<div class="mt3 mb4 linkcolor">Details / History</div>
+			{% endif %}
+						
+			<div class="f6 b mt3 gray">{% if snapshot.date_quarter %}{{ snapshot.date_quarter }}Q {{ snapshot.date.year }}{% else %}Last {{ snapshot.response_day_range }} days{% endif %}</div>
+			<div class="f7 regular mt2 gray">{{ snapshot.nps_count|intcomma }} responses</div>
+			<div class="f7 regular mt1 relative"><span class="gray">Margin of error: {{ snapshot.nps_margin_error|floatformat:1 }}</span> 
+				{% if snapshot.nps_meaningful_data and snapshot.npsMoeWarning %}
+					<span class="hint--top-left hint--medium ml1 yellow smallicon" style="position: absolute;top: -5px;" aria-label="{{ snapshot.npsMoeWarning }}" class="yellow smallicon">{{ templateHelpers.html.icons.warn|safe }}</span>
+				{% endif %}
+			</div>
+			<div class="f7 regular mt1 gray">As of {{ snapshot.nps_score_date|default:snapshot.date|date:'M d, Y' }}</div>
+			<div class="f4 mt3 linkcolor">{{ snapshot.project.name }}</div>
+		</div>
+		
+		<div class="w-100 {% if snapshot.project.designer_assigned == 'yes' %}mt2{% else %}mt4{% endif %}">
+			{% if snapshot.project.designer_assigned == 'yes' %}
+				<div class="h2 tl">
+					<div class="relative ml2" title="Project has a UX specialist assigned">{{ templateHelpers.html.icons.userRole|safe }}</div>
+				</div>
+			{% endif %}
+			
+			{% if tileFiltersData.selectedReportPeriod == 'last90' %}
+				{% if snapshot.project.timePeriodSettings.nps_target %}
+					{% if snapshot.nps_meaningful_data %}
+						{% if snapshot.nps_score > snapshot.project.timePeriodSettings.nps_target_exceed or snapshot.nps_score >= 41 %}
+							<div class="tc f6 bg-dark-green white pv2">Exceeding target</div>
+						{% elif snapshot.nps_score > snapshot.project.timePeriodSettings.nps_target or snapshot.nps_score >= 26 %}
+							<div class="tc f6 bg-dark-gray white pv2">Achieving target</div>
+						{% else %}
+							<div class="tc f6 bg-moon-gray pv2">Below target</div>
+						{% endif %}
+					{% else %}
+						<div class="tc bt b--light-gray f6 pv2">Insufficient responses</div>
+					{% endif %}
+				{% else %}
+					<div class="tc bt b--light-gray f6 pv2">Establishing baseline</div>
+				{% endif %}
+			{% endif %}
+		</div>
+		
+	</div>
+</a>

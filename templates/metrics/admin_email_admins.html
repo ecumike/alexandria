@@ -1,0 +1,44 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Email admins {% endblock %}
+
+{% block pageTitle %} Email all Omnia admins {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+	<style>
+		.flex-ns.items-center {
+			align-items: flex-start;
+		}
+	
+	</style>
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="b mb4">HTML is allowed.</div>
+		
+		<div class="flex-ns">
+			<div class="w-100 w-60-ns mw7 pr4-ns mb4">	
+				{% include 'partials/form_complete_horizontal.html' with form=form %}
+			</div>
+			
+			<div class="w-100 w-40-ns mw7 lh-copy mb4">
+				<div class="mb2">The message you provide here will be sent to all <strong>{{ admins|length }}</strong> Omnia admins:</div>
+				<ul class="{{ templateHelpers.classes.bulletlist }}">{% for admin in admins %}
+						<li>{{ admin }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+		
+{% endblock %}
+

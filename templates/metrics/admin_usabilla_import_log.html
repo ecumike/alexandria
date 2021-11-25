@@ -1,0 +1,50 @@
+{% extends "metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% load humanize %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center - Usabilla &amp; BeeHeard import log{% endblock %}
+
+{% block pageTitle %} Usabilla &amp; BeeHeard import log {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	<script>OM.enableHotlinkrows();</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw8">
+		<p class="lh-copy">An automated background script runs each night and pulls all new Usabilla responses since the last run.</p>
+			
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0, "desc"]]'>
+			<thead>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Date</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Responses</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Projects</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Run time (sec)</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">User</th>
+			</thead>
+			
+			<tbody>
+				{% for run in runs %}
+					<tr>
+						<td data-order="{{ run.date|date:'U' }}" class="{{ templateHelpers.classes.tableListCell }}">{{ run.date }}</td>
+						<td class="">{{ run.responses_imported_count }}</td>
+						<td class="">{{ run.projects_affected_count }}</td>
+						<td class="">{{ run.run_time_seconds }}</td>
+						<td class="">{{ run.user.profile.full_name|default:'' }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+			
+		</table>				
+	</div>
+	
+		
+
+{% endblock %}

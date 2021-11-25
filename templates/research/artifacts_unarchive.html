@@ -1,0 +1,39 @@
+{% extends "research/page_template.html" %}
+{% block browserTitle %} Research - Republish {{ artifact.name }}{% endblock %}
+
+{% block pageTitle %} Republish: <span class="{{ templateHelpers.classes.pageTitleSecondary }}">{{ artifact.name }}</span> {% endblock %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="bg-white pa4 pt3">
+			<form action="" method="post">
+				{% csrf_token %}
+				<input type="hidden" name="do" value="delete">
+				
+				<p class="mw7">By republishing this research artifact, it will show up in search results and lists.</p>
+				
+				<p class="b">{{ artifact.name }}</p>
+				
+				{% if pageViews %}
+					<p>It's been viewed <span class="b">{{ pageViews }}</span> times.</p>
+				{% endif %}
+					
+				{% if childrenArtifacts %}
+					<p>It has <span class="b">{{ childrenArtifacts.count }}</span> other artifacts related to it:</p>
+					<ul class="lh-copy">
+						{% for artifact in childrenArtifacts %}
+						<li class="">{{ artifact.name }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+				
+				<div class="mt4 mb4 dib"><button class="link db mr3 {{ templateHelpers.classes.button }} {{ templateHelpers.classes.redPriButton }}"><span class="flex items-center ph2 fill-white">Yes, republish it</span></button></div>
+					
+			</form>
+		</div>
+	</div>
+	
+	
+{% endblock %}
+

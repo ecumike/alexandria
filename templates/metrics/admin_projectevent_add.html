@@ -1,0 +1,27 @@
+{% extends request.GET.iframe|yesno:"page_template_iframe.html,metrics/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Add a new project event {% endblock %}
+
+{% block pageTitle %} Add a new project event {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		{% include 'partials/form_complete_horizontal.html' with form=form %}
+				
+		{% block deleteButton %}{% endblock %}
+		
+	</div>
+		
+{% endblock %}
+
