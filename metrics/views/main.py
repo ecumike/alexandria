@@ -359,7 +359,8 @@ def projects_home(request):
 ##
 def projects_detail(request):
 	try:
-		project = Project.objects.filter(id=request.GET.get('project')).select_related('domain', 'current_year_settings', 'contact', 'contact__profile').prefetch_related('admins', 'editors', 'admins__profile', 'editors__profile', 'task_projects').first()
+		# Use filter for prefetching, and then [0] to force error/404 on non valid project.
+		project = Project.objects.filter(id=request.GET.get('project')).select_related('domain', 'current_year_settings', 'contact', 'contact__profile').prefetch_related('admins', 'editors', 'admins__profile', 'editors__profile', 'task_projects')[0]
 	except Exception as ex:
 		print(ex)
 		return render(request, '404.html', {}, status=404)

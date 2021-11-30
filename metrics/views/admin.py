@@ -510,9 +510,9 @@ def admin_project_delete(request):
 ##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def admin_campaign_list(request):
-	campaigns = Campaign.objects.order_by('key').annotate(numResponses=Count('response_campaign')+Count('feedback_response_campaign')+Count('other_response_campaign')).annotate(projectName=F('project__name'), vendorApp=F('project__vendor_app'), domainName=F('project__domain__name')).annotate(
-		numOthers=Count('response_campaign', filter=(Q(response_campaign__primary_goal__name='Other') | Q(response_campaign__primary_goal__name='')))
-	)
+	campaigns = Campaign.objects.order_by('key').annotate(numResponses=Count('response_campaign')).annotate(projectName=F('project__name'), vendorApp=F('project__vendor_app'), domainName=F('project__domain__name')).annotate(
+			numOthers=Count('response_campaign', filter=(Q(response_campaign__primary_goal__name='Other') | Q(response_campaign__primary_goal__name='')))
+		)
 	
 	context = {
 		'campaigns': campaigns
