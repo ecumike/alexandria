@@ -20,6 +20,9 @@ from metrics.models import Project
 
 
 class Method(models.Model):
+	'''
+	Research methods
+	'''
 	created_by = models.ForeignKey(User, related_name='method_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	updated_by = models.ForeignKey(User, related_name='method_updated_by', on_delete=models.PROTECT)
@@ -36,6 +39,10 @@ class Method(models.Model):
 
 
 class Source(models.Model):
+	'''
+	Research sources
+	EX: By IBM, for IBM by 3rd party
+	'''
 	created_by = models.ForeignKey(User, related_name='source_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	updated_by = models.ForeignKey(User, related_name='source_updated_by', on_delete=models.PROTECT)
@@ -52,6 +59,9 @@ class Source(models.Model):
 
 
 class Status(models.Model):
+	'''
+	Ex: In progress, completed
+	'''
 	created_by = models.ForeignKey(User, related_name='status_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	updated_by = models.ForeignKey(User, related_name='status_updated_by', on_delete=models.PROTECT)
@@ -87,6 +97,9 @@ class Tag(models.Model):
 
 
 class Attachment(models.Model):
+	'''
+	File name pointer for COS file so we can make relationships and control via research items.
+	'''
 	created_by = models.ForeignKey(User, related_name='attachment_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	updated_by = models.ForeignKey(User, related_name='attachment_updated_by', on_delete=models.PROTECT)
@@ -143,6 +156,9 @@ class Attachment(models.Model):
 		
 		
 class Artifact(models.Model):
+	'''
+	Research item
+	'''
 	created_by = models.ForeignKey(User, related_name='artifact_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
 	updated_by = models.ForeignKey(User, related_name='artifact_updated_by', on_delete=models.PROTECT)
@@ -207,12 +223,18 @@ class Artifact(models.Model):
 		
 	
 	def storeUserResearchCount(self):
+		'''
+		Store the user's research count so we don't have to count and check on every view (for "my research" link)
+		'''
 		for user in list(set([self.created_by, self.updated_by, self.owner] + list(self.editors.all()))):
 			user.profile.research_count = Artifact.objects.filter(Q(created_by=user) | Q(owner=user) | Q(editors=user)).count()
 			user.save()
 			
 			
 	def getArtifacts(request):
+		'''
+		Main gig on search page. Takes request params and returns research items and selected filters.
+		'''
 		# Start with all artifacts and no selected filters.
 		artifacts = Artifact.objects.exclude(archived=True).all()
 		qParam = request.GET.get('q'.strip(), None)
@@ -291,6 +313,9 @@ class Artifact(models.Model):
 		
 	
 	def getAlchemerSurveyQuestions(self):
+		'''
+		On save of research item, try to get and save alchemer questions if alchemer survey ID exists.
+		'''
 		if self.alchemer_survey_id and settings.ALCHEMER_API_TOKEN and settings.ALCHEMER_API_TOKEN_SECRET:
 			try:
 				url = f'https://api.alchemer.com/v5/survey/{self.alchemer_survey_id}/question/?api_token={settings.ALCHEMER_API_TOKEN}&api_token_secret={settings.ALCHEMER_API_TOKEN_SECRET}'
@@ -335,6 +360,9 @@ class Artifact(models.Model):
 	
 
 class ArtifactSearch(models.Model):
+	'''
+	Store search terms, for kicks to see top searches.
+	'''
 	created_at = models.DateTimeField(default=datetime.now, editable=False)
 	updated_at = models.DateTimeField(default=datetime.now, editable=False)
 	
@@ -476,6 +504,9 @@ class BannerNotification(models.Model):
 
 
 class SurveyQuestionExclusion(models.Model):
+	'''
+	Alchemer survey questions to exclude on display because unimportant, like: "what org are you in"
+	'''
 	question_text = models.CharField(max_length=255)
 
 	class Meta:

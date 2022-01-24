@@ -1,3 +1,4 @@
+import csv
 import io
 import json
 import requests
@@ -43,20 +44,25 @@ def getBreadcrumbBase():
 #### Redirects
 ############################################################
 
+###
 ##	/metrics/projectdetail/?project=<ID>
 ##
-## Redirect from old detail URL
+##
 ##
 def redirect_project_detail(request):
+	'''
+	Redirect from old detail URL
+	'''
 	url = f"{reverse('metrics:projects_detail')}?project={request.GET.get('project', None)}"
 	return redirect(url)
 
-
+##
 ##	/metrics/responsescomments/? <params>
 ##
-## Redirect from old responses comments URL
-##
 def redirect_project_comments(request):
+	'''
+	Redirect from old responses comments URL
+	'''
 	url = f"{reverse('metrics:projects_vote_responses')}?{request.GET.urlencode()}"
 	return redirect(url)
 
@@ -78,15 +84,12 @@ def redirect_project_comments(request):
 ##
 ##	/metrics/
 ##
-##	Only routes based on: Project|Domain + Tile|Table
-##  Filters for tiles or table view goes here and we route to the proper URL/view.
-##  Much easier than putting logic in a bunch of views.
-##
-##
 def metrics_home(request):
-	# Get the specified domain, or one from session last used.
-	# Current local speed avg: 135q in 181ms
-	# getHistoricalNpsCatCountChartData is the bottleneck.
+	'''
+	Get the specified domain, or one from session last used.
+	Current local speed avg: 135q in 181ms
+	getHistoricalNpsCatCountChartData is the bottleneck.
+	'''
 	selectedDomain = helpers.getFilterDomain(request)
 	
 	try:
@@ -170,12 +173,12 @@ def metrics_home(request):
 ##
 ##	/metrics/tilestableview/
 ##
-##	Only routes based on: Project|Domain + Tile|Table
-##  Filters for tiles or table view goes here and we route to the proper URL/view.
-##  Much easier than putting logic in a bunch of views.
-##
-##
 def tiles_table_router(request):
+	'''
+	Only routes based on: Project|Domain + Tile|Table
+	Filters for tiles or table view goes here and we route to the proper URL/view.
+	Much easier than putting logic in a bunch of views.
+	'''
 	displayDomainsAs = helpers.getDomainsDisplay(request)
 	#displayProjectsAs = helpers.getProjectsDisplay(request)
 	returnUrl = None
@@ -194,10 +197,10 @@ def tiles_table_router(request):
 ##
 ##	/metrics/domains/
 ##
-##	Tile view of domains.
-##
-##
 def domains_tiles(request):
+	'''
+	Tile view of domains.
+	'''
 	context = {
 		'domainSnapshots': DomainYearSnapshot.objects.filter(year=timezone.now().year).annotate(
 			domainId=F('domain_id'), 
@@ -220,7 +223,6 @@ def domains_tiles(request):
 ##	/metrics/domains/table/
 ##
 ##	# Hidden, no longer linked.
-##
 ##
 def domains_table(request):
 	def getDomainAggregate(field):
@@ -273,11 +275,9 @@ def domains_table(request):
 ##
 ##	/metrics/projects/
 ##
-##	Project home page: tile list.
-##
-##
 def projects_home(request):
 	'''
+	Project home page: tile list.
 	Stats for view (avgs) (prod is faster than local):
 		Show all (default): 245, 123q/87ms
 		Achieving target: 89 of 245, 21q/52ms
@@ -354,10 +354,10 @@ def projects_home(request):
 ##
 ##	/metrics/projects/detail/?<project>
 ##
-##	Project detail template.
-##
-##
 def projects_detail(request):
+	'''
+	Project detail template.
+	'''
 	try:
 		# Use filter for prefetching, and then [0] to force error/404 on non valid project.
 		project = Project.objects.filter(id=request.GET.get('project')).select_related('domain', 'current_year_settings', 'contact', 'contact__profile').prefetch_related('admins', 'editors', 'admins__profile', 'editors__profile', 'task_projects')[0]
@@ -427,6 +427,19 @@ def projects_detail(request):
 		},
 	]
 	
+	# If they're not an editor, but are assigned some, show only those, 
+	#  else, not allowed access to feedback responses so set to 0 so tab doesn't show.
+	feedbackResponses = project.getFeedbackResponses().exclude(comments='').order_by('-date')[:10]
+	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
+	assigneeCount = FeedbackResponse.objects.filter(assignees=request.user).count()
+	if not isProjectEditor:
+		if assigneeCount > 0:
+			feedbackResponses = feedbackResponses.filter(assignees=request.user)
+		else:
+			feedbackResponses = None
+		
+	
+	
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'project': project,
@@ -453,7 +466,7 @@ def projects_detail(request):
 		'legendModalUmuxScoreCategories': UmuxScoreCategory.objects.all(),
 		'legendModalGoalCompletedCategories': GoalCompletedCategory.objects.all(),
 		'customTimeMachineMessage': reportPeriodData['customTimeMachineMessage'],
-		'feedbackResponses': project.getFeedbackResponses().order_by('-date')[:10],
+		'feedbackResponses': feedbackResponses,
 		'menunavItem': 'projects',
 	}
 	
@@ -471,12 +484,12 @@ def projects_detail(request):
 
 
 ##
-##	/metrics/projects/responses/
-##
-##	Responses comments viewer. Filter on project and what field to show.
-##
-##
+##	/metrics/projects/responses/vote/
+##	
 def projects_vote_responses(request):
+	'''
+	Responses comments viewer. Filter on project and what field to show.
+	'''
 	try:
 		project = get_object_or_404(Project, id=request.GET.get('project'))
 	except Exception as ex:
@@ -557,6 +570,7 @@ def projects_vote_responses(request):
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'isProjectAdmin': accessHelpers.isProjectAdmin(request.user, project),
+		'isProjectEditor': accessHelpers.isProjectEditor(request.user, project),
 		'responses': responses,
 		'emptyResponseCount': emptyResponseCount,
 		'projects': Project.objects.allActive().all(),
@@ -576,33 +590,30 @@ def projects_vote_responses(request):
 
 
 ##
-##	/metrics/projects/feedback/
-##
-##	Feedback Responses viewer. 
+##	/metrics/projects/responses/feedback/
 ##
 def projects_feedback_responses(request):
+	'''
+	Feedback Responses viewer. 
+	'''
 	try:
 		project = get_object_or_404(Project, id=request.GET.get('project'))
 	except Exception as ex:
 		return render(request, '404.html', {}, status=404)
 	
-	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
-	
-	if not isProjectEditor:
-		return render(request, '403.html', {}, status=403)	
-		
 	# Get proper report period, snapshot, and responses based on the project and report period selected.
-	allResponses = project.getFeedbackResponses()
+	responses = project.getFeedbackResponses().prefetch_related('assignees', 'keywords')
 	
-	# Exclude responses that don't have a comment for the field we want to show.
-	excludeArgs = {'comments': ''}
-	try:
-		responses = allResponses
-		emptyResponseCount = 0
-	except Exception as ex:
-		responses = None
-		emptyResponseCount = 0
-	
+	# If they're not an editor, but are assigned some, show only those, 
+	#  else, not allowed access to view feedback.
+	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
+	assigneeCount = FeedbackResponse.objects.filter(assignees=request.user).count()
+	if not isProjectEditor:
+		if assigneeCount > 0:
+			responses = responses.filter(assignees=request.user)
+		else:
+			return render(request, '403.html', {}, status=403)	
+		
 	breadcrumbs = [
 		{
 			'text': 'Tools &amp; services',
@@ -616,9 +627,7 @@ def projects_feedback_responses(request):
 	
 	context = {
 		'breadcrumbs': breadcrumbs,
-		'isProjectEditor': accessHelpers.isProjectEditor(request.user, project),
 		'responses': responses,
-		'emptyResponseCount': emptyResponseCount,
 		'projects': Project.objects.allActive().filter(campaign_project__feedback_response_campaign__isnull=False).distinct(),
 		'selectedProject': project,
 		'menunavItem': 'projects',
@@ -626,6 +635,74 @@ def projects_feedback_responses(request):
 		
 	response = render(request, 'metrics/projects_feedback_responses.html', context)
 	helpers.clearPageMessage(request)
+	return response
+
+
+##
+##	/metrics/projects/responses/feedback/detail/<id>/
+##
+def projects_feedback_responses_detail(request, uid):
+	'''
+	Feedback Responses viewer. 
+	'''
+	try:
+		feedbackResponse = FeedbackResponse.objects.filter(uid=uid).prefetch_related('assignees', 'keywords')[0]
+		project = feedbackResponse.campaign.project
+	except Exception as ex:
+		return render(request, '404.html', {}, status=404)
+	
+	# If they're not an editor, but are assigned some, show only those, 
+	#  else, not allowed access to view feedback.
+	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
+	isAssignee = request.user in feedbackResponse.assignees.all()
+	if not isProjectEditor and not isAssignee:
+		return render(request, '403.html', {}, status=403)	
+		
+	breadcrumbs = [
+		{
+			'text': 'Tools &amp; services',
+			'url': reverse('metrics:projects_home')
+		},
+		{ 
+			'text': project.name,
+			'url': f"{reverse('metrics:projects_detail')}?project={project.id}"
+		},
+		{ 
+			'text': 'Feedback responses',
+			'url': f"{reverse('metrics:projects_feedback_responses')}?project={project.id}"
+		},
+	]
+	
+	context = {
+		'breadcrumbs': breadcrumbs,
+		'feedbackResponse': feedbackResponse,
+		'form': FeedbackResponseForm(instance=feedbackResponse),
+		'menunavItem': 'projects',
+	}
+	
+	response = render(request, 'metrics/projects_feedback_responses_detail.html', context)
+	
+	if request.method == 'POST':
+		try:
+			feedbackResponse.notes = request.POST.get('notes', '')
+			feedbackResponse.assignees.clear()
+			feedbackResponse.assignees.add(*request.POST.getlist('assignees', None))
+			
+			feedbackResponse.keywords.clear()
+			for keywordVal in request.POST.getlist('keywords', None):
+				try:
+					keyword = FeedbackResponseKeyword.objects.get(id=keywordVal)
+				except:
+					keyword = FeedbackResponseKeyword.objects.create(name=keywordVal)
+				feedbackResponse.keywords.add(keyword)
+			feedbackResponse.save()
+			
+			helpers.setPageMessage(request, 'success', 'Feedback response was saved successfully')
+			response = redirect(f"{reverse('metrics:projects_feedback_responses')}?project={project.id}")
+		except Exception as ex:
+			helpers.setPageMessage(request, 'error', f'There was an error saving the response: {ex}')
+			response = render(request, 'metrics/projects_feedback_responses_detail.html', context)
+	
 	return response
 
 
@@ -656,10 +733,10 @@ def claude_temp_dabby2(request):
 ##
 ##	/metrics/alerts/
 ##
-##	List of logged alerts for campaigns, projects and domains.
-##
-##
 def alerts(request):
+	'''
+	List of logged alerts for campaigns, projects and domains.
+	'''
 	alerts = Alert.objects.all().select_related('project')
 	selectedProjectIds = [int(i) for i in request.GET.getlist('project', None)]
 	selectedProjects = Project.objects.filter(id__in=selectedProjectIds)
@@ -696,13 +773,17 @@ def alerts(request):
 ##
 ##	/metrics/alerts/
 ##
-##	List of logged alerts for campaigns, projects and domains.
-##
-##
 def response_counts(request):
+	'''
+	List of logged alerts for campaigns, projects and domains.
+	'''
 	monthNames = []
 	monthNums = list(range(1, timezone.now().month + 1))
 	year = timezone.now().year
+	
+	if request.GET.get('year', None):
+		year = request.GET.get('year')
+		monthNums = list(range(1, 13))
 	
 	for mNum in monthNums:
 		monthNames.append(timezone.datetime(1900, mNum, 1).strftime('%B'))
@@ -722,6 +803,7 @@ def response_counts(request):
 			hasMonths.append(snapshot.date.month)
 			
 		missingMonths = list(set(monthNums) - set(hasMonths))
+		missingMonths.sort()
 		for m in missingMonths:
 			project.monthCounts.insert(m-1, 0)
 	
@@ -842,3 +924,83 @@ def tasks_detail(request, id):
 	response = render(request, 'metrics/tasks_detail.html', context)
 	return response
 
+
+##
+##	/metrics/projects/responses/feedback/csvdump/?<project>
+##
+def project_feedback_responses_csv_dump(request):
+	'''
+	Feedback Responses CSV export of ALL fields in raw_data. 
+	'''
+	try:
+		project = get_object_or_404(Project, id=request.GET.get('project'))
+	except Exception as ex:
+		return render(request, '404.html', {}, status=404)
+	
+	# Get proper report period, snapshot, and responses based on the project and report period selected.
+	responses = project.getFeedbackResponses()
+	rowsArr = project.responsesRawDataToCsv(responses)
+	
+	#Send CSV to browser.
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment;filename="All feedback responses.csv"'
+	response.write(u'\ufeff'.encode('utf8'))
+	
+	writer = csv.writer(response)
+	writer.writerows(rowsArr)
+
+	return response	
+
+##
+##	/metrics/projects/responses/vote/csvdump/?<project>
+##
+def project_vote_responses_csv_dump(request):
+	'''
+	VotE Responses CSV export of ALL fields in raw_data. 
+	'''
+	try:
+		project = get_object_or_404(Project, id=request.GET.get('project'))
+	except Exception as ex:
+		return render(request, '404.html', {}, status=404)
+	
+	# Get proper report period, snapshot, and responses based on the project and report period selected.
+	responses = project.getVoteResponses()	
+	rowsArr = project.responsesRawDataToCsv(responses)
+	
+	#Send CSV to browser.
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment;filename="All feedback responses.csv"'
+	response.write(u'\ufeff'.encode('utf8'))
+	
+	writer = csv.writer(response)
+	writer.writerows(rowsArr)
+	
+	return response	
+
+
+##
+##	/metrics/projects/responses/vote/timeperiodcsvdump/?<project>
+##
+def project_vote_responses_timeperiod_csv_dump(request):
+	'''
+	VotE Responses CSV export of ALL fields in raw_data. 
+	FOR the time period given in the request.
+	'''
+	try:
+		project = get_object_or_404(Project, id=request.GET.get('project'))
+	except Exception as ex:
+		return render(request, '404.html', {}, status=404)
+	
+	# Get proper report period, snapshot, and responses based on the project and report period selected.
+	reportPeriodData = project.getReportPeriodData(request)
+	responses = reportPeriodData['projectSnapshotResponses']
+	rowsArr = project.responsesRawDataToCsv(responses)
+	
+	#Send CSV to browser.
+	response = HttpResponse(content_type='text/csv')
+	response['Content-Disposition'] = 'attachment;filename="All feedback responses.csv"'
+	
+	writer = csv.writer(response)
+	writer.writerows(rowsArr)
+	
+	return response	

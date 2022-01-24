@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UserRole, Role, Url, GoalCompleted, Browser, OperatingSystem, PrimaryGoal, DeviceType, Country, State, City, DataSource, ProjectKeyword, NpsScoreCategory, Domain, Project, ProjectEvent, Campaign, NpsLetterGrade, UmuxScoreCategory, GoalCompletedCategory, Response, VoteResponse, FeedbackResponse, OtherResponse, ProjectSnapshot, UsabillaImportLog, ProjectYearSetting, DomainYearSnapshot, ActivityLog, Target, UxSpecialistAssigned, Alert, Task
+from .models import UserRole, Role, Url, GoalCompleted, Browser, OperatingSystem, PrimaryGoal, DeviceType, Country, State, City, DataSource, ProjectKeyword, NpsScoreCategory, Domain, Project, ProjectEvent, Campaign, NpsLetterGrade, UmuxScoreCategory, GoalCompletedCategory, Response, VoteResponse, FeedbackResponseKeyword, FeedbackResponse, OtherResponse, ProjectSnapshot, ImportLog, ProjectYearSetting, DomainYearSnapshot, ActivityLog, Target, UxSpecialistAssigned, Alert, Task
 
 
 @admin.register(UserRole)
@@ -143,6 +143,7 @@ class DomainAdmin(admin.ModelAdmin):
 		'updated_by',
 		'name',
 		'lead',
+		'beeheard_id',
 	)
 	list_filter = (
 		'created_at',
@@ -181,6 +182,7 @@ class ProjectAdmin(admin.ModelAdmin):
 		'currently_reporting_snapshot',
 		'latest_valid_currently_reporting_snapshot',
 		'current_year_settings',
+		'beeheard_id',
 		'api_key',
 	)
 	list_filter = (
@@ -233,9 +235,13 @@ class CampaignAdmin(admin.ModelAdmin):
 		'updated_by',
 		'inactive',
 		'project',
-		'key',
 		'uid',
+		'usabilla_button_id',
+		'key',
 		'latest_response_date',
+		'vote_response_count',
+		'feedback_response_count',
+		'other_response_count',
 	)
 	list_filter = (
 		'created_at',
@@ -402,6 +408,14 @@ class VoteResponseAdmin(admin.ModelAdmin):
 	date_hierarchy = 'created_at'
 
 
+@admin.register(FeedbackResponseKeyword)
+class FeedbackResponseKeywordAdmin(admin.ModelAdmin):
+	list_display = ('id', 'created_at', 'updated_at', 'name')
+	list_filter = ('created_at', 'updated_at')
+	search_fields = ('name',)
+	date_hierarchy = 'created_at'
+
+
 @admin.register(FeedbackResponse)
 class FeedbackResponseAdmin(admin.ModelAdmin):
 	list_display = (
@@ -415,15 +429,11 @@ class FeedbackResponseAdmin(admin.ModelAdmin):
 		'feedback_type',
 		'comments',
 		'email_provided',
+		'notes',
 		'raw_data',
 	)
-	list_filter = (
-		'created_at',
-		'updated_at',
-		'date',
-		'campaign',
-		'email_provided',
-	)
+	list_filter = ('created_at', 'updated_at', 'date', 'email_provided')
+	raw_id_fields = ('campaign',)
 	date_hierarchy = 'created_at'
 
 
@@ -508,14 +518,15 @@ class ProjectSnapshotAdmin(admin.ModelAdmin):
 	date_hierarchy = 'created_at'
 
 
-@admin.register(UsabillaImportLog)
-class UsabillaImportLogAdmin(admin.ModelAdmin):
+@admin.register(ImportLog)
+class ImportLogAdmin(admin.ModelAdmin):
 	list_display = (
 		'id',
 		'date',
 		'responses_imported_count',
 		'projects_affected_count',
 		'run_time_seconds',
+		'import_type',
 		'user',
 	)
 	list_filter = ('date',)

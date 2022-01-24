@@ -221,7 +221,7 @@
 				<button data-id="scorecard" class="{{ templateHelpers.classes.tab }} bo-active">Scorecard</button>
 				<button data-id="events" class="{{ templateHelpers.classes.tab }}">Events</button>
 				<button data-id="comments" class="{{ templateHelpers.classes.tab }}">VotE comments</button>
-				{% if isProjectEditor and feedbackResponses %}<button data-id="feedback" class="{{ templateHelpers.classes.tab }}">Feedback button</button>{% endif %}
+				{% if feedbackResponses %}<button data-id="feedback" class="{{ templateHelpers.classes.tab }}">Feedback button</button>{% endif %}
 				<button data-id="projectinfo" class="{{ templateHelpers.classes.tab }}">Tool/service information</button>
 			</div>
 			
@@ -555,13 +555,13 @@
 		</div>
 	</div>
 	
-	{% if isProjectEditor and feedbackResponses %}
+	{% if feedbackResponses %}
 		<div id="feedback" class="bo-tab-content mb4"> 
 			<div class="{{ templateHelpers.classes.grid }}">
 				<div class="bg-white pa4 w-100 mw7">
 					<ul class="lh-copy">
 						{% for feedback in feedbackResponses %}
-							<li>Rating: {{ feedback.rating|default:'n/a' }} | Comments: {{ feedback.comments|capfirst|truncatewords:40|default:'n/a' }}</li>
+							<li>Rating: {{ feedback.rating|default:'n/a' }} - {{ feedback.comments|capfirst|truncatewords:40|default:'n/a' }}</li>
 						{% endfor %}
 					</ul>
 					<div class="mb2 lh-copy hasicon" style="margin-left: 27px;"><a href="{% url 'metrics:projects_feedback_responses' %}?project={{ project.id }}" class="{{ templateHelpers.classes.link }} animate">{{ templateHelpers.html.icons.chevronForward|safe }} All feedback responses</a></div>

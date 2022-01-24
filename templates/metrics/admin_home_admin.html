@@ -92,17 +92,20 @@
 				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Import responses\' goals' description='' %}
 					
 				{% url 'metrics:admin_get_new_usabilla_responses' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch the latest Usabilla responses now' description='' %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch Usabilla responses' description='' %}
 				<div class="f7 pl3 mb2"><strong>Last run:</strong>
 					<br>{{ lastUsabillaRun.date|date:'M d, Y' }} - {{ lastUsabillaRun.date|time:'TIME_FORMAT' }}
 					<br>By {{ lastUsabillaRun.user.username|default:'nightly script' }}</div>
 					
 				{% url 'metrics:admin_get_new_beeheard_responses' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch the latest BeeHeard responses now' description='' %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch BeeHeard responses' description='' %}
 				<div class="f7 pl3 mb2"><strong>Last run:</strong>
 					<br>{{ lastBeeHeardRun.date|date:'M d, Y' }} - {{ lastBeeHeardRun.date|time:'TIME_FORMAT' }}
 					<br>By {{ lastBeeHeardRun.user.username|default:'nightly script' }}</div>
 	
+				{% url 'metrics:admin_import_log' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Response import log' totalNum=lastUsabillaRun.date|date:'M d, Y' description='Import history, latest run:' %}
+				
 			</div>
 			
 			
@@ -151,8 +154,8 @@
 	
 				<div class="mb2 dib"><a class="animate link underline-hover flex items-center" href="/djangoadmin/request/request/overview/" target="_blank"><span>Site analytics</span><span class="relative ml1">{{ templateHelpers.html.icons.newWindow|safe }}</span></a></div>
 				
-				{% url 'metrics:admin_usabilla_import_log' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Usabilla/BeeHeard import log' totalNum=lastUsabillaRun.date|date:'M d, Y' description='Import history, latest run:' %}
+				{% url 'metrics:admin_import_log' as url %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Response import log' totalNum=lastUsabillaRun.date|date:'M d, Y' description='Import history, latest run:' %}
 	
 				{% url 'metrics:admin_online_users' as url %}
 				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Users currently online' description='' %}

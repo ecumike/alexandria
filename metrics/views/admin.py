@@ -225,8 +225,8 @@ def admin_home(request):
 			'userRoles': estimateCount('UserRole'),
 			'users': estimateCount('User', app='auth'),
 		},
-		'lastUsabillaRun': UsabillaImportLog.objects.filter(user__username='usabilla_import_script').order_by('-date').only('date', 'user').first(),
-		'lastBeeHeardRun': UsabillaImportLog.objects.filter(user__username='beeheard_import_script').order_by('-date').only('date', 'user').first(),
+		'lastUsabillaRun': ImportLog.objects.filter(import_type='usabilla').order_by('-date').only('date', 'user').first(),
+		'lastBeeHeardRun': ImportLog.objects.filter(import_type='beeheard').order_by('-date').only('date', 'user').first(),
 		'dataAudits': {
 			'archivedArtifacts': Artifact.objects.filter(archived=True).count(),
 			'artifactSearches': ArtifactSearch.objects.all().values('search_text', 'search_count')[:10],
@@ -355,10 +355,10 @@ def admin_domain_delete(request):
 ##
 @user_passes_test(accessHelpers.isAnyProjectAdmin_decorator)
 def admin_project_list(request):
-	projects = Project.projectsCanAdmin(request.user).order_by(Lower('name')).prefetch_related(
+	projects = Project.projectsCanAdmin(request.user).order_by(Lower('name')).select_related('created_by','domain').prefetch_related(
 			'campaign_project', 'admins__profile'
 		).annotate(
-			numResponses=Count('campaign_project__response_campaign'),
+			voteResponseCount=Count('campaign_project__response_campaign'),
 			domainName=F('domain__name'),
 			createdbyUsername=F('created_by__username'),
 		)
@@ -510,9 +510,9 @@ def admin_project_delete(request):
 ##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def admin_campaign_list(request):
-	campaigns = Campaign.objects.order_by('key').annotate(numResponses=Count('response_campaign')).annotate(projectName=F('project__name'), vendorApp=F('project__vendor_app'), domainName=F('project__domain__name')).annotate(
-			numOthers=Count('response_campaign', filter=(Q(response_campaign__primary_goal__name='Other') | Q(response_campaign__primary_goal__name='')))
-		)
+	campaigns = Campaign.objects.order_by('key').annotate(projectName=F('project__name'), vendorApp=F('project__vendor_app'), domainName=F('project__domain__name')).annotate(
+		numOthers=Count('response_campaign', filter=(Q(response_campaign__primary_goal__name='Other') | Q(response_campaign__primary_goal__name='')))
+	)
 	
 	context = {
 		'campaigns': campaigns
@@ -715,6 +715,8 @@ def admin_campaign_delete_all_responses(request):
 		campaign.feedback_response_campaign.all().delete()
 		campaign.other_response_campaign.all().delete()
 		campaign.latest_response_date = timezone.make_aware(datetime(2015, 1, 1))
+		campaign.latest_feedback_response_date = timezone.make_aware(datetime(2015, 1, 1))
+		campaign.latest_other_response_date = timezone.make_aware(datetime(2015, 1, 1))
 		campaign.save()
 		campaign.project.updateAllSnapshots()
 		campaign.project.storeLatestSnapshots()
@@ -1364,15 +1366,15 @@ def admin_get_new_beeheard_responses(request):
 
 
 ##
-##	/metrics/admin/usabillaimportlog/
+##	/metrics/admin/importlog/
 ##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_usabilla_import_log(request):
+def admin_import_log(request):
 	context = {
-		'runs': UsabillaImportLog.objects.prefetch_related('user', 'user__profile')[:200]
+		'runs': ImportLog.objects.prefetch_related('user', 'user__profile')[:200]
 	}
 	
-	return render(request, 'metrics/admin_usabilla_import_log.html', context)
+	return render(request, 'metrics/admin_import_log.html', context)
 	
 
 ##
@@ -1424,13 +1426,7 @@ def admin_inactive_users(request):
 ##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def admin_responses_export(request):
-	campaigns = Campaign.objects.filter(response_campaign__isnull=False).order_by('key').annotate(numResponses=Count('response_campaign')).select_related('project')
-	
-	try:
-		for c in campaigns:
-			c.numOthers = c.response_campaign.filter(Q(primary_goal__name='Other') | Q(primary_goal__name='')).count()
-	except Exception as ex:
-		pass
+	campaigns = Campaign.objects.filter(response_campaign__isnull=False).order_by('key').annotate(numOthers=Count('response_campaign', filter=(Q(response_campaign__primary_goal__name='Other') | Q(response_campaign__primary_goal__name='')))).select_related('project')
 	
 	context = {
 		'campaigns': campaigns

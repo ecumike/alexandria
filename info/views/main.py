@@ -32,7 +32,6 @@ def getBreadcrumbBase():
 ##
 ##	/info/
 ##
-##
 def home(request):
 	context = {
 		'researchItemsCount': Artifact.objects.count(),
@@ -43,7 +42,6 @@ def home(request):
 
 ##
 ##	/info/faqs/
-##
 ##
 def faqs_list(request):
 	# Put Glossary at the end/last.
@@ -63,7 +61,6 @@ def faqs_list(request):
 ##
 ##	/info/whatsnew/
 ##
-##
 def whatsnew_list(request):
 	whatsNews = WhatsNew.objects.all()
 		
@@ -77,7 +74,6 @@ def whatsnew_list(request):
 
 ##
 ##	/info/releasenotes/
-##
 ##
 def release_notes(request):
 	releaseNotes = ReleaseNote.objects.all()

@@ -33,28 +33,33 @@
 				<tr>
 					<th class="w5 tl">Key</th>
 					<th class="tl">UID</th>
+					<th class="tl">U. button ID</th>
 					<th class="w2 tl">Inactive</th>
-					<th class="w2 tl pl2">Vote resps</th>
-					<th class="w2 tl pl2">"Other"</th>
+					<th class="w2 tl pl2">Vote</th>
+					<th class="tl pl2">Last VotE</th>
+					<th class="w2 tl pl2">Fdbck</th>
+					<th class="tl pl2">Last Fdbk</th>
+					<th class="w2 tl pl2">Other</th>
+					<th class="w2 tl pl2">"Other" goal</th>
 					<th class="tl pl2">Project</th>
-					<th class="w3 tl pl2">Vndr</th>
-					<th class="w3 tl pl2">Domain</th>
-					<th class="tl pl2">Latest response</th>
 				</tr>
 			</thead>
 			
 			<tbody>
 				{% for campaign in campaigns %}
 					<tr tabindex="0" data-url="{% url 'metrics:admin_campaign_edit' id=campaign.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
-						<td class="w5 pv2 pl2 pr3 bo-word-break-all">{{ campaign.key|default:'' }}</td>
+						<td style="min-width:80px;" class="w5 pv2 pl2 pr3 bo-word-break-all">{{ campaign.key|default:'' }}</td>
 						<td class="pv2 pl2 pr3">{{ campaign.uid }}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.usabilla_button_id|default:'' }}</td>
 						<td class="w2 pv2 pl2 pr3 tc">{% if campaign.inactive %}<span class="red f6">❌</span>{% endif %}</td>
-						<td class="w2 pv2 pl2 pr3">{{ campaign.numResponses }}</td>
-						<td class="w2 pv2 pl2 pr3">{{ campaign.numOthers }}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.vote_response_count|default:'' }}</td>
+						<td class="pv2 pl2 pr3" data-order="{% if campaign.vote_response_count > 0 %}{{ campaign.latest_response_date|date:'U' }}{% endif %}">{% if campaign.vote_response_count > 0 %}{{ campaign.latest_response_date|default:'' }}{% endif %}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.feedback_response_count|default:'' }}</td>
+						<td class="pv2 pl2 pr3" data-order="{% if campaign.feedback_response_count > 0 %}{{ campaign.latest_feedback_response_date|date:'U' }}{% endif %}">{% if campaign.feedback_response_count > 0 %}{{ campaign.latest_feedback_response_date|default:'' }}{% endif %}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.other_response_count|default:'' }}</td>
+						<td class="w2 pv2 pl2 pr3">{{ campaign.numOthers|default:'' }}</td>
 						<td class="pv2 pl2 pr3">{{ campaign.projectName|default:'' }}</td>
-						<td class="w2 pv2 pl2 pr3 tc">{% if campaign.vendorApp == 'yes' %}✅{% elif campaign.vendorApp == 'no' %}<span class="red f6">❌</span>{% endif %}</td>
-						<td class="pv2 pl2 pr3">{{ campaign.domainName|default:'' }}</td>
-						<td class="pv2 pl2 pr3" data-order="{{ campaign.latest_response_date|date:'U' }}">{{ campaign.latest_response_date }}</td>
+						
 					</tr>
 				{% endfor %}
 			</tbody>

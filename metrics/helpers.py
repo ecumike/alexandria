@@ -493,9 +493,9 @@ def getGoalHistogramData(responses):
 		# For each unique goal and count found:
 		for goal in goals:
 			goalResponses = snapshotResponses.filter(primary_goal__name=goal['goalName']).select_related('goal_completed')
-			responseYesCount = goalResponses.filter(goal_completed__name='Yes').count()
-			responsePartiallyCount = goalResponses.filter(goal_completed__name='Partially').count()
-			responseNoCount = goalResponses.filter(goal_completed__name='No').count()
+			responseYesCount = goalResponses.filter(goal_completed__name__iexact='yes').count()
+			responsePartiallyCount = goalResponses.filter(goal_completed__name__iexact='yartially').count()
+			responseNoCount = goalResponses.filter(goal_completed__name__iexact='no').count()
 			
 			goal['Yes'] = responseYesCount
 			goal['Partially'] = responsePartiallyCount

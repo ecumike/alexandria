@@ -29,7 +29,7 @@ from research.helpers import sendEmail
 
 
 CAMPAIGNS_ID_NAME_MAP = {}
-
+BUTTONS_ID_CAMPAIGNS_ID_MAP = {}
 
 def cleanArray(arr):
 	"""
@@ -39,13 +39,23 @@ def cleanArray(arr):
 
 
 def setSinceDate(date = None):
-	# Get reponses since this date. In MILLISECONDS (datetime x 1000)
-	inception = datetime(2021, 1, 1)
+	# Get responses since this date. In MILLISECONDS (datetime x 1000)
+	inception = datetime(2010, 1, 1)
 	
 	if not date:
 		date = inception
 	
 	return int(date.timestamp() * 1000)
+
+
+def setBeeHeardCampaignSinceDate(date=None):
+	# Get responses since this date. In MILLISECONDS (datetime x 1000)
+	inception = datetime(2020, 1, 1)
+	
+	if not date:
+		date = inception
+	
+	return int(date.timestamp())
 
 
 def conectToUsabilla():
@@ -65,6 +75,12 @@ def conectToUsabilla():
 	#  the name and generate our 'key'
 	for campaign in campaignsArr:
 		CAMPAIGNS_ID_NAME_MAP[campaign['id']] = campaign['name']
+	
+	# Get list of campaigns and map their buttons ID to their name so we can use 
+	#  the name and generate our 'key'
+	for campaign in campaignsArr:
+		if campaign['buttonId']:
+			BUTTONS_ID_CAMPAIGNS_ID_MAP[campaign['buttonId']] = campaign['id']
 	
 	return apiClient
 
@@ -150,6 +166,8 @@ def getCampaign(key, uid):
 			'uid': uid,
 			'project': project,
 			'latest_response_date': timezone.make_aware(datetime(2016,1,1)),
+			'latest_feedback_response_date': timezone.make_aware(datetime(2016,1,1)),
+			'latest_other_response_date': timezone.make_aware(datetime(2016,1,1)),
 			'created_by': getImportScriptUser(),
 			'updated_by': getImportScriptUser(),
 		}
@@ -343,6 +361,7 @@ def getPrimaryGoalOther(r):
 		'Goal_text1',
 		'Goal_text_1',
 		'Goal_text_2',
+		'primary_goal_other',
 		'Other_goal',
 	]
 	return findAValue(r['data'], fieldnameArr)
@@ -627,6 +646,8 @@ def convertVoteResponseToData(r):
 	"""
 	try:
 		rd = r['data']
+		if not rd:
+			return
 	except:
 		return
 	
@@ -930,7 +951,8 @@ def importUsabillaFromApi(campaignsArr):
 	
 	projectsTouched = []
 	projectsTouchedData = {}
-	campaignsTouched = []
+	campaignUidsTouched = []
+	buttonIdsTouched = []
 	campaignsProcessed = []
 	campaignButtonsProcessed = []
 	processedCount = 0
@@ -945,43 +967,59 @@ def importUsabillaFromApi(campaignsArr):
 		# Get feedback responses.
 		if campaign['usabilla_button_id'] and campaign['usabilla_button_id'] not in campaignButtonsProcessed:
 			try:
-				sinceDate = setSinceDate(campaign['latest_response_date'])
-				#sinceDate = setSinceDate()
+				# Get the earliest latest response date.
+				sinceDate = setSinceDate(campaign['latest_feedback_response_date'])
 				apiClient.set_query_parameters({'since': sinceDate})
 				campaignResponses = apiClient.get_resource(apiClient.SCOPE_LIVE, apiClient.PRODUCT_WEBSITES, apiClient.RESOURCE_FEEDBACK, campaign['usabilla_button_id'], iterate=True)
 			
-				#if settings.DEBUG:
-				#	print(f">> Button id: {campaign['usabilla_button_id']}")
+				if settings.DEBUG:
+					print(f">> Button id: {campaign['usabilla_button_id']}, since date: {sinceDate}")
 				
-				for response in campaignResponses:
+				for cr in campaignResponses:
 					processedCount += 1
-					#if settings.DEBUG:
-					#	print(f'>> Processing # {processedCount}')
 					
-					# It's expecting object with some fields and survye data in 'data'
+					if settings.DEBUG:
+						print(f'>> Processing response #{processedCount}')
+					
+					if FeedbackResponse.objects.filter(uid=cr['id']).exists():
+						if settings.DEBUG:
+							print(f'>> Have it already')
+						continue
+					
+					# It's expecting object with some fields and survey data in 'data'
 					responseData = {
-						'id': response['id'],
-						'date': response['date'],
-						'campaignId': campaign['uid'],
-						'data': response,
+						'id': cr['id'],
+						'date': cr['date'],
+						'campaignId': BUTTONS_ID_CAMPAIGNS_ID_MAP[campaign['usabilla_button_id']],
+						'data': cr,
 					}
 					
 					# Insert record if there's data.
-					responseData = convertFeedbackResponseToData(responseData)
-					if responseData:
+					responseDataArgs = convertFeedbackResponseToData(responseData)
+					if responseDataArgs:
 						try:
-							FeedbackResponse.objects.create(**responseData)
+							savedResponse = FeedbackResponse.objects.create(**responseDataArgs)
 							insertedCount += 1
-							campaignsTouched.append(responseData['campaign'])
+							buttonIdsTouched.append(campaign['usabilla_button_id'])
+							
+							if not savedResponse.campaign.usabilla_button_id:
+								savedResponse.campaign.usabilla_button_id = campaign['usabilla_button_id']
+								savedResponse.campaign.save()
+							if settings.DEBUG:
+								print(f'Inserted feedback #{insertedCount}')
 						except Exception as ex:
-							#if settings.DEBUG:
-							#	print(f'{ex}')
+							if settings.DEBUG:
+								print(f">> Error: Button id: {campaign['usabilla_button_id']}, since date: {sinceDate}")
+								print(f'Error importing response: {ex}')
 							continue
 						
 			except Exception as ex:
+				if settings.DEBUG:
+					print(f'{ex}')
+					
 				newActivity = ActivityLog.objects.create(
 					user = getUsabillaImportScriptUser(),
-					comments = f"Error trying Usabilla feedback campaign: {campaign['uid']}, using date: {ex}"
+					comments = f"Error trying Usabilla feedback button: {campaign['usabilla_button_id']}: {ex}"
 				)
 					
 			campaignButtonsProcessed.append(campaign['usabilla_button_id'])
@@ -989,33 +1027,47 @@ def importUsabillaFromApi(campaignsArr):
 		# Get VOTE responses.	
 		if campaign['uid'] and campaign['uid'] not in campaignsProcessed:
 			try:
+				# Get the earliest latest response date.
 				sinceDate = setSinceDate(campaign['latest_response_date'])
 				apiClient.set_query_parameters({'since': sinceDate})
 				campaignResponses = apiClient.get_resource(apiClient.SCOPE_LIVE, apiClient.PRODUCT_WEBSITES, apiClient.RESOURCE_CAMPAIGN_RESULT, campaign['uid'], iterate=True)
 				
-				#print(f">> Campaign UID: {campaign['uid']} - Using date: {sinceDate}")
+				if settings.DEBUG:
+					print(f">> Intercept id: {campaign['uid']}, since date: {sinceDate}")
 				
 				# For each user response/feedback item, convert data and add to DB.
 				for cr in campaignResponses:
 					processedCount += 1
-					#print(f'>> Processing # {processedCount}')
+					
+					if settings.DEBUG:
+						print(f'>> Processing response #{processedCount}')
+					
+					if VoteResponse.objects.filter(uid=cr['id']).exists():
+						if settings.DEBUG:
+							print(f'>> Have it already')
+						continue
 					
 					# Insert record if there's data.
-					responseData = convertVoteResponseToData(cr)
-					if responseData:
-						# No need to check if we have response already (via uid), just fail silently,
-						#   because 99.99% it's new response and if we have if just continue to next one anyway.
+					# No need to check if we have response already (via uid), just fail silently,
+					#   because 99.99% it's new response and if we have if just continue to next one anyway.
+					responseDataArgs = convertVoteResponseToData(cr)
+					if responseDataArgs:
 						try:
-							VoteResponse.objects.create(**responseData)	
-							insertedCount += 1			
-						except:
+							savedResponse = VoteResponse.objects.create(**responseDataArgs)	
+							insertedCount += 1
+							campaignUidsTouched.append(campaign['uid'])
+							if settings.DEBUG:
+								print(f'Inserted vote #{insertedCount}')
+						except Exception as ex:
+							if settings.DEBUG:
+								print(f">> Intercept id: {campaign['uid']}, since date: {sinceDate}")
+								print(f'{ex}')
 							continue
 						
 						# Flag this campaign so we set the latest response date for it (usabilla ID + role)
-						campaignsTouched.append(responseData['campaign'])
-						project = responseData['campaign'].project
-						responseYearQuarter = (pd.Timestamp(responseData['date']).year,pd.Timestamp(responseData['date']).quarter)
-						responseYearMonth = (pd.Timestamp(responseData['date']).year,pd.Timestamp(responseData['date']).month)
+						project = savedResponse.campaign.project
+						responseYearQuarter = (pd.Timestamp(savedResponse.date).year,pd.Timestamp(savedResponse.date).quarter)
+						responseYearMonth = (pd.Timestamp(savedResponse.date).year,pd.Timestamp(savedResponse.date).month)
 					
 						if project:
 							# If it's not in the array already, add it.
@@ -1034,6 +1086,9 @@ def importUsabillaFromApi(campaignsArr):
 									projectsTouchedData[project.id]['months'].append(responseYearMonth)
 									
 			except Exception as ex:
+				if settings.DEBUG:
+					print(f'{ex}')
+				
 				newActivity = ActivityLog.objects.create(
 					user = getUsabillaImportScriptUser(),
 					comments = f"Error trying Usabilla vote campaign: {campaign['uid']}, using date: {ex}"
@@ -1041,18 +1096,18 @@ def importUsabillaFromApi(campaignsArr):
 				
 			campaignsProcessed.append(campaign['uid'])
 			
-	try:
-		newActivity = ActivityLog.objects.create(
-			user = getUsabillaImportScriptUser(),
-			comments = f'Import timer: Importing Usabilla responses: {round(time.time()-t0,1)}'
-		)
-	except Exception as ex:
-		print(f'Error: Import timer: Usabille VoteResponse importing logging ERROR: {str(ex)}')
+	newActivity = ActivityLog.objects.create(
+		user = getUsabillaImportScriptUser(),
+		comments = f'Import timer: Importing Usabilla responses: {round(time.time()-t0,1)}'
+	)
 		
 	if settings.DEBUG:
-		print(f'>> {campaignsTouched}')
+		print(f'>> {campaignUidsTouched}')
 		
-	setLatestResponseDate(campaignsTouched, getUsabillaImportScriptUser())
+	setLatestResponseDate(campaignUidsTouched, getUsabillaImportScriptUser())
+	setLatestButtonResponseDate(buttonIdsTouched, getUsabillaImportScriptUser())
+	
+	setCampaignsResponseCount()
 	
 	# We only need to update snapshots and baseline/targets for projects 
 	#  touched that got VOTE responses.
@@ -1160,7 +1215,7 @@ def createCsvFromData(campaigns=None, projects=None, startDate=None, endDate=Non
 #	return response
 
 	# Save CSV as local file.
-	filename = f'usabilla_data_to_csv_{int(timezone.now().timestamp())}.csv'
+	filename = f'responses_to_csv_{int(timezone.now().timestamp())}.csv'
 	
 	t0 = time.time()
 	with open(filename, mode='w', encoding='utf-8') as csvFile:
@@ -1182,20 +1237,18 @@ def fetchNewUsabillaResponses(user=None):
 	
 	campaignCountBefore = Campaign.objects.fromUsabilla().count()
 	
-	campaigns = list(Campaign.objects.allActive().fromUsabilla().exclude(uid__isnull=True).values('uid', 'usabilla_button_id').order_by('uid').distinct())
+	# Get list of active usabilla campaigns.
+	campaigns = Campaign.objects.fromUsabilla().only('uid', 'usabilla_button_id', 'latest_response_date', 'latest_feedback_response_date', 'latest_other_response_date').order_by('uid')
 	
+	# Build smal array of campaign data to use for imports.
 	campaignDataArr = []
 	for campaign in campaigns:
-		try:
-			latestOne = Campaign.objects.filter(uid=campaign['uid']).order_by('-latest_response_date').first()
-			latestDate = latestOne.latest_response_date
-		except Exception as ex:
-			latestDate = ''
-		
 		campaignDataArr.append({
-			'uid': campaign['uid'],
-			'usabilla_button_id': campaign['usabilla_button_id'],
-			'latest_response_date': latestDate,
+			'uid': campaign.uid,
+			'usabilla_button_id': campaign.usabilla_button_id,
+			'latest_response_date': campaign.latest_response_date,
+			'latest_feedback_response_date': campaign.latest_feedback_response_date,
+			'latest_other_response_date': campaign.latest_other_response_date,
 		})
 	
 	try:
@@ -1205,9 +1258,12 @@ def fetchNewUsabillaResponses(user=None):
 		)
 	except Exception as ex:
 		print(f'Error: Import timer: Usabilla campaign list count logging ERROR: {str(ex)}')
-		
+	
 	importStats = importUsabillaFromApi(campaignDataArr)
 	
+	if settings.DEBUG:
+		print(f'{importStats}')
+		
 	runTime = round(time.time()-t0,1)
 	
 	if not user:
@@ -1218,13 +1274,14 @@ def fetchNewUsabillaResponses(user=None):
 		'responses_imported_count': importStats['insertedCount'],
 		'projects_affected_count': importStats['projectsTouchedCount'], 
 		'run_time_seconds': runTime,
+		'import_type': 'usabilla',
 		'user': user
 	}
-	logEntry = UsabillaImportLog.objects.create(**logData)
+	logEntry = ImportLog.objects.create(**logData)
 	
 	newCampaignsCount = Campaign.objects.fromUsabilla().count() - campaignCountBefore
 	if newCampaignsCount > 0:
-		newCampaigns = Campaign.objects.fromUsabilla().all().order_by('-created_at')[:newCampaignsCount]
+		newCampaigns = Campaign.objects.allActive().fromUsabilla().order_by('-created_at')[:newCampaignsCount]
 		campaignList = '<br>- '.join(map(str, (list(newCampaigns.values_list('key', flat=True)))))
 		admins = list(Group.objects.get(name='admins').user_set.all().values_list('username', flat=True))
 		
@@ -1449,16 +1506,19 @@ def importBeeHeardFromApi(campaignsArr):
 	projectsTouched = []
 	voteProjectsTouched = []
 	voteProjectsTouchedData = {}
-	campaignsTouched = []
+	campaignIdsTouched = []
 	processedCount = 0
 	insertedCount = 0
 	t0 = time.time()
 	
+	if settings.DEBUG:
+		print(f'>> {campaignsArr}')
+	
+	# We don't skip duplicate instances of UIDs because each one has a different date, 
+	#  And it's a fast skip anyway when we already have a response.
 	for campaign in campaignsArr:
 		try:
-			# Usabilla uses milliseconds and this function x 1000 the #, so div by 1000 
-			# to get back to proper unix time in seconds.
-			sinceDate = int(setSinceDate(campaign['latest_response_date'])/1000)
+			sinceDate = setBeeHeardCampaignSinceDate(campaign['latest_response_date'])
 			
 			campaignResponses = requests.get(f"https://REPLACE_ME/survey/api/responses/?campaign={campaign['uid']}&since={sinceDate}", timeout=4).json()['responses']
 			i
@@ -1466,30 +1526,49 @@ def importBeeHeardFromApi(campaignsArr):
 			
 			# For each user response/feedback item, convert data and add to DB.
 			for response in campaignResponses:
-				#print(f'>> Processing # {processedCount}')
-				
-				# Process and insert response based on the type of respose it is. 3 types.
-				# No need to check if we have data or already have the response (via uid)
-				# Just fail silently, because 99.99% of the time it's a new response and 
-				#   if we have it or there's no data, just continue to next response anyway.
-				responseType = response.get('surveyType', None)				
-				try:
-					if responseType == 'vote':
-						responseData = convertVoteResponseToData(response)
-						VoteResponse.objects.create(**responseData)
-					elif responseType == 'feedback':
-						responseData = convertFeedbackResponseToData(response)
-						FeedbackResponse.objects.create(**responseData)
-					else:
-						responseData = convertOtherResponseToData(response)
-						OtherResponse.objects.create(**responseData)
-					insertedCount += 1
-				except:
-					continue
-				
 				processedCount += 1
 				
-				campaignsTouched.append(responseData['campaign'])
+				if settings.DEBUG:
+					print(f'>> Processing response #{processedCount}')
+				
+				# Process and insert response based on the type of respose it is. 3 types.
+				responseType = response.get('surveyType', None)
+				try:
+					if responseType == 'vote':
+						if VoteResponse.objects.filter(uid=response['id']).exists():
+							if settings.DEBUG:
+								print(f'>> Have it already')
+							continue
+						responseData = convertVoteResponseToData(response)
+						savedResponse = VoteResponse.objects.create(**responseData)
+					elif responseType == 'feedback':
+						if FeedbackResponse.objects.filter(uid=response['id']).exists():
+							if settings.DEBUG:
+								print(f'>> Have it already')
+							continue
+						responseData = convertFeedbackResponseToData(response)
+						savedResponse = FeedbackResponse.objects.create(**responseData)
+					else:
+						if OtherResponse.objects.filter(uid=response['id']).exists():
+							if settings.DEBUG:
+								print(f'>> Have it already')
+							continue
+						responseData = convertOtherResponseToData(response)
+						savedResponse = OtherResponse.objects.create(**responseData)
+						
+				except Exception as ex:
+					if settings.DEBUG:
+						print(f'{ex}')
+					continue
+				
+				# If we made it here, we inserted one of the three types of responses.
+				insertedCount += 1
+				
+				if settings.DEBUG:
+					print(f'Inserted feedback #{insertedCount}')
+				
+				# Store the actual DB ID to make it easy.
+				campaignIdsTouched.append(savedResponse.campaign.id)
 				
 				project = responseData['campaign'].project
 				if project and project.id not in projectsTouched:
@@ -1519,6 +1598,9 @@ def importBeeHeardFromApi(campaignsArr):
 								voteProjectsTouchedData[project.id]['months'].append(responseYearMonth)
 								
 		except Exception as ex:
+			if settings.DEBUG:
+				print(f'{ex}')
+				
 			newActivity = ActivityLog.objects.create(
 				user = getUsabillaImportScriptUser(),
 				comments = f"Error trying BeeHeard campaign: {campaign['uid']}, using date: {ex}"
@@ -1532,7 +1614,8 @@ def importBeeHeardFromApi(campaignsArr):
 	except Exception as ex:
 		print(f'Error: Import timer: VoteResponse importing logging ERROR: {str(ex)}')
 	
-	setLatestResponseDate(campaignsTouched, getBeeHeardImportScriptUser())
+	setLatestBeeHeardResponseDate(campaignIdsTouched, getBeeHeardImportScriptUser())
+	setCampaignsResponseCount()
 	
 	# We only need to update snapshots and baseline/targets for projects 
 	#  touched that got VOTE responses.
@@ -1563,7 +1646,7 @@ def fetchNewBeeHeardResponses(user=None):
 	
 	campaignCountBefore = Campaign.objects.fromBeeHeard().count()
 	
-	uniqueIds = list(Campaign.objects.allActive().fromBeeHeard().exclude(uid__isnull=True).values_list('uid', flat=True).order_by('uid').distinct())
+	uniqueIds = list(Campaign.objects.allActive().fromBeeHeard().values_list('uid', flat=True).order_by('uid').distinct())
 	
 	try:
 		beeHeardCampaigns = requests.get('https://REPLACE_ME/survey/api/campaigns/', timeout=4).json()['campaigns']
@@ -1598,9 +1681,10 @@ def fetchNewBeeHeardResponses(user=None):
 		'responses_imported_count': importStats['insertedCount'],
 		'projects_affected_count': importStats['projectsTouchedCount'], 
 		'run_time_seconds': runTime,
+		'import_type': 'beeheard',
 		'user': user
 	}
-	logEntry = UsabillaImportLog.objects.create(**logData)
+	logEntry = ImportLog.objects.create(**logData)
 	
 	newCampaignsCount = Campaign.objects.fromBeeHeard().count() - campaignCountBefore
 	if newCampaignsCount > 0:
@@ -1618,40 +1702,114 @@ def fetchNewBeeHeardResponses(user=None):
 		print('>> BeeHeard import done.')
 	
 
-def setLatestResponseDate(campaignsTouched, user):
+def setLatestResponseDate(campaignUidsTouched, user):
 	# Loop thru unique campaigns touched and set the latest response date.
 	t0 = time.time()
-	latestDate = timezone.make_aware(datetime(2016,1,1))
 	
-	for campaign in list(set(campaignsTouched)):
-		try:
-			if campaign.response_campaign.order_by('-date').values('date').first()['date'] > latestDate:
-				latestDate = campaign.response_campaign.order_by('-date').values('date').first()['date']
-		except:
-			pass
+	uniqueUids = list(set(campaignUidsTouched))
+	
+	for uid in uniqueUids:
+		if not uid:
+			continue
+			
+		# Get all campaigns that have this UID and set the date on ACTIVE ones.
+		campaigns = Campaign.objects.filter(uid=uid).prefetch_related('response_campaign', 'feedback_response_campaign', 'other_response_campaign')
 		
-		try:
-			if campaign.feedback_response_campaign.order_by('-date').values('date').first()['date'] > latestDate:
-				latestDate = campaign.feedback_response_campaign.order_by('-date').values('date').first()['date']
-		except:
-			pass
+		if Response.objects.filter(campaign__in=campaigns).exists():
+			latestDate = Response.objects.filter(campaign__in=campaigns).order_by('-date').values('date')[0]['date']
+			campaigns.allActive().update(latest_response_date=latestDate)
+
+		if FeedbackResponse.objects.filter(campaign__in=campaigns).exists():
+			latestDate = FeedbackResponse.objects.filter(campaign__in=campaigns).order_by('-date').values('date')[0]['date']
+			campaigns.allActive().update(latest_feedback_response_date=latestDate)
 		
-		try:
-			if campaign.other_response_campaign.order_by('-date').values('date').first()['date'] > latestDate:
-				latestDate = campaign.other_response_campaign.order_by('-date').values('date').first()['date']
-		except:
-			pass
+		if OtherResponse.objects.filter(campaign__in=campaigns).exists():
+			latestDate = OtherResponse.objects.filter(campaign__in=campaigns).order_by('-date').values('date')[0]['date']
+			campaigns.allActive().update(latest_other_response_date=latestDate)
+			
+	try:
+		newActivity = ActivityLog.objects.create(
+			user = user,
+			comments = f'Import timer: Set campaign latest date for {len(uniqueUids)} UIDs: {round(time.time()-t0,1)}s'
+		)
+	except Exception as ex:
+		print(f'Error: Import timer: Campaign latest date logging ERROR: {str(ex)}')
 		
-		campaign.latest_response_date = latestDate
-		campaign.save()
+
+def setLatestButtonResponseDate(buttonIdsTouched, user):
+	# Loop thru unique campaigns touched and set the latest response date.
+	t0 = time.time()
+	
+	uniqueButtonIds = list(set(buttonIdsTouched))
+	
+	for usabilla_button_id in uniqueButtonIds:
+		if not usabilla_button_id:
+			continue
+		
+		# Get all campaigns that have this UID and set the date on ACTIVE ones.
+		campaigns = Campaign.objects.filter(usabilla_button_id=usabilla_button_id).prefetch_related('feedback_response_campaign')
+
+		if FeedbackResponse.objects.filter(campaign__in=campaigns).exists():
+			latestDate = FeedbackResponse.objects.filter(campaign__in=campaigns).order_by('-date').values('date')[0]['date']
+			campaigns.allActive().update(latest_feedback_response_date=latestDate)
 		
 	try:
 		newActivity = ActivityLog.objects.create(
 			user = user,
-			comments = f'Import timer: Set campaign latest date ({len(list(set(campaignsTouched)))}): {round(time.time()-t0,1)}s'
+			comments = f'Import timer: Set campaign latest date for {len(uniqueButtonIds)} button IDs: {round(time.time()-t0,1)}s'
 		)
 	except Exception as ex:
 		print(f'Error: Import timer: Campaign latest date logging ERROR: {str(ex)}')
+
+
+def setLatestBeeHeardResponseDate(campaignIdsTouched, user):
+	# Loop thru unique campaigns touched and set the latest response date.
+	t0 = time.time()
+	
+	for campaignId in campaignIdsTouched:
+		# Each BeeHeard campaign can only have 1 type of response because each is unique,
+		#   so we use only the latest_response_date field for them.
+		# Just concat counts from each of the three because we don't know what type of 
+		#   responses the campaign has.
+		noDateDate = timezone.make_aware(datetime(2020,1,1))
+		latestDate = noDateDate
+		
+		try:
+			lastRespDate = Response.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
+			if lastRespDate > latestDate:
+				latestDate = lastRespDate 
+		except Exception as ex:
+			pass
+		
+		try:
+			lastRespDate = FeedbackResponse.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
+			if lastRespDate > latestDate:
+				latestDate = lastRespDate 
+		except Exception as ex:
+			pass
+		
+		try:
+			lastRespDate = OtherResponse.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
+			if lastRespDate > latestDate:
+				latestDate = lastRespDate 
+		except Exception as ex:
+			pass
+		
+		if latestDate != noDateDate:
+			Campaign.objects.filter(id=campaignId).update(latest_response_date=latestDate)
+		
+	try:
+		newActivity = ActivityLog.objects.create(
+			user = user,
+			comments = f'Import timer: Set campaign latest date for {len(campaignIdsTouched)} UIDs: {round(time.time()-t0,1)}s'
+		)
+	except Exception as ex:
+		print(f'Error: Import timer: Campaign latest date logging ERROR: {str(ex)}')
+		
+
+def setCampaignsResponseCount():
+	for campaign in Campaign.objects.all():
+		campaign.storeResponseCount()
 		
 
 def updateProjectSnapshots(projectsTouched, projectsTouchedData):

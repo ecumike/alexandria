@@ -23,14 +23,12 @@ from login_required_middleware import login_exempt
 ##
 ##	/research/api/artifacts/search/ <getparams>
 ##
-##	Used
-##
 def api_artifacts_search(request):
-	"""
+	'''
 	Used on home page "load more" button at bottom.
 	Gets 40 more artifacts, with offset/pagination, and returns the HTML
 	to inject at the bottom of the page.
-	"""
+	'''
 	searchResults = Artifact.getArtifacts(request)
 	
 	page = request.GET.get('page')
@@ -65,12 +63,10 @@ def api_artifacts_search(request):
 ##
 ##	/research/api/artifacts/?q=<search string>
 ##
-##
 def api_artifacts_typeahead(request):
-	"""
+	'''
 	Takes a given string and returns top 6 search results for it.
-	"""
-	
+	'''
 	textString = request.GET.get('q', '')
 	
 	urlList = []
@@ -94,14 +90,14 @@ def api_users(request):
 
 
 ##
-##
 ##	/research/api/users/add/<POST DATA>
-##
-##	Creates a user with the passed email and name. Basic.
-##	Returns the user object ID and user's name (for optional display).
 ##
 @login_required
 def api_users_add(request):
+	'''
+	Creates a user with the passed email and name. Basic.
+	Returns the user object ID and user's name (for optional display).
+	'''
 	email = request.POST.get('email')
 	httpCode = 404
 	
@@ -130,12 +126,12 @@ def api_users_add(request):
 ##
 ##	/research/api/userimage/ <POST DATA>
 ##
-##	Updates existing user, uses request.user for validation
-##	Called from profile edit page.
-##
-##
 @login_required
 def api_save_user_image(request):
+	'''
+	Updates existing user, uses request.user for validation
+	Called from profile edit page.
+	'''
 	try:
 		user = User.objects.get(username=request.POST.get('email').lower())
 		
@@ -162,10 +158,11 @@ def api_save_user_image(request):
 ##
 ##	/research/api/adminaccess/<POST>
 ##
-##	Add/remove a user from the admin group.
-##
 @user_passes_test(hasAdminAccess_decorator)
 def api_adminaccess(request):
+	'''
+	Add/remove a user from the admin group.
+	'''
 	email = request.POST.get('email')
 	action = request.POST.get('action')
 	adminGroup, created = Group.objects.get_or_create(name='admins')
@@ -214,9 +211,10 @@ def api_adminaccess(request):
 ##
 ##	/research/api/tag/? id=## or name=abc
 ##
-##	Find tag by name, return the ID. Used to dynamically select tags on "add research" entry template.
-##
 def api_get_tag(request):
+	'''
+	Find tag by name, return the ID. Used to dynamically select tags on "add research" entry template.
+	'''
 	responseData = {}
 	tagName = request.GET.get('name', '')
 	tagId = request.GET.get('id', '')
@@ -237,11 +235,10 @@ def api_get_tag(request):
 ##
 ##	/research/api/users/togglestate/<id>/ POST: inactive='y|n'
 ##
-##
 def api_users_toggle_state(request, id):
-	"""
+	'''
 	Takes a given user and sets their state to inactive or not, based on posted data.
-	"""
+	'''
 	user = get_object_or_404(User, id=id)
 	setInactive = request.GET.get('inactive', '')
 	
@@ -260,11 +257,10 @@ def api_users_toggle_state(request, id):
 ##
 ##	/research/api/pv/
 ##
-##
 def api_page_view_tracker(request):
-	"""
+	'''
 	Increment the hit count to the URL for the user, or creates it as 1.
-	"""
+	'''
 	try:
 		try:
 			page = request.POST['page']
@@ -287,11 +283,10 @@ def api_page_view_tracker(request):
 ##
 ##	/research/api/brokenlink/
 ##
-##
 def api_report_broken_link(request):
-	"""
+	'''
 	Used next to links for users to report them as broken.
-	"""
+	'''
 	try:
 		artifact = Artifact.objects.get(id=request.POST.get('artifact'))
 		linkUrl = request.POST.get('link_url', '')
@@ -313,9 +308,10 @@ def api_report_broken_link(request):
 ##
 ##	/research/api/file/upload/<POST DATA>
 ##
-##	Takes a file, uploads to COS, creates Attachment obj and returns it.
-##
 def api_upload_file(request):
+	'''
+	Takes a file, uploads to COS, creates Attachment obj and returns it.
+	'''
 	httpCode = 404
 	if request.method == 'POST':
 		attachment = Attachment.storeFile(request.user, request.FILES['file'])
@@ -341,9 +337,10 @@ def api_upload_file(request):
 ##
 ##	/research/api/file/delete/<POST DATA>
 ##
-##	Takes a file, deleted from COS and Attachment obj and returns it.
-##
 def api_delete_file(request):
+	'''
+	Takes a file, deleted from COS and Attachment obj and returns it.
+	'''
 	httpCode = 200
 	
 	responseData = {
@@ -368,9 +365,10 @@ def api_delete_file(request):
 ##
 ##	/research/api/file/relate/<POST DATA>
 ##
-##	Takes a file, deleted from COS and Attachment obj and returns it.
-##
 def api_relate_file(request):
+	'''
+	Takes an Attachment obj and related it to the research item.
+	'''
 	httpCode = 200
 	
 	if request.method == 'POST':

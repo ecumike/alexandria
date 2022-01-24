@@ -23,10 +23,11 @@ import metrics.helpers as helpers
 ##
 ##	/info/api/whatsnewforme
 ##
-##	Returns what's new items the user hasn't seen, up to 3, to populate
-##    to populate the toast and overlay
-##
 def api_whats_new_for_me(request):
+	'''
+	Returns what's new items the user hasn't seen, up to 3, to populate
+	to populate the toast and overlay
+	'''
 	try:
 		whatsNewCount = request.user.profile.whats_new_count
 	
@@ -53,9 +54,10 @@ def api_whats_new_for_me(request):
 ##
 ##	/info/api/whatsnewemail/
 ##
-##	Toggle user's flag if they want what's new in an email or not.
-##
 def api_whats_new_email_subscription(request):
+	'''
+	Toggle user's flag if they want what's new in an email or not.
+	'''
 	profile = request.user.profile
 	
 	if profile.whats_new_email:
@@ -77,9 +79,10 @@ def api_whats_new_email_subscription(request):
 ##
 ##	/info/api/whatsnewread/
 ##
-##	Set user's flag that they've read the latest updates.
-##
 def api_whats_new_read(request):
+	'''
+	Set user's flag that they've read the latest updates.
+	'''
 	request.user.profile.seenWhatsNew()
 	
 	responseData = {
@@ -94,10 +97,11 @@ def api_whats_new_read(request):
 ##
 ##	/info/api/whatsnewfeatured/
 ##
-##	Set user's flag that they've read the latest updates.
-##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def api_whats_new_featured(request):
+	'''
+	Set a whats new item as the featured item.
+	'''
 	id = request.POST.get('id', None)
 	whatsNewItem = get_object_or_404(WhatsNew, id=id)
 	
@@ -115,6 +119,3 @@ def api_whats_new_featured(request):
 		
 	return JsonResponse(responseData, status=200)
 	
-
-
-

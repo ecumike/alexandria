@@ -32,7 +32,7 @@
 					<th class="tl">Tool/service</th>
 					<th class="tl">Domain</th>
 					<th class="tl w2 mw2">Cmps</th>
-					<th class="tl w2 mw2">Resps</th>
+					<th class="tl w2 mw2">Vote Rsps</th>
 					<th class="tl w3 mw2">Prty</th>
 					<th class="tl w2 mw3">UX asgnd</th>
 					<th class="tl w2 mw3">Vndr</th>
@@ -49,8 +49,8 @@
 						<td class="">{{ project.name }}</td>
 						<td class=" pl2">{{ project.domainName|default:'' }}</td>
 						<td class=" tr">{{ project.campaign_project.count }}</td>
-						<td class=" tr">{{ project.numResponses|intcomma }}</td>
-						<td class=" tc">{{ project.priority }}</td>
+						<td class=" tr">{{ project.voteResponseCount|intcomma }}</td>
+						<td class=" tc">{{ project.priority|default:'' }}</td>
 						<td class=" tc w3 mw3">{% if project.designer_assigned == 'yes' %}✅{% elif project.designer_assigned == 'no' %}<span class="red f6">❌</span>{% endif %}</td>
 						<td class=" tc">{% if project.vendor_app == 'yes' %}✅{% elif project.vendor_app == 'no' %}<span class="red g6">❌</span>{% endif %}</td>
 						<td class="w2 mw3 red tc f6">{% if project.inactive %}❌{% endif %}</td>

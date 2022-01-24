@@ -24,6 +24,7 @@
 		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0, "desc"]]'>
 			<thead>
 				<th class="{{ templateHelpers.classes.tableListCell }}">Date</th>
+				<th class="{{ templateHelpers.classes.tableListCell }}">Type</th>
 				<th class="{{ templateHelpers.classes.tableListCell }}">Responses</th>
 				<th class="{{ templateHelpers.classes.tableListCell }}">Projects</th>
 				<th class="{{ templateHelpers.classes.tableListCell }}">Run time (sec)</th>
@@ -34,6 +35,7 @@
 				{% for run in runs %}
 					<tr>
 						<td data-order="{{ run.date|date:'U' }}" class="{{ templateHelpers.classes.tableListCell }}">{{ run.date }}</td>
+						<td class="">{{ run.import_type }}</td>
 						<td class="">{{ run.responses_imported_count }}</td>
 						<td class="">{{ run.projects_affected_count }}</td>
 						<td class="">{{ run.run_time_seconds }}</td>

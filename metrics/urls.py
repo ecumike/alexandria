@@ -18,13 +18,18 @@ urlpatterns = [
 	# APIs.
 	url(r'^api/activeusabillacampaigns/$', api_active_usabilla_campaigns, name='api_active_usabilla_campaigns'),
 	url(r'^api/projects/links/$', api_projects_links, name='api_projects_links'),
-	url(r'^api/projects/responses/feedback/export/csv/$', api_project_feedback_responses_to_csv, name='api_project_feedback_responses_to_csv'),
-	url(r'^api/projects/responses/vote/export/csv/$', api_project_vote_responses_to_csv, name='api_project_vote_responses_to_csv'),
 	url(r'^api/projects/voteresponses/download/$', api_projects_vote_responses, name='api_projects_vote_responses'),
+	url(r'^api/survey/submit/rawdata/$', api_survey_submit_raw_data, name='api_survey_submit_raw_data'),
+	
+	# Admin only APIs:
+	url(r'^api/deleteprojectresponses/$', api_delete_project_responses, name='api_delete_project_responses'),
+	url(r'^api/deleteresponse/$', api_delete_response, name='api_delete_response'),
+	url(r'^api/recalculatesnapshot/$', api_recalculate_snapshot, name='api_recalculate_snapshot'),
 	url(r'^api/setresponsesgoal/$', api_set_responses_goal, name='api_set_responses_goal'),
-		
+			
 	
 	# API Crons: run daily or weekly.
+	url(r'^api/addbeeheardcampaign/$', api_add_beeheard_campaign, name='api_add_beeheard_campaign'),
 	url(r'^api/deactivateoldcampaigns/$', api_deactivate_old_campaigns, name='api_deactivate_old_campaigns'),
 	url(r'^api/getnewbeeheardresponses/$', api_get_new_beeheard_responses, name='api_get_new_beeheard_responses'),
 	url(r'^api/getnewusabillaresponses/$', api_get_new_usabilla_responses, name='api_get_new_usabilla_responses'),
@@ -33,7 +38,6 @@ urlpatterns = [
 	url(r'^api/removeoldemails/$', api_remove_old_emails, name='api_remove_old_emails'),
 	url(r'^api/scheduledalerts/$', api_do_scheduled_alerts, name='api_do_scheduled_alerts'),
 	url(r'^api/setuxspecialistassigned/$', api_set_ux_specialist_assigned, name='api_set_ux_specialist_assigned'),
-	
 
 	# Redirects.
 	url(r'^domains/$', tiles_table_router, name='domains_home'),
@@ -42,19 +46,24 @@ urlpatterns = [
 	url(r'^tilestableview/$', tiles_table_router, name='tiles_table_router'),
 	url(r'^projectdetail/$', redirect_project_detail),
 	url(r'^responsescomments/$', redirect_project_comments, name='redirect_project_comments'),
-	
+	url(r'^projects/responses/$', redirect_project_comments, name='redirect_project_comments'),
 	
 	## Pages
 	url(r'^$', metrics_home, name='home'),
 	url(r'^projects/$', projects_home, name='projects_home'),
 	url(r'^projects/detail/$', projects_detail, name='projects_detail'),
-	url(r'^projects/responses/$', projects_vote_responses, name='projects_vote_responses'),
 	url(r'^projects/responses/vote/$', projects_vote_responses, name='projects_vote_responses'),
 	url(r'^projects/responses/feedback/$', projects_feedback_responses, name='projects_feedback_responses'),
+	url(r'^projects/responses/feedback/detail/(?P<uid>[\w-]+)/$', projects_feedback_responses_detail, name='projects_feedback_responses_detail'),
+	url(r'^projects/responses/feedback/csvdump/$', project_feedback_responses_csv_dump, name='project_feedback_responses_csv_dump'),
+	url(r'^projects/responses/vote/csvdump/$', project_vote_responses_csv_dump, name='project_vote_responses_csv_dump'),
+	url(r'^projects/responses/vote/timeperiodcsvdump/$', project_vote_responses_timeperiod_csv_dump, name='project_vote_responses_timeperiod_csv_dump'),
 	url(r'^alerts/$', alerts, name='alerts'),
 	url(r'^responsecounts/$', response_counts, name='response_counts'),
 	url(r'^tasks/$', tasks_home, name='tasks_home'),
 	url(r'^tasks/detail/(?P<id>[\w-]+)/$', tasks_detail, name='tasks_detail'),
+	
+	
 	
 	
 	## Admin pages:
@@ -64,7 +73,7 @@ urlpatterns = [
 	url(r'^admin/emailallresponsesascsv/$', admin_email_all_responses_as_csv, name='admin_email_all_responses_as_csv'),
 	url(r'^admin/getnewbeeheardresponses/$', admin_get_new_beeheard_responses, name='admin_get_new_beeheard_responses'),
 	url(r'^admin/getnewusabillaresponses/$', admin_get_new_usabilla_responses, name='admin_get_new_usabilla_responses'),
-	url(r'^admin/usabillaimportlog/$', admin_usabilla_import_log, name='admin_usabilla_import_log'),
+	url(r'^admin/importlog/$', admin_import_log, name='admin_import_log'),
 	url(r'^admin/pageviews/$', admin_page_views, name='admin_page_views'),
 	url(r'^admin/pageviews/download/$', admin_page_views_download, name='admin_page_views_download'),
 	

@@ -28,9 +28,10 @@ from metrics.helpers import runInBackground
 
 ##	/research/<ID>/
 ##
-##	Redirect from old detail URL to new one. If invalid, sent to home page.
-##
 def redirect_artifacts_detail(request, id):
+	'''
+	Redirect from old detail URL to new one. If invalid, sent to home page.
+	'''
 	if id.isdigit():
 		url = reverse('research:artifacts_detail', kwargs={'id':id})
 	else:
@@ -38,13 +39,8 @@ def redirect_artifacts_detail(request, id):
 	return redirect(url)
 
 ############################################################
-
-
 ##
 ##	/research/
-##
-##	Research home page.
-##
 ##
 def home(request):
 	searchResults = Artifact.getArtifacts(request)
@@ -111,8 +107,6 @@ def home(request):
 ##
 ##	/research/<id>/detail/
 ##
-##	Research Artifact detail page.
-##
 def artifacts_detail(request, id):
 	try:
 		artifact = Artifact.objects.filter(id=id).select_related('owner__profile', 'source', 'status').prefetch_related('tags', 'methods', 'related_artifacts', 'projects')[0]
@@ -150,12 +144,11 @@ def artifacts_detail(request, id):
 ##
 ##	/myresearch/
 ##
-##	Personalized page of research user has created.
-##
-##
 @login_required
 def myresearch(request):
-
+	'''
+	Personalized page of research user has created.
+	'''
 	breadcrumbs = [
 		{ 
 			'text': 'Research',
@@ -177,11 +170,12 @@ def myresearch(request):
 ##
 ##	/research/add/
 ##
-##	Add a new Artifact - Public (signed in user) way to do it.
-##	Admins can use admin center page.
-##
 @login_required
 def artifacts_add(request):
+	'''
+	Add a new Artifact - Public (signed in user) way to do it.
+	Admins can use admin center page.
+	'''
 	breadcrumbs = [
 		{ 
 			'text': 'Research',
@@ -259,10 +253,11 @@ def artifacts_add(request):
 ##
 ##	/research/edit/<id>/
 ##
-##	Edit an Artifact.
-##
 @login_required
 def artifacts_edit(request, id):
+	'''
+	Edit an Artifact.
+	'''
 	artifact = get_object_or_404(Artifact, id=id)
 	
 	if not hasEditorAccess(request.user, artifact):
@@ -343,10 +338,11 @@ def artifacts_edit(request, id):
 ##
 ##	/research/<id>/archive/
 ##
-##	Archive an Artifact.
-##
 @login_required
 def artifacts_archive(request, id):
+	'''
+	Archive an Artifact.
+	'''
 	artifact = get_object_or_404(Artifact, id=id)
 	
 	if not hasEditorAccess(request.user, artifact):
@@ -393,10 +389,11 @@ def artifacts_archive(request, id):
 ##
 ##	/research/<id>/unarchive/
 ##
-##	Unarchive an Artifact.
-##
 @login_required
 def artifacts_unarchive(request, id):
+	'''
+	Unarchive an Artifact.
+	'''
 	artifact = get_object_or_404(Artifact, id=id)
 	
 	if not hasEditorAccess(request.user, artifact):
@@ -443,10 +440,11 @@ def artifacts_unarchive(request, id):
 ##
 ##	/research/<id>/delete/
 ##
-##	Delete an Artifact.
-##
 @user_passes_test(hasAdminAccess_decorator)
 def artifacts_delete(request, id):
+	'''
+	Delete an Artifact.
+	'''
 	artifact = get_object_or_404(Artifact, id=id)
 	
 	breadcrumbs = [
@@ -485,6 +483,35 @@ def artifacts_delete(request, id):
 	return response
 
 
+##
+##	/research/file/<file>
+##
+def get_file(request):
+	'''
+	Gets the requested file from COS and echos it back
+	'''
+	attachment = get_object_or_404(Attachment, name=request.GET.get('filename', None))
+	
+	file = attachment.getFile()
+	
+	if file:
+		fileHeaders = file['ResponseMetadata']['HTTPHeaders']
+		response = HttpResponse(file['Body'].read())
+		response['content-length'] = fileHeaders['content-length']
+		
+		if attachment.name.endswith('.xlsx'):
+			response['content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			response['content-disposition'] = 'filename="{}"'.format(attachment.getFileName())
+		elif attachment.name.endswith('.pptx'):
+			response['content-type'] = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+			response['content-disposition'] = 'filename="{}"'.format(attachment.getFileName())
+		else:
+			response['content-type'] = fileHeaders['content-type']	
+	else:
+		response = render(request, '404.html', {}, status=404)
+	
+	return response
+
 
 ########################################################
 ########################################################
@@ -497,10 +524,14 @@ def artifacts_delete(request, id):
 ##
 ##	/research/signin/
 ##
-##	Sign in page
-##
-##
 def signin(request):
+	'''
+	Sign in page
+	'''
+	response = render(request, 'signin.html', {
+		'form': AuthenticationForm,
+	})
+	
 	## If user is already signed in they don't need to be here, so redirect them to home page.
 	if request.user.is_authenticated:
 		response = redirect(request.GET.get('next', reverse('research:home')))
@@ -550,10 +581,10 @@ def signin(request):
 ##
 ##	/research/signout/
 ##
-##	Signs the user out.
-##
-##
 def signout(request):
+	'''
+	Signs the user out.
+	'''
 	logout(request)
 	return render(request, "signout.html", {})
 
@@ -561,9 +592,10 @@ def signout(request):
 ##
 ##	404
 ##
-##	This is only needed if you want to do custom processing when a 404 happens.
-##
 def custom_404(request, exception):
+	'''
+	This is only needed if you want to do custom processing when a 404 happens.
+	'''
 	referer = request.META.get('HTTP_REFERER', 'None')
 
 	try:
@@ -580,9 +612,10 @@ def custom_404(request, exception):
 ##
 ##	500
 ##
-##	This is only needed if you want to do custom processing when a 500 happens.
-##
 def custom_500(request):
+	'''
+	This is only needed if you want to do custom processing when a 500 happens.
+	'''
 	exc_info = sys.exc_info()
 	errorTitle = exc_info[:2]
 	
@@ -601,32 +634,3 @@ def custom_500(request):
 		
 	return render(request, '500.html', {}, status=500)
 	
-
-##
-##	/research/file/<file>
-##
-##	Gets the requested file from COS and echos it back
-##
-def get_file(request):
-	attachment = get_object_or_404(Attachment, name=request.GET.get('filename', None))
-	
-	file = attachment.getFile()
-	
-	if file:
-		fileHeaders = file['ResponseMetadata']['HTTPHeaders']
-		response = HttpResponse(file['Body'].read())
-		response['content-length'] = fileHeaders['content-length']
-		
-		if attachment.name.endswith('.xlsx'):
-			response['content-type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-			response['content-disposition'] = 'filename="{}"'.format(attachment.getFileName())
-		elif attachment.name.endswith('.pptx'):
-			response['content-type'] = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-			response['content-disposition'] = 'filename="{}"'.format(attachment.getFileName())
-		else:
-			response['content-type'] = fileHeaders['content-type']	
-	else:
-		response = render(request, '404.html', {}, status=404)
-	
-	return response
-

@@ -22,8 +22,56 @@
 					$('#custom-filters').submit();
 				});
 			}
-			
 			$(setupInstantSubmit);
+			
+			
+			function setupDeleteResponse () {
+				var table = $('#custom-response-table').DataTable();
+				
+				$('#custom-response-table tbody').on('click', '.custom-delete-response', function (evt) {
+					evt.preventDefault();
+					
+					$.ajax({
+						url: '{% url "metrics:api_delete_response" %}',
+						type: 'post',
+						data: {
+							csrfmiddlewaretoken: '{{ csrf_token }}',
+							id: evt.currentTarget.dataset.id,
+							type: 'feedback',
+						},
+						success: function () {
+							table
+								.row($(evt.currentTarget).parents('tr'))
+								.remove()
+								.draw();
+						},
+					});					
+				});
+			}
+			$(setupDeleteResponse);
+			
+			
+			function setupDeleteAllResponses () {
+				$('#custom-delete-all-responses').on('click', function (evt) {
+					document.querySelector('#custom-delete-processing').classList.remove('dn');
+					evt.preventDefault();
+					$.ajax({
+						url: '{% url "metrics:api_delete_project_responses" %}',
+						type: 'post',
+						data: {
+							csrfmiddlewaretoken: '{{ csrf_token }}',
+							id: {{ selectedProject.id }},
+							type: 'feedback',
+						},
+						success: function () {
+							window.location.reload();
+						},
+					});	
+				});				
+			}
+			$(setupDeleteAllResponses);
+			
+			
 		})(jQuery);
 			
 	</script>
@@ -60,20 +108,29 @@
 			<div class="f6 mb3">{{ emptyResponseCount }} responses without comments have been omitted from the table.</div>
 		{% endif %}
 		
-		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[{% if request.GET.sort %}{{ request.GET.sort }},"asc"{% else %}0,"desc"{% endif %}]]'>
+		<div class="mb3 f6"><a class="inline-flex items-center smallicon {{ templateHelpers.classes.link }}" href="{% url 'metrics:project_feedback_responses_csv_dump' %}?project={{ selectedProject.id }}"><span class="mr1">{{ templateHelpers.html.icons.csv|safe }}</span><span>Export all responses since the dawn of time, with <strong>every</strong> question field, as a CSV file (be patient, may take ~20s)</span></a></div>
+		
+		
+		<table id="custom-response-table" {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[{% if request.GET.sort %}{{ request.GET.sort }},"asc"{% else %}1,"desc"{% endif %}]]'>
 			<thead class="f6">
+				{% if request.user.hasAdminAccess %}<th data-orderable="false">Del</th>{% endif %}
 				<th style="width:100px;">Date</th>
+				<th>View</th>
 				<th>Rating</th>
 				<th>Type</th>
 				<th>Comments</th>
 				<th>Location</th>
 				<th class="mw3">Email</th>
+				<th>Keywords</th>
+				<th>Assignees</th>
 			</thead>
 			
 			<tbody class="f6">
 				{% for response in responses %}
 					<tr>
+						{% if request.user.hasAdminAccess %}<td><a class="custom-delete-response hint--medium hint--top-right red ph2 smallicon {{ templateHelpers.classes.link }}" href="#" data-id="{{ response.id }}" aria-label="Delete this response. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></td>{% endif %}
 						<td>{{ response.date|date:"Y-m-d" }}</td>
+						<td><a href="{% url 'metrics:projects_feedback_responses_detail' uid=response.uid %}">Detail</a></td>
 						<td>{{ response.rating }}</td>
 						<td>{{ response.feedback_type }}</td>
 						<td>{{ response.comments }}</td>
@@ -83,10 +140,20 @@
 								{{ response.raw_data.data.location }}
 						{% endif %}</td>
 						<td>{{ response.raw_data.data.email|default:'' }}</td>
+						<td>{{ response.keywords.all|default:''|join:', ' }}</td>
+						<td>{{ response.assignees.all|default:''|join:', ' }}</td>
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
+		
+		{% if responses %}
+			<div class="mv4 flex">
+				<a href="#" id="custom-delete-all-responses" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redPriButton }}">Permanently delete all feedback responses</a>
+				<div id="custom-delete-processing" class="dn ml2 bo-spinner ba bw2 br-100 w2 h2"></div>
+			</div>
+		{% endif %}
+		
 	</div>
 
 

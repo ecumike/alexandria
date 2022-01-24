@@ -1,3 +1,4 @@
+import math
 import numpy
 import pandas as pd
 
@@ -61,11 +62,11 @@ def getBeeHeardImportScriptUser():
 
 
 def estimateCount(modelName, app='metrics'):
-	"""
+	'''
 	Postgres really sucks at full table counts, this is a faster version:
 	http://wiki.postgresql.org/wiki/Slow_Counting
 	Return: {int} Estimated count of # of objects in model.
-	"""
+	'''
 	cursor = connection.cursor()
 	cursor.execute(f"select reltuples from pg_class where relname='{app}_{modelName.lower()}'")
 	row = cursor.fetchone()
@@ -73,14 +74,14 @@ def estimateCount(modelName, app='metrics'):
 	
 	
 class UserRole(models.Model):
-	"""
+	'''
 	Examples:
-		Department_Owner_Manager
-		Financial_Analyst
-		Self
-		Manager
-		Other
-	"""
+	Department_Owner_Manager
+	Financial_Analyst
+	Self
+	Manager
+	Other
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -94,10 +95,10 @@ class UserRole(models.Model):
 
 
 class Role(models.Model):
-	"""
+	'''
 	Examples:
-		Any user
-	"""
+	Any user
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -111,11 +112,11 @@ class Role(models.Model):
 
 
 class Url(models.Model):
-	"""
+	'''
 	Examples:
-		https://somesite.com/services/eamtlite/AssetsIManage.wss
-		https://idea-1.somedomain.com/ECM/workflowmanagement/requesthome?menu=1
-	"""
+	https://somesite.com/services/eamtlite/AssetsIManage.wss
+	https://idea-1.somedomain.com/ECM/workflowmanagement/requesthome?menu=1
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -129,12 +130,12 @@ class Url(models.Model):
 
 
 class GoalCompleted(models.Model):
-	"""
+	'''
 	Examples:
-		Yes
-		No
-		Partially
-	"""
+	Yes
+	No
+	Partially
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -148,12 +149,12 @@ class GoalCompleted(models.Model):
 
 
 class Browser(models.Model):
-	"""
+	'''
 	Examples:
-		Mobile Safari 12.1.1
-		Firefox 67.0
-		Edge 18.17763
-	"""
+	Mobile Safari 12.1.1
+	Firefox 67.0
+	Edge 18.17763
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -167,12 +168,12 @@ class Browser(models.Model):
 
 
 class OperatingSystem(models.Model):
-	"""
+	'''
 	Examples:
-		Windows 7
-		Mac OS X 10.14.5
-		Linux
-	"""
+	Windows 7
+	Mac OS X 10.14.5
+	Linux
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -186,13 +187,13 @@ class OperatingSystem(models.Model):
 
 
 class PrimaryGoal(models.Model):
-	"""
+	'''
 	Examples:
-		View_Update_my_assets
-		Search_for_asset
-		Modify_request
-		Other
-	"""
+	View_Update_my_assets
+	Search_for_asset
+	Modify_request
+	Other
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -206,11 +207,11 @@ class PrimaryGoal(models.Model):
 
 
 class DeviceType(models.Model):
-	"""
+	'''
 	Examples:
-		Desktop
-		Mobile
-	"""
+	Desktop
+	Mobile
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -224,12 +225,12 @@ class DeviceType(models.Model):
 
 
 class Country(models.Model):
-	"""
+	'''
 	Examples:
-		United Stated
-		Ireland
-		Hong Kong
-	"""
+	United Stated
+	Ireland
+	Hong Kong
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -244,12 +245,12 @@ class Country(models.Model):
 
 
 class State(models.Model):
-	"""
+	'''
 	Examples:
-		NY
-		TX
-		NC
-	"""
+	NY
+	TX
+	NC
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -263,12 +264,12 @@ class State(models.Model):
 
 
 class City(models.Model):
-	"""
+	'''
 	Examples:
-		Highland Park
-		Austin
-		Danbury
-	"""
+	Highland Park
+	Austin
+	Danbury
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -283,12 +284,12 @@ class City(models.Model):
 
 
 class DataSource(models.Model):
-	"""
+	'''
 	Examples:
-		Usabilla
-		Survey Monkey
-		Other
-	"""
+	Usabilla
+	Survey Monkey
+	Other
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='data_source_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -317,12 +318,12 @@ class ProjectKeyword(models.Model):
 
 
 class NpsScoreCategory(models.Model):
-	"""
+	'''
 	Examples:
-		Excellent
-		Very good
-		Good
-	"""
+	Excellent
+	Very good
+	Good
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='nps_score_category_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -346,9 +347,9 @@ class NpsScoreCategory(models.Model):
 	
 	@staticmethod
 	def getCategory(npsNum):
-		"""
+		'''
 		Return: {model instance} The NpsScoreCategory for the given NPS -100 to 100.
-		"""
+		'''
 		roundedNum = round(npsNum, 1)
 		try:
 			return NpsScoreCategory.objects.get(min_score_range__lte=roundedNum, max_score_range__gte=roundedNum)
@@ -358,9 +359,9 @@ class NpsScoreCategory(models.Model):
 	
 	@staticmethod
 	def getCategoryCounts(snapshots, includeZeros=True):
-		"""
+		'''
 		Return: {queryset} NpsScoreCategory set with annotated counts of snapshots for each across given snapshots.
-		"""
+		'''
 		categories = NpsScoreCategory.objects.order_by('-min_score_range').only('name', 'color_code', 'text_color_code')
 		
 		# If don't need 0s, simple annotation count # of snapshots for each unique found category.
@@ -381,12 +382,12 @@ class NpsScoreCategory(models.Model):
 	
 
 class Domain(models.Model):
-	"""
+	'''
 	Examples:
-		CFO
-		Design
-		Sales and Marketing Systems
-	"""
+	CFO
+	Design
+	Sales and Marketing Systems
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='domain_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -405,9 +406,9 @@ class Domain(models.Model):
 
 	
 	def getCampaignCount(self):
-		"""
+		'''
 		Return: {int} # of campaigns for this Domain.
-		"""
+		'''
 		i = 0
 		for project in self.project_domain.all():
 			i += project.campaign_project.count()
@@ -415,12 +416,15 @@ class Domain(models.Model):
 		return i
 
 	
-	def updateDomainYearSnapshot(self, year=timezone.now().year):
-		"""
+	def updateDomainYearSnapshot(self, year=None):
+		'''
 		Get this Domain's projects and update DomainYearSnapshot values for the given year.
 		Creates a new yearly instance of DomainSnapshot if not exist.
 		Return: null
-		"""
+		'''
+		if not year:
+			year = timezone.now().year
+			
 		domainSnapshot, created = DomainYearSnapshot.objects.get_or_create(
 			domain = self,
 			year = year,
@@ -552,11 +556,11 @@ class Domain(models.Model):
 		
 	@staticmethod
 	def getCombinedMetrics(domain=None, keyword=None):
-		"""
+		'''
 		Used on Metrics home dashboard page and domains page for CURRENT YEAR metrics.
 		Return: {obj} Aggregated yearly numbers for the given (optional) Domain(s) CURRENT YEAR snapshots.
 		Perf: 141q in 196ms
-		"""
+		'''
 		data = {
 			'core_projects_count': None,
 			'core_projects_currently_reporting_count': None,
@@ -626,9 +630,9 @@ class Domain(models.Model):
 	
 	@staticmethod
 	def domainsCanAdmin(user):
-		"""
+		'''
 		Return: {queryset} Domains the user has admin access to.
-		"""
+		'''
 		if user.hasAdminAccess():
 			domains = Domain.objects.all()
 		else:
@@ -645,11 +649,11 @@ class Domain(models.Model):
 ##
 class ProjectQueryset(models.QuerySet):
 	def allActive(self):
-		"""
+		'''
 		Get all projects that are active. Basic .fiter() preset.
 		Usage: Project.objects.allActive()
 		Return: {queryset} Chainable queryset, the same as if you used .filter().
-		"""
+		'''
 		return self.filter(inactive=False)
 
 class ProjectManager(models.Manager):
@@ -661,12 +665,12 @@ class ProjectManager(models.Manager):
 
 
 class Project(models.Model):
-	"""
+	'''
 	Examples:
-		Box
-		CrashPlan
-		Slack
-	"""
+	Box
+	CrashPlan
+	Slack
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='project_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -684,9 +688,9 @@ class Project(models.Model):
 	], null=True, blank=True)
 	private_comments = models.BooleanField(default=False)
 	keywords = models.ManyToManyField(ProjectKeyword, related_name='project_keywords', blank=True)
-	contact = models.ForeignKey(User, related_name='project_contact', null=True, blank=True, on_delete=models.SET_NULL)
-	admins = models.ManyToManyField(User, related_name='project_admins', blank=True)
-	editors = models.ManyToManyField(User, related_name='project_editors', blank=True)
+	contact = models.ForeignKey(User, related_name='project_contact', null=True, blank=True, on_delete=models.SET_NULL, help_text='Contact is the owner and has full edit access to the project info, can add other admins and editors, and can see emails in responses')
+	admins = models.ManyToManyField(User, related_name='project_admins', blank=True, help_text='Admins have full edit access to the project info, can add other admins and editors, and can see emails in responses')
+	editors = models.ManyToManyField(User, related_name='project_editors', blank=True, help_text='Editors can only create/edit manual snapshots and can see emails in responses')
 	url = models.URLField(max_length=255, null=True, blank=True)
 	estimated_num_users	= models.PositiveIntegerField(null=True, blank=True)
 	core_project = models.BooleanField(default=False)
@@ -721,10 +725,10 @@ class Project(models.Model):
 		
 	
 	def save(self, *args, **kwargs):
-		"""
+		'''
 		If the project was updated and domains changed, update the new and old domain snapshots 
 		to recalculate the rollup metrics based on projects in the domain.
-		"""
+		'''
 		# New priority value determines if it's 'core' or not. 1-3 = vore
 		if self.priority and self.priority <= 3:
 			self.core_project = True
@@ -769,8 +773,8 @@ class Project(models.Model):
 				comments = f'Project domain changed from "{oldDomain.name}" to "{self.domain.name}".'
 			)
 			eventEntry = ProjectEvent.objects.create(
-				created_by = project.updated_by,
-				updated_by = project.updated_by,
+				created_by = self.updated_by,
+				updated_by = self.updated_by,
 				name = f'Project domain changed from "{oldDomain.name}" to "{self.domain.name}".',
 				project = self,
 				date = timezone.now(),
@@ -804,30 +808,30 @@ class Project(models.Model):
 		
 	
 	def getVoteResponses(self):
-		"""
+		'''
 		Return: {queryset} All responses for all campaigns for this project.
-		"""
+		'''
 		return VoteResponse.objects.filter(campaign__project=self)
 		
 	
 	def getFeedbackResponses(self):
-		"""
+		'''
 		Return: {queryset} All responses for all campaigns for this project.
-		"""
+		'''
 		return FeedbackResponse.objects.filter(campaign__project=self)
 		
 	
 	def getOtherResponses(self):
-		"""
+		'''
 		Return: {queryset} All responses for all campaigns for this project.
-		"""
+		'''
 		return OtherResponse.objects.filter(campaign__project=self)
 		
 	
 	def getLatestSnapshot(self, requiredValid=False):
-		"""
+		'''
 		Return: {model instance} This project's lastest snapshot (optionally lastest meaningful).
-		"""
+		'''
 		snapshot = None
 		
 		if requiredValid:
@@ -852,10 +856,10 @@ class Project(models.Model):
 	
 	
 	def getCurrentlyReportingSnapshot(self, requiredValid=False):
-		"""
+		'''
 		Used to find and store this relationship on the project instance so it's always instantly available.
 		Return: {model instance} Get this project's "current" snapshot.
-		"""
+		'''
 		today = timezone.now()
 		oldestDate = today - timedelta(days=180)
 		snapshot = None
@@ -881,11 +885,11 @@ class Project(models.Model):
 		
 	
 	def getCreateSnapshot(self, last90=False, year=None, quarter=None, month=None, create=False):
-		"""
+		'''
 		Convenience method to get or create a snapshot for this project using the given params.
 		Centralizes the logistics and values needed for querying and creating new.
 		Return: {model instance} A snapshot (or None) for this project using the given params.
-		"""
+		'''
 		
 		dataSource = DataSource.objects.get(name='Usabilla')
 		
@@ -938,7 +942,7 @@ class Project(models.Model):
 	
 		
 	def updateMonthSnapshot(self, year, month):
-		"""
+		'''
 		Get this project's set of responses, do calculations, then store them.
 		ONLY used by automated script because it uses responses for calculations.
 		Update this project's snapshot for the given month and year.
@@ -946,7 +950,7 @@ class Project(models.Model):
 			Only sets to 'automatic import' if there are responses for the period.
 			Only deletes if there's an existing snapshot and it's set to 'automatic import'
 		Return: null
-		"""
+		'''
 		# If there are responses, we create or take over the existing snapshot via auto import script.
 		# Else, we only delete a snapshot for the period if it was NOT a manual entered one.
 		responses = self.getVoteResponses().filter(date__year=year, date__month=month)
@@ -978,7 +982,7 @@ class Project(models.Model):
 		
 	
 	def updateQuarterSnapshot(self, year, quarter):
-		"""
+		'''
 		Get this project's set of responses, do calculations, then store them.
 		ONLY used by automated script because it uses responses for calculations.
 		Update this project's snapshot for the given quarter and year.
@@ -986,7 +990,7 @@ class Project(models.Model):
 			Only sets to 'automatic import' if there are responses for the period.
 			Only deletes if there's an existing snapshot and it's set to 'automatic import'
 		Return: null
-		"""
+		'''
 		# If there are responses, we create or take over the existing snapshot via auto import script.
 		# Else, we only delete a snapshot for the period if it was NOT a manual entered one.
 		responses = self.getVoteResponses().filter(date__year=year, date__quarter=quarter)
@@ -1018,7 +1022,7 @@ class Project(models.Model):
 		
 
 	def updateLast90Snapshot(self):
-		"""
+		'''
 		Get this project's set of responses, do calculations, then store them.
 		ONLY used by automated script because it uses responses for calculations.
 		Update this project's snapshot for the past 90-180 days from TODAY.
@@ -1026,7 +1030,7 @@ class Project(models.Model):
 			Only sets to 'automatic import' if there are responses for the period.
 			Only deletes if there's an existing snapshot and it's set to 'automatic import'
 		Return: null
-		"""
+		'''
 		# Start at 90 days, and go back in increment of 30, up to 180 days until we get 30+ and <15 moe.
 		# dayRange var is used so we can later store which one we used.
 		# Note at the end, 180 is used no matter what if we reach that point.
@@ -1073,10 +1077,10 @@ class Project(models.Model):
 
 	
 	def updateAllSnapshots(self):
-		"""
+		'''
 		Get/create/update all Snapshots for this project for every month and quarter it has responses for.
 		Return: null
-		"""
+		'''
 		projectResponses = self.getVoteResponses()
 		
 		if projectResponses.count() > 0:
@@ -1100,12 +1104,13 @@ class Project(models.Model):
 			for snapshot in self.project_snapshot_project.filter(entry_type='automatic import'):
 				snapshot.delete()
 	
+	
 	@staticmethod
 	def getFilteredSet(filterdata, coreProjectsOnly):
-		"""
+		'''
 		Convenience method for project tiles and table (deprecated) pages.
 		Return: {queryset} All projects or Domain specific projects, and optional 2nd filter; core projects only.
-		"""
+		'''
 		if filterdata['selectedArchived'] == 'y':
 			projects = Project.objects.filter(inactive=True)
 		else:
@@ -1145,10 +1150,10 @@ class Project(models.Model):
 		
 	
 	def storeLatestSnapshots(self):
-		"""
+		'''
 		Get this project's key snapshots used for calculations/displays and store relationship for quick reference.
 		Return: null
-		"""
+		'''
 		try:
 			self.latest_valid_snapshot = self.getLatestSnapshot(requiredValid=True)
 			self.latest_snapshot_by_date = self.getLatestSnapshot()
@@ -1160,7 +1165,7 @@ class Project(models.Model):
 	
 	
 	def setYearBaselinesAndTargets(self, year=timezone.now().year):
-		"""
+		'''
 		Try to set an NPS and UMUX baseline score for this project.
 		This is called in 3 places:
 			1. End of nightly usabilla import from API
@@ -1173,7 +1178,7 @@ class Project(models.Model):
 				If no baseline and we find a "meaningful" snapshot, in this order, use it's values:
 					Q4 (year-1), Q1, Q2, last90
 		Return: null
-		"""
+		'''
 		# Get or create a ProjectYearSetting for the project. 
 		# After the initial run on Jan 1, every existing project will have one.
 		# This will only create for any new projects added after Jan 1.
@@ -1198,11 +1203,11 @@ class Project(models.Model):
 
 	
 	def setUxSpecialistFlag(self):
-		"""
+		'''
 		Find the latest UxSpecialistAssigned entry for this project for today 
 		or earlier and set designer_assigned flag.
 		Return: null
-		"""
+		'''
 		try:
 			latestSa = UxSpecialistAssigned.objects.filter(project=self, date__lte=timezone.now()).order_by('-date').values('assigned').first()['assigned']
 			if latestSa:
@@ -1216,26 +1221,26 @@ class Project(models.Model):
 	
 	@staticmethod
 	def updateAllUxSpecialistflags():
-		"""
+		'''
 		Loops thru all active project and checks/sets flag. Used by daily cron.
 		Return: null
-		"""
+		'''
 		for p in Project.objects.allActive():
 			p.setUxSpecialistFlag()
 	
 	
 	@staticmethod
 	def getQuarterlyChangers():
-		"""
+		'''
 		If it's the first week of the month, and the end of last quarter happend durning last week,
 		For each project, get 3 quarters back of snapshots and see if NPS declined or increased consecutively across 2 quarters.
 		Return: {obj} Arrays of projects for decliners and increasers.
-		"""
+		'''
 		today = timezone.now()
 		
 		lastWeekStart = helpers.getDaysAgo(7).replace(hour=0)
 		lastWeekEnd = helpers.getDaysAgo(1).replace(hour=23)
-		currentQ = round((today.month - 1) / 3 + 1)
+		currentQ = math.floor((today.month - 1) / 3 + 1)
 		currentQStart = timezone.datetime(today.year, 3 * currentQ - 2, 1, tzinfo=timezone.utc).replace(hour=12)
 		currentQMid = currentQStart.replace(month=currentQStart.month+1)
 		
@@ -1273,11 +1278,11 @@ class Project(models.Model):
 		
 	@staticmethod
 	def getMonthlyChangers():
-		"""
+		'''
 		If it's the first week of the month, and the end of last month happend durning last week,
 		For each project, get 4 months back of snapshots and see if NPS declined or increased consecutively across 3 months.
 		Return: {obj} Arrays of projects for decliners and increasers.
-		"""
+		'''
 		today = timezone.now()
 		
 		monthsDeclineProjects = []
@@ -1330,9 +1335,9 @@ class Project(models.Model):
 	
 	@staticmethod
 	def projectsCanAdmin(user):
-		"""
+		'''
 		Return: {queryset} Projects the user can admin.
-		"""
+		'''
 		if user.hasAdminAccess():
 			projects = Project.objects.all()
 		else:
@@ -1346,10 +1351,10 @@ class Project(models.Model):
 		
 	@staticmethod
 	def projectsCanAdminDomainProjects(user):
-		"""
+		'''
 		Get the domain(s) for the project the user is an admins is and return all those projects.
 		Return: {queryset} Projects the user can admin's domain's all projects.
-		"""
+		'''
 		if user.hasAdminAccess():
 			projects = Project.objects.allActive().order_by(Lower('name'))
 		else:
@@ -1364,9 +1369,9 @@ class Project(models.Model):
 		
 	@staticmethod
 	def projectsCanEdit(user):
-		"""
+		'''
 		Return: {queryset} Projects the user can edit.
-		"""
+		'''
 		if user.hasAdminAccess():
 			projects = Project.objects.all()
 		else:
@@ -1379,10 +1384,10 @@ class Project(models.Model):
 		
 		
 	def recalculateSnapshotsBaselinesAndDomains(self):
-		"""
+		'''
 		Convenience bundle function used on campaign_edit when campaign changes projects (very rare).
 		Return: null
-		"""
+		'''
 		self.updateAllSnapshots()
 		self.storeLatestSnapshots()
 		self.setYearBaselinesAndTargets()
@@ -1391,9 +1396,9 @@ class Project(models.Model):
 	
 	
 	def createSnapshotForDate(self, startDate=None, endDate=None):
-		"""
+		'''
 		Used for special Time machine feature to create a 'last90' snapshot on the fly for any given date.
-		"""
+		'''
 		# Start at 90 days, and go back in increment of 30, up to 180 days until we get 30+ and <15 moe.
 		# dayRange var is used so we can later store which one we used.
 		# Note at the end, 180 is used no matter what if we reach that point.
@@ -1453,6 +1458,9 @@ class Project(models.Model):
 
 	
 	def getReportPeriodData(self, request):
+		'''
+		Used by project detail page
+		'''
 		timeMachineStartDate = None
 		timeMachineEndDate = None
 		customTimeMachineMessage = None
@@ -1520,15 +1528,45 @@ class Project(models.Model):
 			'projectSnapshotResponses': projectSnapshotResponses,
 			'reportPeriod': reportPeriod,
 		}
+	
+	
+	def responsesRawDataToCsv(self, responses):
+		rowsArr = []
+		fieldNames = []
 		
-
+		for r in responses:
+			for fn,v in r.raw_data['data'].items():
+				fieldNames.append(fn)				
+		fieldNames = list(set(fieldNames))
+		
+		# For each response, loop thru every field, get the value.
+		for r in responses:
+			responseArr = []
+			responseArr.append(r.date)
+			responseArr.append(r.campaign.key)
+			responseArr.append(r.uid)
+			
+			for fn in fieldNames:
+				try:
+					v = r.raw_data['data'][fn]
+				except:
+					v = ' '
+				responseArr.append(v)
+			rowsArr.append(responseArr)
+		
+		headerRow = ['Date', 'Campaign key', 'Response ID'] + fieldNames
+		
+		# Add header row and return
+		return [headerRow] + rowsArr	
+		
+		
 class ProjectEvent(models.Model):
-	"""
+	'''
 	Examples:
-		Redesigned home page.
-		Reduced survey capture to 15% of traffic.
-		Changed checkout process
-	"""
+	Redesigned home page.
+	Reduced survey capture to 15% of traffic.
+	Changed checkout process
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='project_event_created_by', on_delete=models.PROTECT)
 	updated_by = models.ForeignKey(User, related_name='project_event_updated_by', on_delete=models.PROTECT)
@@ -1550,27 +1588,27 @@ class ProjectEvent(models.Model):
 ##
 class CampaignQueryset(models.QuerySet):
 	def allActive(self):
-		"""
+		'''
 		Get all Campaigns that are active. Basic .fiter() preset.
 		Usage: Campaign.objects.allActive()
 		Return: {queryset} Chainable queryset, the same as if you used .filter().
-		"""
+		'''
 		return self.filter(inactive=False)
 
 	def fromBeeHeard(self):
-		"""
+		'''
 		Get all Campaigns that are active. Basic .fiter() preset.
 		Usage: Campaign.objects.allActive()
 		Return: {queryset} Chainable queryset, the same as if you used .filter().
-		"""
+		'''
 		return self.filter(uid__startswith='b')
 		
 	def fromUsabilla(self):
-		"""
+		'''
 		Get all Campaigns that are active. Basic .fiter() preset.
 		Usage: Campaign.objects.allActive()
 		Return: {queryset} Chainable queryset, the same as if you used .filter().
-		"""
+		'''
 		return self.exclude(uid__startswith='b')
 
 class CampaignManager(models.Manager):
@@ -1588,12 +1626,12 @@ class CampaignManager(models.Manager):
 
 
 class Campaign(models.Model):
-	"""
+	'''
 	Examples:
-		Help Advisor Feedback - End user doc
-		18_server provisioning feedback
-		Vote_Help_eng_FULL
-	"""
+	Help Advisor Feedback - End user doc
+	18_server provisioning feedback
+	Vote_Help_eng_FULL
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='campaign_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -1608,6 +1646,11 @@ class Campaign(models.Model):
 	# OUR unique key we generate and use
 	key = models.CharField(max_length=128, unique=True, null=True, blank=True) # True unique campaign ID: 'campaignID + role + version'
 	latest_response_date = models.DateTimeField(null=True, blank=True)
+	latest_feedback_response_date = models.DateTimeField(null=True, blank=True)
+	latest_other_response_date = models.DateTimeField(null=True, blank=True)
+	vote_response_count = models.PositiveIntegerField(default=0)
+	feedback_response_count = models.PositiveIntegerField(default=0)
+	other_response_count = models.PositiveIntegerField(default=0)
 	
 	objects = CampaignManager()
 	
@@ -1616,16 +1659,29 @@ class Campaign(models.Model):
 		
 	def __str__(self):
 		return self.uid
+		
+		
+	# def save(self, *args, **kwargs):
+	# 	if not self.latest_response_date:
+	# 		self.latest_response_date = timezone.make_aware(datetime(2015, 1, 1))
+	# 	super(Campaign, self).save(*args, **kwargs)
+		
+		
+	def storeResponseCount(self):
+		self.vote_response_count = self.response_campaign.count()
+		self.feedback_response_count = self.feedback_response_campaign.count()
+		self.other_response_count = self.other_response_campaign.count()
+		self.save()
 
 
 class NpsLetterGrade(models.Model):
-	"""
+	'''
 	Examples:
-		A
-		B+
-		B
-		B-
-	"""
+	A
+	B+
+	B
+	B-
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='nps_letter_grade_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -1645,9 +1701,9 @@ class NpsLetterGrade(models.Model):
 	
 	@staticmethod
 	def getLetterGrade(score):
-		"""
+		'''
 		Return: {model instance} NpsLetterGrade match for the given points.
-		"""
+		'''
 		try:
 			return NpsLetterGrade.objects.filter(min_score__lte=score).order_by('-min_score').first()
 		except Exception as ex:
@@ -1655,13 +1711,13 @@ class NpsLetterGrade(models.Model):
 	
 
 class UmuxScoreCategory(models.Model):
-	"""
+	'''
 	Examples:
-		A
-		B+
-		B
-		B-
-	"""
+	A
+	B+
+	B
+	B-
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='umux_score_category_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -1684,9 +1740,9 @@ class UmuxScoreCategory(models.Model):
 	
 	@staticmethod
 	def getCategory(score):
-		"""
+		'''
 		Return: {model instance} UmuxScoreCategory match for the given score.
-		"""
+		'''
 		roundedScore = round(score, 1)
 		try:
 			return UmuxScoreCategory.objects.get(min_score_range__lte=roundedScore, max_score_range__gte=roundedScore)
@@ -1696,9 +1752,9 @@ class UmuxScoreCategory(models.Model):
 	
 	@staticmethod
 	def getCategoryCounts(snapshots, includeZeros=False):
-		"""
+		'''
 		Return: {queryset} UmuxScoreCategory set with annotated counts of snapshots for each across given snapshots.
-		"""
+		'''
 		categories = UmuxScoreCategory.objects.order_by('-min_score_range').only('name', 'color_code', 'text_color_code')
 		
 		# If don't need 0s, simple annotation count # of snapshots for each unique found category.
@@ -1720,12 +1776,12 @@ class UmuxScoreCategory(models.Model):
 	
 
 class GoalCompletedCategory(models.Model):
-	"""
+	'''
 	Examples:
-		Excellent
-		Above average
-		Average		
-	"""
+	Excellent
+	Above average
+	Average		
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='goal_completed_category_created_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
@@ -1747,9 +1803,9 @@ class GoalCompletedCategory(models.Model):
 	
 	@staticmethod
 	def getCategory(score):
-		"""
+		'''
 		Return: {model instance} UmuxScoreCategory match for the given score.
-		"""
+		'''
 		roundedScore = round(score, 1)
 		try:
 			return GoalCompletedCategory.objects.get(min_score_range__lte=roundedScore, max_score_range__gte=roundedScore)
@@ -1759,9 +1815,9 @@ class GoalCompletedCategory(models.Model):
 	
 	@staticmethod
 	def getCategoryCounts(snapshots, includeZeros=False):
-		"""
+		'''
 		Return: {queryset} GoalCompletedCategory set with annotated counts of snapshots for each across given snapshots.
-		"""
+		'''
 		categories = GoalCompletedCategory.objects.order_by('-min_score_range').all().only('name', 'color_code', 'text_color_code')
 		
 		# If don't need 0s, simple annotation count # of snapshots for each unique found category.
@@ -1783,10 +1839,10 @@ class GoalCompletedCategory(models.Model):
 
 
 class Response(models.Model):
-	"""
+	'''
 	Automated imported data from usabilla. A user's response to a survey.
 	This should never be created or updated in admin. 100% auto-imported raw_data, parsed and created.
-	"""
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -1842,11 +1898,11 @@ class Response(models.Model):
 	
 	@staticmethod	
 	def getVoteResponsesCountsHistory(projects=None, startDate=None, endDate=None):
-		"""
+		'''
 		Used on metrics home page.
 		For each quarter in the given date range, sum NPS/UMUX/Goal completion response counts across given projects.
 		Return: {obj} Labels and data to generate historical line chart with total quarterly response counts.
-		"""
+		'''
 		if not projects or not startDate or not endDate:
 			return []
 		
@@ -1878,11 +1934,11 @@ class Response(models.Model):
 	
 	@staticmethod	
 	def createGoalImportPreviewData(attachment):
-		"""
+		'''
 		Used for goal update import to preview changed CSV to verify sample of changes before submitting.
 		Take first 100 rows of CSV file and list existing goal from DB, and new goal from attachment.
 		Return: {array} List of responses with existing and new goal.
-		"""
+		'''
 		df = pd.read_csv(attachment, dtype='string')
 		df = df.head(100)
 		
@@ -1910,10 +1966,10 @@ class Response(models.Model):
 	
 	@staticmethod
 	def processGoalImportUpdateFile(attachment):
-		"""
+		'''
 		Take uploaded CSV file and for each response, update the PrimaryGoal.
 		Return: null
-		"""
+		'''
 		df = pd.read_csv(attachment, dtype='string')
 		
 		for i in df.itertuples():
@@ -1928,9 +1984,9 @@ class Response(models.Model):
 	
 	@staticmethod
 	def removeOldEmailValues():
-		"""
+		'''
 		Called by weekly cron, deletes email values on responses older than 3 years ago.
-		"""
+		'''
 		for r in VoteResponse.objects.filter(date__lte=helpers.getDaysAgo(365*2.99), raw_data__data__email__isnull=False):
 			if r.raw_data['data'].get('email'):
 				r.raw_data['data']['email'] = ''
@@ -1941,11 +1997,24 @@ class VoteResponse(Response):
 		proxy = True
 		
 
+class FeedbackResponseKeyword(models.Model):
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+	
+	name = models.CharField(max_length=64)
+	
+	class Meta:
+		ordering = ['name']
+		
+	def __str__(self):
+		return self.name
+	
+	
 class FeedbackResponse(models.Model):
-	"""
+	'''
 	Automated imported data from BeeHeard. Only survey with type==feedback
 	This should never be created or updated in admin. 100% auto-imported raw_data, parsed and created.
-	"""
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -1956,6 +2025,9 @@ class FeedbackResponse(models.Model):
 	feedback_type = models.CharField(max_length=128, blank=True)
 	comments = models.TextField(blank=True)
 	email_provided = models.BooleanField(default=False)
+	assignees = models.ManyToManyField(User, related_name='feedback_response_assignees', blank=True)
+	keywords = models.ManyToManyField(FeedbackResponseKeyword, related_name='feedback_response_keywords', blank=True)
+	notes = models.TextField(max_length=3000, blank=True)
 	raw_data = JSONField()
 	
 	class Meta:
@@ -1967,9 +2039,9 @@ class FeedbackResponse(models.Model):
 	
 	@staticmethod
 	def removeOldEmailValues():
-		"""
+		'''
 		Called by weekly cron, deletes email values on responses older than 3 years ago.
-		"""
+		'''
 		for r in FeedbackResponse.objects.filter(date__lte=helpers.getDaysAgo(365*2.99), raw_data__data__email__isnull=False):
 			if r.raw_data['data'].get('email'):
 				r.raw_data['data']['email'] = ''
@@ -1977,10 +2049,10 @@ class FeedbackResponse(models.Model):
 		
 
 class OtherResponse(models.Model):
-	"""
+	'''
 	Automated imported data from BeeHeard. Only survey with type==other
 	This should never be created or updated in admin. 100% auto-imported raw_data, parsed and created.
-	"""
+	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 	
@@ -1998,9 +2070,9 @@ class OtherResponse(models.Model):
 	
 	@staticmethod
 	def removeOldEmailValues():
-		"""
+		'''
 		Called by weekly cron, deletes email values on responses older than 3 years ago.
-		"""
+		'''
 		for r in OtherResponse.objects.filter(date__lte=helpers.getDaysAgo(365*2.99), raw_data__data__email__isnull=False):
 			if r.raw_data['data'].get('email'):
 				r.raw_data['data']['email'] = ''
@@ -2140,10 +2212,10 @@ class ProjectSnapshot(models.Model):
 	
 	
 	def setNpsMeaningfulDataFlag(self):
-		"""
+		'''
 		Centralized function with logic to determine if Snapshot has enough responses to be "meaningful".
 		Return: null
-		"""
+		'''
 		try:
 			if self.nps_count >= 30 and self.nps_margin_error <= 16:
 				self.nps_meaningful_data = True
@@ -2154,10 +2226,10 @@ class ProjectSnapshot(models.Model):
 		
 	
 	def setUmuxMeaningfulDataFlag(self):
-		"""
+		'''
 		Centralized function with logic to determine if Snapshot has enough responses to be "meaningful".
 		Return: null
-		"""
+		'''
 		try:
 			if self.umux_count >= 30 and self.umux_margin_error <= 7:
 				self.umux_meaningful_data = True
@@ -2168,21 +2240,21 @@ class ProjectSnapshot(models.Model):
 	
 		
 	def setMeaningfulDataFlags(self):
-		"""
+		'''
 		Convenience function grouping. Called from calculateStats and manualEntryCalculateAndSave.
 		Return: null
-		"""
+		'''
 		self.setNpsMeaningfulDataFlag()
 		self.setUmuxMeaningfulDataFlag()
 		
 		
 	def calculateStats(self, responses):
-		"""
+		'''
 		Do some calculations and counts and store them.
 		ONLY used by "updateQuarter/Month/last90" which is only used by automated script
 		because it requires responses to do calculations.
 		Return: null
-		"""
+		'''
 		# Get counts of NPS promoters, passive, detractors and total NPS respnoses.
 		npsCounts = helpers.getVoteResponsesNpsCounts(responses)
 		
@@ -2235,7 +2307,7 @@ class ProjectSnapshot(models.Model):
 			self.goal_completed_count = None
 			
 		try:
-			self.goal_completed_percent = round((responses.filter(goal_completed__name='Yes').count() / responses.exclude(goal_completed=None).count()) * 100, 4)
+			self.goal_completed_percent = round(((responses.filter(goal_completed__name__iexact='yes').count()) / responses.exclude(goal_completed=None).count()) * 100, 4)
 			
 			# Store the category so we don't have to look it up on every page view.
 			roundedGoal = round(self.goal_completed_percent, 0)
@@ -2279,11 +2351,11 @@ class ProjectSnapshot(models.Model):
 
 
 	def manualEntryCalculateAndSave(self):
-		"""
+		'''
 		Do some calculations and counts and store them.
 		ONLY used by manual editing of snapshot.
 		Return: null
-		"""
+		'''
 		# NPS margin of error
 		if self.nps_score and self.nps_margin_error:
 			self.nps_margin_error_upper = self.nps_score + self.nps_margin_error
@@ -2334,7 +2406,7 @@ class ProjectSnapshot(models.Model):
 
 
 	def calculateNpsErrorMargin(self):
-		"""
+		'''
 		Calculate and return NPS MOE numbers for this snapshot.
 		Formula from spreadsheet:
 			MOE: ((((1-npsScore/100)^2*(promoterPercent)+(0-npsScore/100)^2*(passivePercent)+(-1-npsScore/100)^2*(detractorPercent))^0.5)/((totalNpsCount)^0.5))*100*1.64
@@ -2343,7 +2415,7 @@ class ProjectSnapshot(models.Model):
 			Lower:
 				-100 if (I11-E16)<=-100 else I11-E16
 		Return: {obj} NPS MOE data for this snapshot.
-		"""
+		'''
 		# Legend for above XLS cells:
 		#   I5:  Total NPS count
 		#   I11: NPS
@@ -2373,14 +2445,14 @@ class ProjectSnapshot(models.Model):
 
 
 	def calculateUmuxErrorMargin(self, responses):
-		"""
+		'''
 		Calculate and return UMUX MOE numbers for this snapshot.
 		Formula from spreadsheet:
 			MOE: ((STDEV.S(F:F))*1.64)/(SQRT(UMUXListResponses))
 			Upper: Just add margin
 			Lower: Just subtract margin
 		Return: {obj} UMUX MOE data for this snapshot.
-		"""
+		'''
 		umuxScoresArray = responses.filter(umux_score__isnull=False).values_list('umux_score', flat=True)
 		
 		try:
@@ -2399,9 +2471,9 @@ class ProjectSnapshot(models.Model):
 
 	
 	def getVoteResponses(self):
-		"""
+		'''
 		Return: {queryset} Responses for to this snapshot quarter/month/last90 days ago.
-		"""
+		'''
 		try:
 			responses = self.project.getVoteResponses()
 			
@@ -2419,10 +2491,10 @@ class ProjectSnapshot(models.Model):
 	
 	@staticmethod
 	def getCoreCurrentlyReportingProjectSnapshots(domain=None, keyword=None):
-		"""
+		'''
 		Used for metrics home dashboard.
 		Return: {queryset} Core projects currently reporting's snapshots, optionally domain filtered.
-		"""
+		'''
 		conditions = {
 			'project_latest_valid_currently_reporting_snapshot__isnull': False,
 			'project__inactive': False,
@@ -2446,10 +2518,10 @@ class ProjectSnapshot(models.Model):
 	
 	@staticmethod
 	def getFilteredSet(tileFiltersData, projects):
-		"""
+		'''
 		Convenience method for project tiles page.
 		Return: {queryset} Snapshots for given projects, using given filter data.
-		"""
+		'''
 		def addYearSettings(snapshots):
 			for snapshot in snapshots:
 				if 'q' in timePeriod:
@@ -2616,9 +2688,9 @@ class ProjectSnapshot(models.Model):
 		
 	@staticmethod
 	def hasMeaningfulNps(responses):
-		"""
+		'''
 		Return: {bool} Does NPS calc and determines if given responses generate a meaningful NPS.
-		"""
+		'''
 		npsCounts = helpers.getVoteResponsesNpsCounts(responses)
 		tempSnapshot = ProjectSnapshot()
 		tempSnapshot.nps_promoter_count = npsCounts['promoter']
@@ -2637,11 +2709,11 @@ class ProjectSnapshot(models.Model):
 		
 	@staticmethod	
 	def getExcellentNpsHistoricalChartData():
-		"""
+		'''
 		Used on metrics home page.
 		For each quarter in the given date range, sum NPS/UMUX/Goal completion response counts across given projects.
 		Return: {obj} Labels and data to generate historical line chart with total quarterly response counts.
-		"""
+		'''
 		npsHistoryChartData = {}
 		
 		startdate = timezone.now() - timedelta(days=365)
@@ -2733,6 +2805,9 @@ class ProjectSnapshot(models.Model):
 		
 	@staticmethod
 	def getHistoricalNpsCatCountChartData():
+		'''
+		Used on metrics home page at bottom. 2-yr history of NPS catrgories response counts by quarter.
+		'''
 		npsCatData = []
 		npsCategories = list(NpsScoreCategory.objects.all().values('id', 'name'))
 		allMeaninfulQuarterSnapshots = ProjectSnapshot.objects.filter(date_period='quarter', nps_meaningful_data=True, project__inactive=False)
@@ -2756,11 +2831,15 @@ class ProjectSnapshot(models.Model):
 		return npsCatData
 			
 
-class UsabillaImportLog(models.Model):
+class ImportLog(models.Model):
 	date = models.DateTimeField(db_index=True, auto_now_add=True)
 	responses_imported_count = models.PositiveIntegerField(null=True, blank=True)
 	projects_affected_count = models.PositiveIntegerField(null=True, blank=True)
 	run_time_seconds = models.FloatField()
+	import_type = models.CharField(choices=[
+			('beeheard','BeeHeard'),
+			('usabilla','Usabilla'),
+		], max_length=12)
 	user = models.ForeignKey(User, related_name='usabilla_import_log_user', null=True, blank=True, on_delete=models.SET_NULL)
 	
 	class Meta:
@@ -2818,10 +2897,10 @@ class ProjectYearSetting(models.Model):
 
 
 	def save(self, *args, **kwargs):
-		"""
+		'''
 		Logging. 
 		Check if baselines we're about to save are different. If so, set baseline date and log.
-		"""
+		'''
 		# Need to check if NPS and UMUX baselines changed, and grab old value before we save the new one.
 		try:
 			oldNpsBaseline = ProjectYearSetting.objects.get(id=self.id).nps_baseline
@@ -2871,11 +2950,11 @@ class ProjectYearSetting(models.Model):
 				
 		
 	def calculateTargets(self, *args, **kwargs):
-		"""
+		'''
 		Calculate NPS targets, set baseline category.
 		Calculate UMUX targets, set baseline category.
 		Return: null
-		"""
+		'''
 		# NPS target calc.
 		if self.nps_baseline:
 			self.nps_target = self.calculateNpsTarget()
@@ -2889,13 +2968,13 @@ class ProjectYearSetting(models.Model):
 			self.umux_baseline_score_category = UmuxScoreCategory.getCategory(self.umux_baseline)
 
 	def calculateNpsTarget(self):
-		"""
+		'''
 		Force the baseline to have decimal and find the closest INT entry below the baseline.
 		Else, get the lowest one because it's too low and there's nothing below it.
 		We round it to normalize to display value first, to prevent case:
 		  baseline = 26.98. Displays as 27, target would be 26 (int of 26.98)
 		Return: {int} 'Achieve' Target for this project year setting's NPS baseline.
-		"""
+		'''
 		target = None
 		
 		if self.nps_baseline:
@@ -2910,13 +2989,13 @@ class ProjectYearSetting(models.Model):
 		
 		
 	def calculateNpsTargetExceed(self):
-		"""
+		'''
 		Force the baseline to have decimal and find the closest INT entry below the baseline.
 		Else, get the lowest one because it's too low and there's nothing below it.
 		We round it to normalize to display value first, to prevent case:
 		  baseline = 26.98. Displays as 27, target would be 26 (int of 26.98)
 		Return: {int} 'Exceed' Target for this project year setting's NPS baseline.
-		"""
+		'''
 		target = None
 		
 		if self.nps_baseline:
@@ -2931,13 +3010,13 @@ class ProjectYearSetting(models.Model):
 		
 		
 	def calculateUmuxTarget(self):
-		"""
+		'''
 		Force the baseline to have decimal and find the closest INT entry below the baseline.
 		Else, get the lowest one because it's too low and there's nothing below it.
 		We round it to normalize to display value first, to prevent case:
 		  baseline = 26.98. Displays as 27, target would be 26 (int of 26.98)
 		Return: {int} 'Achieve' Target for this project year setting's UMUX baseline.
-		"""
+		'''
 		target = None
 		
 		if self.umux_baseline:
@@ -2952,13 +3031,13 @@ class ProjectYearSetting(models.Model):
 
 	
 	def calculateUmuxTargetExceed(self):
-		"""
+		'''
 		Force the baseline to have decimal and find the closest INT entry below the baseline.
 		Else, get the lowest one because it's too low and there's nothing below it.
 		We round it to normalize to display value first, to prevent case:
 		  baseline = 26.98. Displays as 27, target would be 26 (int of 26.98)
 		Return: {int} 'Exceed' Target for this project year setting's UMUX baseline.
-		"""
+		'''
 		target = None
 		
 		if self.umux_baseline:
@@ -2973,12 +3052,12 @@ class ProjectYearSetting(models.Model):
 
 
 	def setNpsBaseline(self):
-		"""
+		'''
 		Set NPS baseline #s for this project year setting if suitable snapshot is found.
 		Admins can manually set a baseline so this is not done on Save. This is only for automated import.
 		Only the target is done on Save because that contains a formula that is used to calc the target.
 		Return: null
-		"""
+		'''
 		# If the baseline is already set, or it's after July 15: Stop and do nothing.
 		# Rule: No baseline allowed to be set after July 15.
 		if self.nps_baseline or timezone.now() > timezone.make_aware(datetime(timezone.now().year,7,15)):
@@ -3010,12 +3089,12 @@ class ProjectYearSetting(models.Model):
 			
 				
 	def setUmuxBaseline(self):
-		"""
+		'''
 		Set UMUX baseline #s for this project year setting if suitable snapshot is found.
 		Admins can manually set a baseline so this is not done on Save. This is only for automated import.
 		Only the target is done on Save because that contains a formula that is used to calc the target.
 		Return: null
-		"""
+		'''
 		# If the baseline is already set, or it's after July 15: Stop and do nothing.
 		# Rule: No baseline allowed to be set after July 15.
 		if self.umux_baseline or timezone.now() > timezone.make_aware(datetime(timezone.now().year,7,15)):
@@ -3049,10 +3128,9 @@ class ProjectYearSetting(models.Model):
 class DomainYearSnapshot(models.Model):
 	'''
 	Terms:
-		core projects = Have the core_project flag set (priority 1-3)
-		vote_projects = Core with a "current" snapshot
-		core_projects_currently_reporting = Core with a "current" snapshot that's "meaningful"
-	
+	core projects = Have the core_project flag set (priority 1-3)
+	vote_projects = Core with a "current" snapshot
+	core_projects_currently_reporting = Core with a "current" snapshot that's "meaningful"
 	'''
 	created_at = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User, related_name='domain_year_snapshot_created_by', on_delete=models.PROTECT)
@@ -3154,10 +3232,10 @@ class Alert(models.Model):
 
 
 	def doScheduledAlerts():
-		"""
+		'''
 		Look for monthly and quarterly trends and log/email alerts found.
 		Runs at 2am on the 1st of every month, via cron.
-		"""
+		'''
 		quarterlyChangers = Project.getQuarterlyChangers()
 		monthlyChangers = Project.getMonthlyChangers()
 		

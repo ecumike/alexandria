@@ -20,7 +20,6 @@ from djqscsv import render_to_csv_response
 from ..models import *
 from ..response_data_helpers import *
 from ..forms import *
-from ..response_data_helpers import fetchNewUsabillaResponses, fetchNewBeeHeardResponses, convertFeedbackResponseToData
 from login_required_middleware import login_exempt
 import metrics.helpers as helpers
 import metrics.access_helpers as accessHelpers
@@ -29,11 +28,10 @@ import metrics.access_helpers as accessHelpers
 ##
 ##	/research/api/artifacts/?q=<search string>
 ##
-##
 def api_artifacts_typeahead(request):
-	"""
+	'''
 	Takes a given string and returns top 6 search results for it.
-	"""
+	'''
 	
 	textString = request.GET.get('q', '')
 	
@@ -60,12 +58,12 @@ def api_users(request):
 ##
 ##	/research/api/userimage/ <POST DATA>
 ##
-##	Updates existing user, uses request.user for validation
-##	Called from profile edit page.
-##
-##
 @login_required
 def api_save_user_image(request):
+	'''
+	Updates existing user, uses request.user for validation
+	Called from profile edit page.
+	'''
 	try:
 		user = User.objects.get(username=request.POST.get('email').lower())
 		
@@ -92,11 +90,11 @@ def api_save_user_image(request):
 ##
 ##	/research/api/adminaccess/<POST>
 ##
-##	Add/remove a user from the admin group.
-##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def api_adminaccess(request):
-	email = request.POST.get('email')
+	'''
+	Add/remove a user from the admin group.email = request.POST.get('email')
+	'''
 	action = request.POST.get('action')
 	adminGroup, created = Group.objects.get_or_create(name='admins')
 	httpCode = 404
@@ -144,11 +142,10 @@ def api_adminaccess(request):
 ##
 ##	/research/api/users/togglestate/<id>/ POST: inactive='y|n'
 ##
-##
 def api_users_toggle_state(request, id):
-	"""
+	'''
 	Takes a given user and sets their state to inactive or not, based on posted data.
-	"""
+	'''
 	user = get_object_or_404(User, id=id)
 	setInactive = request.GET.get('inactive', '')
 	
@@ -166,10 +163,11 @@ def api_users_toggle_state(request, id):
 ##
 ##	/metrics/api/getnewusabillaresponses/
 ##
-##	Called by cron app to do pull of latest usabilla responses.
-##
 @login_exempt
 def api_get_new_usabilla_responses(request):
+	'''
+	Called by cron app to do pull of latest usabilla responses.
+	'''
 	helpers.runInBackground(fetchNewUsabillaResponses)
 	return JsonResponse({'results': 'started' })
 
@@ -177,10 +175,11 @@ def api_get_new_usabilla_responses(request):
 ##
 ##	/metrics/api/getnewbeeheardresponses/
 ##
-##	Called by cron app to do pull of latest beeheard responses.
-##
 @login_exempt
 def api_get_new_beeheard_responses(request):
+	'''
+	Called by cron app to do pull of latest beeheard responses.
+	'''
 	helpers.runInBackground(fetchNewBeeHeardResponses)
 	return JsonResponse({'results': 'started' })
 
@@ -188,10 +187,11 @@ def api_get_new_beeheard_responses(request):
 ##
 ##	/metrics/api/setresponsesgoal/
 ##
-##	For each response ID in CSV, change the goal to the one specified.
-##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def api_set_responses_goal(request):
+	'''
+	For each response ID in CSV, change the goal to the one specified.
+	'''
 	try:
 		attachment = request.FILES['file']
 	except Exception as ex:
@@ -227,10 +227,11 @@ def api_set_responses_goal(request):
 ##
 ##	/metrics/api/deactivateoldcampaigns/
 ##
-##	Deactivates campaigns that don't have responses after X months.
-##
 @login_exempt
 def api_deactivate_old_campaigns(request):
+	'''
+	Deactivates campaigns that don't have responses after X months.
+	'''
 	oldDate = helpers.getDaysAgo(30*9) # Older than 9 months ago.
 	Campaign.objects.allActive().filter(latest_response_date__lt=oldDate).update(inactive=True)
 	return JsonResponse({'results': 'done' })
@@ -239,10 +240,11 @@ def api_deactivate_old_campaigns(request):
 ##
 ##	/metrics/api/setuxspecialistassigned/
 ##
-##	Called by cron app to do daily check and set any pre-dated ux specialist assigned flags.
-##
 @login_exempt
 def api_set_ux_specialist_assigned(request):
+	'''
+	Called by cron app to do daily check and set any pre-dated ux specialist assigned flags.
+	'''
 	Project.updateAllUxSpecialistflags()
 	return JsonResponse({'results': 'done' })
 
@@ -250,10 +252,11 @@ def api_set_ux_specialist_assigned(request):
 ##
 ##	/metrics/api/prunealerthistory/
 ##
-##	Called by cron app to trim alert history to 90 days back.
-##
 @login_exempt
 def api_prune_alert_history(request):
+	'''
+	Called by cron app to trim alert history to 90 days back.
+	'''
 	Alert.objects.filter(date__lt=helpers.getDaysAgo(90)).delete()
 	return JsonResponse({'results': 'done' })
 
@@ -261,10 +264,11 @@ def api_prune_alert_history(request):
 ##
 ##	/metrics/api/pruneactivitylog/
 ##
-##	Called by cron app to trim activity log to 2000.
-##
 @login_exempt
 def api_prune_activity_log(request):
+	'''
+	Called by cron app to trim activity log to 2000.
+	'''
 	try:
 		afterDate = ActivityLog.objects.all()[2000:2001].first().timestamp
 		ActivityLog.objects.filter(timestamp__lt=afterDate).delete()
@@ -285,11 +289,11 @@ def api_do_scheduled_alerts(request):
 ##
 ##	/metrics/api/projects/responses/download/
 ##
-##	Return all responses for the given project.
-##
-##
 @login_exempt
 def api_projects_vote_responses(request):
+	'''
+	Return all responses for the given project.
+	'''
 	key = request.GET.get('key', 'xxx')
 	#project = request.GET.get('project', None)
 	
@@ -338,45 +342,12 @@ def api_remove_old_emails(request):
 ##	/metrics/api/projects/links/
 ##
 def api_projects_links(request):
+	'''
+	Used for "project links" overlay. Dynamically get this list and display overlay with them.
+	'''
 	return JsonResponse({
 		'results': list(Project.objects.allActive().order_by(Lower('name')).values_list('name', 'id'))
 	}, status=200)
-
-
-
-##
-##	/metrics/api/projects/responses/vote/export/csv/
-##
-def api_project_vote_responses_to_csv(request):
-	try:
-		project = get_object_or_404(Project, id=request.GET.get('project'))
-	except Exception as ex:
-		return render(request, '404.html', {}, status=404)
-	
-	# Get proper report period, snapshot, and responses based on the project and report period selected.
-	reportPeriodData = project.getReportPeriodData(request)
-	projectSnapshotResponses = reportPeriodData['projectSnapshotResponses']
-	
-	return render_to_csv_response(projectSnapshotResponses.values('date', 'improvement_suggestion', 'goal_not_completed_reason', 'comments', 'nps', 'umux_capability', 'umux_ease_of_use', goal=F('primary_goal__name')))
-
-
-##
-##	/metrics/api/projects/responses/feedback/export/csv/
-##
-def api_project_feedback_responses_to_csv(request):
-	try:
-		project = get_object_or_404(Project, id=request.GET.get('project'))
-	except Exception as ex:
-		return render(request, '404.html', {}, status=404)
-	
-	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
-	
-	if not isProjectEditor:
-		return render(request, '403.html', {}, status=403)
-	
-	responses = project.getFeedbackResponses()
-	
-	return render_to_csv_response(responses.values('date', 'rating', 'feedback_type', 'comments', country=F('raw_data__data__email'), email=F('raw_data__data__cc')))
 
 
 ##
@@ -384,7 +355,166 @@ def api_project_feedback_responses_to_csv(request):
 ##
 @login_exempt
 def api_active_usabilla_campaigns(request):
+	'''
+	Return a list of active Usabilla campaigns. BeeHeard hits this daily and imports any new ones.
+	'''
 	campaigns = list(Campaign.objects.fromUsabilla().allActive().filter(project__isnull=False).order_by('project__name').values('uid','project__id', 'project__name', 'project__domain__id', 'project__domain__name').distinct())
 		
 	return JsonResponse({'campaigns': campaigns })
 	
+
+##
+##	/metrics/api/survey/submit/rawdata/
+##
+@login_exempt
+@csrf_exempt
+def api_survey_submit_raw_data(request):
+	'''
+	All surveys POST submit to this URL. Take fields and store response.
+	'''
+	requestJson = json.loads(request.body)
+	try:
+		# Push campaign ID/key into mapping so "convert response" can find and use it.
+		CAMPAIGNS_ID_NAME_MAP[requestJson['campaignId']] = requestJson['campaignKey']
+		
+		response = convertFeedbackResponseToData(requestJson['data'])
+		FeedbackResponse.objects.create(**response)
+	except Exception as ex:
+		print(f'Error: api_survey_submit_raw_data failed - {ex}')
+	
+	return JsonResponse({'message': 'done' })
+	
+
+##
+##	/metrics/api/addbeeheardcampaign
+##
+@login_exempt
+@csrf_exempt
+def api_add_beeheard_campaign(request):
+	'''
+	When BeeHeard saves a campaign, if the "feed to lux" box is checked, it hits this so we can create 
+	the campaign in LUX (if it doesn't exist already)
+	'''
+	requestJson = json.loads(request.body)
+	
+	scriptUser = getBeeHeardImportScriptUser()
+	
+	if not Campaign.objects.filter(uid=requestJson['uid']).exists():
+		try:
+			project = Project.objects.get(beeheard_id=requestJson['project']['id'])
+		except:
+			project, created = Project.objects.get_or_create(name = requestJson['project']['name'],
+				defaults = {
+					'created_by': scriptUser,
+					'updated_by': scriptUser,
+					'domain': None,
+				}
+			)
+			project.beeheard_id = requestJson['project']['id']
+			project.save()
+			
+		try:
+			campaign = Campaign.objects.create(
+				created_by = scriptUser,
+				updated_by = scriptUser,
+				uid=requestJson['uid'],
+				project = project,
+			)
+			newActivity = ActivityLog.objects.create(
+				user = scriptUser,
+				comments = f'Added campaign {campaign.uid} from BeeHeard because it was saved with "feed to lux" flag'
+			)
+		except Exception as ex:
+			print(f"Error: api_add_beeheard_campaign couldn't create campaign {requestJson['uid']}: {ex}")
+		
+	return JsonResponse({'results': 'done'}, status=200)
+
+
+##
+##	/metrics/api/deleteresponse/
+##
+@user_passes_test(accessHelpers.hasAdminAccess)
+def api_delete_response(request):
+	'''
+	Admins only: Project responses list - "delete this response" trashcan link hits this.
+	'''
+	if request.POST.get('type', False) == 'vote':
+		responseModelToUse = VoteResponse
+	elif request.POST.get('type', False) == 'feedback':
+		responseModelToUse = FeedbackResponse
+	elif request.POST.get('type', False) == 'other':		
+		responseModelToUse = OtherResponse
+	else:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+		
+	try:
+		response = responseModelToUse.objects.get(id=request.POST.get('id'))
+		response.delete()
+	except Exception as ex:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+	
+	return JsonResponse({'results': {'message': 'Success.'}}, status=200)
+	
+	
+##
+##	/metrics/api/deleteprojectresponses/
+##
+@user_passes_test(accessHelpers.hasAdminAccess)
+def api_delete_project_responses(request):
+	'''
+	Admin only - Project's response list page "delete all responses" hits this.
+	'''
+	if request.POST.get('type', False) == 'vote':
+		responseModelToUse = VoteResponse
+	elif request.POST.get('type', False) == 'feedback':
+		responseModelToUse = FeedbackResponse
+	elif request.POST.get('type', False) == 'other':		
+		responseModelToUse = OtherResponse
+	else:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+	
+	try:
+		project = Project.objects.get(id=request.POST.get('id'))
+	except Exception as ex:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+	
+	try:
+		responseModelToUse.objects.filter(campaign__project=project).delete()
+	except Exception as ex:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+	
+	return JsonResponse({'results': {'message': 'Success.'}}, status=200)
+	
+	
+##
+##	/metrics/api/recalculatesnapshot/
+##
+@user_passes_test(accessHelpers.hasAdminAccess)
+def api_recalculate_snapshot(request):
+	'''
+	Admin only - Link on vote response list pages for projects. 
+	'''
+	try:
+		project = Project.objects.get(id=request.POST.get('project'))
+		reportPeriod = request.POST.get('reportperiod')
+		
+		try:
+			if 'last90' in reportPeriod:
+				project.updateLast90Snapshot()
+			elif 'q' in reportPeriod:
+				quarterYear = reportPeriod.split('q')
+				project.updateQuarterSnapshot(year=quarterYear[1], quarter=quarterYear[0])
+		except Exception as ex:
+			return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+		
+		try:
+			project.domain.updateDomainYearSnapshot(year=quarterYear[1])
+		except:
+			pass
+	except Exception as ex:
+		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+		
+	return JsonResponse({'results': {'message': 'Success.'}}, status=200)
+	
+
+

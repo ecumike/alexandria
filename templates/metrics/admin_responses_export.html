@@ -78,8 +78,8 @@
 				<tr>
 					<th class="tl w1"></th>
 					<th class="tl bo-word-break-all">Key</th>
-					<th class="tl w2">Resp #</th>
-					<th class="tl w2">"Other"s</th>
+					<th class="tl w2">Vote resps</th>
+					<th class="tl w2">"Other" goal</th>
 					<th class="tl">Project</th>
 					<th class="tl">Latest response</th>
 				</tr>
@@ -90,7 +90,7 @@
 					<tr tabindex="0" class="bg-animate hover-bg-lightest-blue">
 						<td class="w1 pv1 pr2 v-top"><input type="checkbox" name="campaigns" value="{{ campaign.id }}"></td>
 						<td class="pv1 pr2 v-top">{{ campaign.key|default:'' }}</td>
-						<td class="pv1 pr2 v-top">{{ campaign.numResponses }}</td>
+						<td class="pv1 pr2 v-top">{{ campaign.vote_response_count }}</td>
 						<td class="pv1 pr2 v-top">{{ campaign.numOthers }}</td>
 						<td class="pv1 pr2 v-top">{{ campaign.project|default:'' }}</td>
 						<td data-order="{{ campaign.latest_response_date|date:'U' }}"  class="pv1 pr2 v-top">{{ campaign.latest_response_date }}</td>

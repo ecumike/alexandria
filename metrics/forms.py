@@ -64,6 +64,22 @@ class DomainYearSnapshotForm(ModelForm):
 		super().__init__(*args, **kwargs)
 
 
+class FeedbackResponseForm(ModelForm):
+	required_css_class = requiredCssClass
+	
+	class Meta:
+		model = FeedbackResponse
+		exclude = ['created_at', 'updated_at']
+		widgets = {
+			'assignees': forms.SelectMultiple(attrs={'data-widget':'addnewuser'}),
+			'keywords': forms.SelectMultiple(attrs={'data-tags': 'true'}),
+		}
+	
+	def __init__(self, *args, **kwargs):
+		self.base_fields['assignees'].choices = Profile.usersByFullname()
+		super().__init__(*args, **kwargs)
+
+
 class GoalCompletedCategoryForm(ModelForm):
 	required_css_class = requiredCssClass
 	
