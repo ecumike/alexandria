@@ -247,7 +247,7 @@ HIJACK_LOGOUT_REDIRECT_URL = '/'  # Where admins are redirected to after releasi
 
 CDN_FILES_URL = ''
 
-#X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 #SECURE_REFERRER_POLICY = 'unsafe-url' # Default: 'same-origin'
 
 
