@@ -46,9 +46,9 @@ def home(request):
 def faqs_list(request):
 	# Put Glossary at the end/last.
 	faqCategories = []
-	for fcat in FaqCategory.objects.exclude(name='Glossary').prefetch_related('faq_categories').order_by('name'):
+	for fcat in FaqCategory.objects.prefetch_related('faq_categories').order_by('name'):
 		faqCategories.append(fcat)
-	faqCategories.append(FaqCategory.objects.filter(name='Glossary').prefetch_related('faq_categories').order_by('name').get())
+	faqCategories.append(FaqCategory.objects.prefetch_related('faq_categories').order_by('name'))
 	
 	context = {
 		'faqCatgories': faqCategories,
@@ -56,20 +56,6 @@ def faqs_list(request):
 		'highlightLeftnavLink': 'faqs',
 	}
 	return render(request, 'info/faqs.html', context)
-
-
-##
-##	/info/whatsnew/
-##
-def whatsnew_list(request):
-	whatsNews = WhatsNew.objects.all()
-		
-	context = {
-		'whatsNews': whatsNews,
-		'featuredItem': whatsNews.filter(featured=True),
-		'highlightLeftnavLink': 'whatsnew',
-	}
-	return render(request, 'info/whatsnew_list.html', context)
 
 
 ##

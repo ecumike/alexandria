@@ -57,7 +57,7 @@
 		}
 		
 		.c3-gauge-value {
-			font-family: 'IBM Plex Sans', 'helvetica neue', 'helvetica', 'sans-serif';
+			font-family: 'helvetica neue', 'helvetica', 'sans-serif';
 			font-size: 24px;
 		}
 		
@@ -434,7 +434,7 @@
 									{% include 'metrics/partials/responses_not_available.html' %}
 								{% elif goalHistogramData %}
 									<div id="goal-completion-histogram-con" class="bo-fadein bo-fadeout">
-										<div class="relative f6 flex justify-center" title="This was Claude's idea">
+										<div class="relative f6 flex justify-center">
 											<div class="f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.4.color_code }};"></div><div class="f7">No</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.3.color_code }};"></div><div class="f7">Partially</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.0.color_code }};"></div><div class="f7">Yes</div>
 										</div>
 										<div style="max-height: 260px; overflow-y: auto">
@@ -599,17 +599,6 @@
 					<tr>
 						<td class="{{templateHelpers.classes.tableListCell }} b">Research:</td>
 						<td class="{{templateHelpers.classes.tableListCell }}">{% if projectResearchCount > 0 %}<a class="{{ templateHelpers.classes.link }}" href="{% url 'research:home' %}?project={{ project.id }}">Research items</a>{% else %}None yet{% endif %}</td>
-					</tr>
-					<tr>
-						<td class="{{templateHelpers.classes.tableListCell }} b">Tasks:</td>
-						<td class="{{templateHelpers.classes.tableListCell }}">{% if project.task_projects.count > 0 %}
-							{% for task in project.task_projects.all %}
-							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'metrics:tasks_detail' id=task.id %}">{{ task.name }}</a></div>
-							{% endfor %}{% else %}None{% endif %}</td>
-					</tr>
-					<tr>
-						<td class="{{templateHelpers.classes.tableListCell }} b">Embedded designer:</td>
-						<td class="{{templateHelpers.classes.tableListCell }}">{{ project.designer_assigned|title }}</td>
 					</tr>
 					<tr>
 						<td class="{{templateHelpers.classes.tableListCell }} b">Data source:</td>

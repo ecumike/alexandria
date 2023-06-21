@@ -16,7 +16,6 @@
 			<th>Latest valid snapshot</th>
 			<th>Latest NPS category</th>
 			<th>NPS target status</th>
-			<th>Embedded designer</th>
 		</thead>
 		
 		<tbody>
@@ -53,7 +52,6 @@
 					{% else %}
 						<td></td>
 					{% endif %}
-					<td class="tc">{% if project.designer_assigned == 'yes' %}✅{% endif %}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

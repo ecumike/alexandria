@@ -1,6 +1,6 @@
 {% load static %}
 <script>
-	window.OM = {};
+	window.AL = {};
 </script>
 
 <script src="{% static 'shared/js/jquery.min.js' %}"></script>

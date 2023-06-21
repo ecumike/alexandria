@@ -369,24 +369,6 @@ def admin_users(request):
 
 
 ##
-##	/research/admin/users/noprofile/
-##
-##	Users without a profile
-##
-@user_passes_test(hasAdminAccess_decorator)
-def admin_users_noprofile(request):
-	context = {
-		'users': User.objects.filter(Q(profile__full_name = '') | Q(profile__image__isnull=True), profile__inactive=False).order_by('username')
-	}
-	
-	response = render(request, 'research/admin_users_noprofile.html', context)
-	
-	clearPageMessage(request)
-	
-	return response
-
-
-##
 ##	/research/admin/batchchange/
 ##
 ##	Batch changes across all artifacts

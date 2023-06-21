@@ -11,7 +11,7 @@
 {% block extraFiles %}
 
 	{% include 'partials/tablewidget_files.inc' %}
-	<script>OM.enableHotlinkrows();</script>
+	<script>AL.enableHotlinkrows();</script>
 	
 {% endblock %}
 
@@ -50,7 +50,6 @@
 						<td class="pv2 pl2 pr3">{{ item.core_projects_count }}</td>
 						<td class="pv2 pl2 pr3">{{ item.vote_projects_count }}</td>
 						<td class="pv2 pl2 pr3">{{ item.core_projects_currently_reporting_count }}</td>
-						<td class="pv2 pl2 pr3">{{ item.designer_assigned_count }}</td>
 						<td class="pv2 pl2 pr3">{{ item.core_projects_nps_target_achieved_count }}</td>
 						<td class="pv2 pl2 pr3">{{ item.core_projects_nps_letter_grade }}</td>
 					</tr>

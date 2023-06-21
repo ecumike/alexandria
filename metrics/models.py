@@ -51,15 +51,6 @@ def getUsabillaImportScriptUser():
 		
 	return user
 
-def getBeeHeardImportScriptUser():
-	user, created = User.objects.get_or_create(username='beeheard_import_script')
-	
-	if created:
-		user.profile.full_name = 'beeheard_import_script'
-		user.save()
-		
-	return user
-
 
 def estimateCount(modelName, app='metrics'):
 	'''
@@ -396,7 +387,6 @@ class Domain(models.Model):
 	name = models.CharField(max_length=64, unique=True)
 	lead = models.ForeignKey(User, related_name='domain_lead', null=True, blank=True, on_delete=models.SET_NULL)
 	admins = models.ManyToManyField(User, related_name='domain_admins', blank=True)
-	beeheard_id = models.PositiveIntegerField(default=0)
 	
 	class Meta:
 		ordering = ['name']
@@ -453,13 +443,9 @@ class Domain(models.Model):
 		## Now calculate and set each domain year metrics.
 		
 		# Basic counts and %s of project and flags.
-		projectsWithDesignersCount = domainCoreProjects.filter(designer_assigned='yes').count()
-		
 		domainSnapshot.all_projects_count = domainProjects.count()
 		domainSnapshot.core_projects_count = domainCoreProjects.count()
 		domainSnapshot.core_projects_percent = round(domainSnapshot.core_projects_count/domainSnapshot.all_projects_count * 100, 4) if domainSnapshot.all_projects_count else 0
-		domainSnapshot.designer_assigned_count = projectsWithDesignersCount
-		domainSnapshot.designer_assigned_percent = round(projectsWithDesignersCount/domainSnapshot.core_projects_count * 100, 4) if domainSnapshot.core_projects_count else 0
 		
 		# Core projects that we have CURRENT responses for (within 180 days)
 		domainSnapshot.vote_projects_count = domainCoreProjects.filter(currently_reporting_snapshot__isnull=False).distinct().count()
@@ -522,31 +508,11 @@ class Domain(models.Model):
 		domainSnapshot.core_projects_nps_target_achieved_count = coreProjectsMeetingNpsTargetCount
 		domainSnapshot.core_projects_nps_target_achieved_percent = round(coreProjectsMeetingNpsTargetCount/domainSnapshot.core_projects_currently_reporting_count * 100, 4) if domainSnapshot.core_projects_currently_reporting_count else 0
 		
-		if oldTargetPercent < 75 and domainSnapshot.core_projects_nps_target_achieved_percent > 75:
-			alertEntry = Alert.objects.create(
-				domain = self,
-				type = 'Info',
-				comments = f'{self.name} now has 75%+ of their projects achieving NPS target.'
-			)
-		
 		# Set NPS letter grade based on average NPS points above.
 		domainSnapshot.core_projects_nps_score_points_average = round(domainNpsScorePoints/domainNpsScoreProjects, 4) if domainNpsScoreProjects != 0 else 0
 		
 		if domainSnapshot.vote_projects_count > 0:
 			domainSnapshot.core_projects_nps_letter_grade = NpsLetterGrade.getLetterGrade(domainSnapshot.core_projects_nps_score_points_average)
-			
-			try:
-				oldGrade = domainSnapshot.core_projects_nps_letter_grade
-				if oldGrade.min_score != domainSnapshot.core_projects_nps_letter_grade.min_score:
-					direction = 'up' if domainSnapshot.core_projects_nps_letter_grade.min_score > oldGrade.min_score else 'down'
-					
-					alertEntry = Alert.objects.create(
-						domain = self,
-						type = 'Info',
-						comments = f'{self.name} NPS grade went {direction} from {oldGrade.name} to {domainSnapshot.core_projects_nps_letter_grade.name}.'
-					)
-			except:
-				pass
 		else:
 			domainSnapshot.core_projects_nps_letter_grade = None
 		
@@ -573,7 +539,6 @@ class Domain(models.Model):
 			'core_projects_nps_target_achieved_percent': None,
 			'vote_projects_count': None,
 			'vote_projects_percent': None,
-			'core_projects_designer_assigned_percent': None,
 		}
 		
 		
@@ -595,8 +560,6 @@ class Domain(models.Model):
 		npsTotalPoints = projects.aggregate(numTot=Sum(F('latest_valid_currently_reporting_snapshot__nps_score_category__ux_points')))['numTot']
 		
 		excellentNpsCount = projects.filter(latest_valid_currently_reporting_snapshot__nps_score_category__name='Excellent').count()
-		
-		designerAssignedCount = projects.filter(designer_assigned='yes').count()
 		
 		npsTargetAchievedCount = projects.filter(Q(latest_valid_currently_reporting_snapshot__nps_score__gte=F('current_year_settings__nps_target')) | Q(latest_valid_currently_reporting_snapshot__nps_score__gte=26)).count()
 		
@@ -623,7 +586,6 @@ class Domain(models.Model):
 		data['core_projects_nps_target_achieved_percent'] = (data['core_projects_nps_target_achieved_count']/data['core_projects_currently_reporting_count']) * 100 if data['core_projects_currently_reporting_count'] else 0
 		data['vote_projects_count'] = currentlyReportingCount
 		data['vote_projects_percent'] = (data['vote_projects_count']/data['core_projects_count']) * 100 if data['core_projects_count'] else 0
-		data['core_projects_designer_assigned_percent'] = (designerAssignedCount/data['core_projects_count']) * 100 if data['core_projects_count'] else 0
 		
 		return data
 		
@@ -694,10 +656,6 @@ class Project(models.Model):
 	url = models.URLField(max_length=255, null=True, blank=True)
 	estimated_num_users	= models.PositiveIntegerField(null=True, blank=True)
 	core_project = models.BooleanField(default=False)
-	designer_assigned = models.CharField(choices=[
-		('no','No'),
-		('yes','Yes')
-	], max_length=3, default='', null=True, blank=True)
 	vendor_app = models.CharField(choices=[
 		('no','No'),
 		('yes','Yes')
@@ -710,7 +668,6 @@ class Project(models.Model):
 	currently_reporting_snapshot = models.ForeignKey('ProjectSnapshot', related_name='project_currently_reporting_snapshot', null=True, blank=True, on_delete=models.SET_NULL)
 	latest_valid_currently_reporting_snapshot = models.ForeignKey('ProjectSnapshot', related_name='project_latest_valid_currently_reporting_snapshot', null=True, blank=True, on_delete=models.SET_NULL)
 	current_year_settings = models.ForeignKey('ProjectYearSetting', related_name='project_current_year_settings', null=True, blank=True, on_delete=models.SET_NULL)
-	beeheard_id = models.PositiveIntegerField(default=0)
 	
 	api_key = models.CharField(max_length=16, null=True, blank=True)
 
@@ -764,12 +721,6 @@ class Project(models.Model):
 			changeEntry = ActivityLog.objects.create(
 				user = self.updated_by,
 				content_object = self,
-				comments = f'Project domain changed from "{oldDomain.name}" to "{self.domain.name}".'
-			)
-			alertEntry = Alert.objects.create(
-				project = self,
-				domain = self.domain,
-				type = 'Info',
 				comments = f'Project domain changed from "{oldDomain.name}" to "{self.domain.name}".'
 			)
 			eventEntry = ProjectEvent.objects.create(
@@ -1139,13 +1090,6 @@ class Project(models.Model):
 			except Exception as ex:
 				pass
 		
-		if filterdata['selectedTask']:
-			try:
-				projects = projects.filter(task_projects=filterdata['selectedTask'])
-			except Exception as ex:
-				pass
-		
-		
 		return projects
 		
 	
@@ -1201,33 +1145,6 @@ class Project(models.Model):
 		projectYearSettings.calculateTargets()
 		projectYearSettings.save()
 
-	
-	def setUxSpecialistFlag(self):
-		'''
-		Find the latest UxSpecialistAssigned entry for this project for today 
-		or earlier and set designer_assigned flag.
-		Return: null
-		'''
-		try:
-			latestSa = UxSpecialistAssigned.objects.filter(project=self, date__lte=timezone.now()).order_by('-date').values('assigned').first()['assigned']
-			if latestSa:
-				self.designer_assigned = 'yes'
-			else:
-				self.designer_assigned = 'no'
-		except:
-			self.designer_assigned = 'no'
-		self.save()
-	
-	
-	@staticmethod
-	def updateAllUxSpecialistflags():
-		'''
-		Loops thru all active project and checks/sets flag. Used by daily cron.
-		Return: null
-		'''
-		for p in Project.objects.allActive():
-			p.setUxSpecialistFlag()
-	
 	
 	@staticmethod
 	def getQuarterlyChangers():
@@ -1595,14 +1512,6 @@ class CampaignQueryset(models.QuerySet):
 		'''
 		return self.filter(inactive=False)
 
-	def fromBeeHeard(self):
-		'''
-		Get all Campaigns that are active. Basic .fiter() preset.
-		Usage: Campaign.objects.allActive()
-		Return: {queryset} Chainable queryset, the same as if you used .filter().
-		'''
-		return self.filter(uid__startswith='b')
-		
 	def fromUsabilla(self):
 		'''
 		Get all Campaigns that are active. Basic .fiter() preset.
@@ -1617,9 +1526,6 @@ class CampaignManager(models.Manager):
 
 	def allActive(self):
 		return self.get_queryset().allActive()
-
-	def fromBeeHeard(self):
-		return self.get_queryset().fromBeeHeard()
 
 	def fromUsabilla(self):
 		return self.get_queryset().fromUsabilla()
@@ -1639,7 +1545,7 @@ class Campaign(models.Model):
 	
 	inactive = models.BooleanField(default=False)
 	project = models.ForeignKey(Project, related_name='campaign_project', null=True, blank=True, on_delete=models.PROTECT)
-	# uid from Usabilla or BeeHeard. Basically just a FK to reference this in upstream systems.
+	# uid from Usabilla. Basically just a FK to reference this in upstream systems.
 	# One UID have multiple Campaigns here because we tack on "role" and "version" to make unique "key"
 	uid = models.CharField(max_length=128, null=True, blank=True)
 	usabilla_button_id = models.CharField(max_length=128, null=True, blank=True)
@@ -2012,7 +1918,7 @@ class FeedbackResponseKeyword(models.Model):
 	
 class FeedbackResponse(models.Model):
 	'''
-	Automated imported data from BeeHeard. Only survey with type==feedback
+	Automated imported data. Only survey with type==feedback
 	This should never be created or updated in admin. 100% auto-imported raw_data, parsed and created.
 	'''
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -2050,7 +1956,7 @@ class FeedbackResponse(models.Model):
 
 class OtherResponse(models.Model):
 	'''
-	Automated imported data from BeeHeard. Only survey with type==other
+	Automated imported data. Only survey with type==other
 	This should never be created or updated in admin. 100% auto-imported raw_data, parsed and created.
 	'''
 	created_at = models.DateTimeField(auto_now_add=True)
@@ -2158,56 +2064,6 @@ class ProjectSnapshot(models.Model):
 			elif self.date_period == 'month' and self.date and ProjectSnapshot.objects.filter(project=self.project, date_period='month', date__year=self.date.year, date__month=pd.Timestamp(self.date).month).exists():
 				return 'A snapshot already exists for this month. Edit it from the list of snapshots.'
 		
-		# Logging alerts.
-		if self.id and self.date_period == 'last90' and self.nps_meaningful_data:
-			try:
-				# NOTE: If today is month end: if pd.to_datetime(timezone.now()).is_month_end
-				existingNpsScore = ProjectSnapshot.objects.get(id=self.id).nps_score
-				newNpsScore = round(self.nps_score, 1)
-				projectYearSetting = self.project.current_year_settings
-				npsBaseline = round(projectYearSetting.nps_baseline)
-				
-				# If the NPS changed by at least 1 and there's a baseline/target, look for 
-				#   significant change to alert.
-				if abs(newNpsScore - existingNpsScore) > 1 and npsBaseline:
-					if newNpsScore < npsBaseline-15:
-						Alert.objects.create(
-							project = self.project,
-							domain = self.project.domain,
-							type = 'Poop',
-							comments = f'The NPS ({newNpsScore}) is far below the project baseline ({npsBaseline}) with {self.nps_count:,} responses.'
-						)
-					elif newNpsScore < npsBaseline-8:
-						Alert.objects.create(
-							project = self.project,
-							domain = self.project.domain,
-							type = 'Bad',
-							comments = f'The NPS ({newNpsScore}) is significantly below the project baseline ({npsBaseline}) with {self.nps_count:,} responses.'
-						)
-					elif newNpsScore < npsBaseline:
-						Alert.objects.create(
-							project = self.project,
-							domain = self.project.domain,
-							type = 'Warning',
-							comments = f'The NPS ({newNpsScore}) is just below the project baseline ({npsBaseline}) with {self.nps_count:,} responses.'
-						)
-					elif newNpsScore > projectYearSetting.nps_target_exceed:
-						Alert.objects.create(
-							project = self.project,
-							domain = self.project.domain,
-							type = 'Great',
-							comments = f'The NPS ({newNpsScore}) is exceeding the target ({projectYearSetting.nps_target_exceed}) with {self.nps_count:,} responses.'
-						)
-					elif newNpsScore >projectYearSetting.nps_target:
-						Alert.objects.create(
-							project = self.project,
-							domain = self.project.domain,
-							type = 'Good',
-							comments = f'The NPS ({newNpsScore}) is achieving the target ({projectYearSetting.nps_target}) with {self.nps_count:,} responses.'
-						)
-			except Exception as ex:
-				pass
-			
 		super(ProjectSnapshot, self).save(*args, **kwargs)
 	
 	
@@ -2837,7 +2693,6 @@ class ImportLog(models.Model):
 	projects_affected_count = models.PositiveIntegerField(null=True, blank=True)
 	run_time_seconds = models.FloatField()
 	import_type = models.CharField(choices=[
-			('beeheard','BeeHeard'),
 			('usabilla','Usabilla'),
 		], max_length=12)
 	user = models.ForeignKey(User, related_name='usabilla_import_log_user', null=True, blank=True, on_delete=models.SET_NULL)
@@ -3140,8 +2995,6 @@ class DomainYearSnapshot(models.Model):
 	domain = models.ForeignKey(Domain, related_name='domain_year_snapshot_domain', on_delete=models.CASCADE)
 	year = models.PositiveIntegerField(default=timezone.now().year)
 	
-	designer_assigned_count = models.PositiveIntegerField(default=0)
-	designer_assigned_percent = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 	all_projects_count = models.PositiveIntegerField(default=0)
 	core_projects_count = models.PositiveIntegerField(default=0)
 	core_projects_percent = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
@@ -3195,21 +3048,6 @@ class Target(models.Model):
 		return f'{self.timestamp} - {self.user}'
 
 
-class UxSpecialistAssigned(models.Model):
-	created_at = models.DateTimeField(auto_now_add=True)
-	created_by = models.ForeignKey(User, related_name='ux_specialist_assigned_created_by', on_delete=models.PROTECT)
-	
-	date = models.DateField(default=timezone.now)
-	assigned = models.BooleanField(default=False)
-	project = models.ForeignKey(Project, related_name='ux_specialist_assigned_project', on_delete=models.CASCADE)
-	
-	class Meta:
-		ordering = ['-date', '-created_at', '-project']
-		
-	def __str__(self):
-		return f'{self.date} - {self.project} - {self.assigned}'
-
-
 class Alert(models.Model):
 	date = models.DateTimeField(default=timezone.now)
 	project = models.ForeignKey(Project, related_name='alert_project', null=True, blank=True, on_delete=models.CASCADE)
@@ -3249,7 +3087,7 @@ class Alert(models.Model):
 			
 			try:
 				sendEmail({
-					'subject': f'[Omnia Metrics] NPS decline warning for {p.name}',
+					'subject': f'[Alexandria Metrics] NPS decline warning for {p.name}',
 					'recipients': [p.contact.username],
 					'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>The NPS for {p.name} has declined the past two consecutive quarters.',
 				})
@@ -3266,7 +3104,7 @@ class Alert(models.Model):
 			
 			try:
 				sendEmail({
-					'subject': f'[Omnia Metrics] NPS increase for {p.name}',
+					'subject': f'[Alexandria Metrics] NPS increase for {p.name}',
 					'recipients': [p.contact.username],
 					'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>The NPS for {p.name} has increased the past two consecutive quarters.',
 				})
@@ -3283,7 +3121,7 @@ class Alert(models.Model):
 			
 			try:
 				sendEmail({
-					'subject': f'[Omnia Metrics] NPS decline warning for {p.name}',
+					'subject': f'[Alexandria Metrics] NPS decline warning for {p.name}',
 					'recipients': [p.contact.username],
 					'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>The NPS for {p.name} has declined the past three consecutive months.</p>',
 				})
@@ -3300,51 +3138,11 @@ class Alert(models.Model):
 			
 			try:
 				sendEmail({
-					'subject': f'[Omnia Metrics] NPS increase for {p.name}',
+					'subject': f'[Alexandria Metrics] NPS increase for {p.name}',
 					'recipients': [p.contact.username],
 					'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>The NPS for {p.name} has increased the past three consecutive months.</p>',
 				})
 			except Exception as ex:
 				pass
 
-
-class Task(models.Model):
-	created_at = models.DateTimeField(auto_now_add=True)
-	created_by = models.ForeignKey(User, related_name='task_created_by', on_delete=models.PROTECT)
-	updated_at = models.DateTimeField(auto_now=True)
-	updated_by = models.ForeignKey(User, related_name='task_updated_by', on_delete=models.PROTECT)
 	
-	name = models.CharField(max_length=128, unique=True)
-	parent_task = models.ForeignKey('self', related_name='task_parent_task',null=True, blank=True, on_delete=models.CASCADE, help_text='If a subtask, choose what parent task it belongs to')
-	frequency = models.CharField(choices=[
-		('Daily', 'Daily'),
-		('Weekly', 'Weekly'),
-		('Monthly', 'Monthly'),
-		('Quarterly', 'Quarterly'),
-		('Yearly', 'Yearly'),
-		('> Yearly', '> Yearly'),
-	], max_length=12, null=True, blank=True)
-	score = models.FloatField(default=0)
-	score_category = models.ForeignKey(UmuxScoreCategory, related_name='task_score_category', null=True, blank=True,on_delete=models.PROTECT)
-	ease = models.FloatField(default=0)
-	current_friction = models.FloatField(default=0)
-	target_friction = models.FloatField(default=0)
-	role = models.ForeignKey(Role, related_name='task_role', null=True, blank=True, on_delete=models.SET_NULL)
-	research = models.ManyToManyField('research.Artifact', related_name='task_research', blank=True, help_text='Select associated research. In addition to items selected here, all research tagged for the selected projects will be listed.')
-	projects = models.ManyToManyField(Project, related_name='task_projects', blank=True, help_text='Select associated tools/services. In addition to listing them, all their tagged research auto-populates the research section.')
-	
-	class Meta:
-		ordering = ['name']
-		
-	def __str__(self):
-		return self.name
-		
-	def save(self, *args, **kwargs):
-		try:
-			self.score_category = UmuxScoreCategory.getCategory(self.score)
-		except:
-			self.score_category = None
-		
-		super(Task, self).save(*args, **kwargs)
-		
-		

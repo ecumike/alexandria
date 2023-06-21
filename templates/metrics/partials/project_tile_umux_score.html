@@ -51,13 +51,7 @@
 			<div class="f4 mt3 linkcolor">{{ snapshot.project.name }}</div>
 		</div>
 		
-		<div class="w-100 {% if snapshot.project.designer_assigned == 'yes' %}mt2{% else %}mt4{% endif %}">
-			{% if snapshot.project.designer_assigned == 'yes' %}
-				<div class="h2 tl">
-					<div class="relative ml2" title="Project has a UX specialist assigned">{{ templateHelpers.html.icons.userRole|safe }}</div>
-				</div>
-			{% endif %}
-			
+		<div class="w-100 mt4">
 			{% if tileFiltersData.selectedReportPeriod == 'last90' and snapshot.project.timePeriodSettings.umux_target %}
 				{% if snapshot.umux_meaningful_data %}
 					{% if snapshot.umux_score > snapshot.project.timePeriodSettings.umux_target_exceed or snapshot.umux_score >= 84 %}

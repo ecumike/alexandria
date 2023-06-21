@@ -48,7 +48,7 @@
 					<div class="flex justify-between">
 						<div class="flex">
 							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Domain metrics apply only to tools &amp; services designated priority 1-3 by domain leader">{{ templateHelpers.html.icons.info|safe }}</span></div>
-							<div style="width: 220px;">Priority 1-3 tools &amp; services:</div>
+							<div style="width: 220px;">Priority tools &amp; services:</div>
 						</div>
 						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_count }}</div>
 					</div>
@@ -85,16 +85,7 @@
 							<div style="width: 220px;">Reporting excellent NPS:</div>
 						</div>
 						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_excellent_nps_percent|floatformat:0 }}%</div>
-					</div>
-					
-					<div class="flex justify-between">
-						<div class="flex">
-							<div class="gray mr1"><span class="hint--top-right hint--medium smallicon" aria-label="Designer/researcher currently assigned to the project">{{ templateHelpers.html.icons.info|safe }}</span></div>
-							<div style="width: 220px;">UX specialist assigned:</div>
-						</div>
-						<div class="b w2 tr mb1">{{ allDomainsMetrics.core_projects_designer_assigned_percent|floatformat:0 }}%</div>
-					</div>
-	
+					</div>	
 				</div>
 			</div>
 			
@@ -129,7 +120,7 @@
 								<div class="f6 lh-copy">Insufficient responses to calculate letter grade</div>
 							{% endif %}
 						{% else %}
-							<div class="f6 lh-title">Domain must have at least one priority 1-3 tool/service</div>						
+							<div class="f6 lh-title">Domain must have at least one priority tool/service</div>						
 						{% endif %}
 					</div>
 				</a>

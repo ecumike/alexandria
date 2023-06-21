@@ -133,16 +133,11 @@ class ProfileAdmin(admin.ModelAdmin):
         'full_name',
         'image',
         'inactive',
-        'whats_new_count',
-        'whats_new_seen',
-        'whats_new_email',
         'research_count',
     )
     list_filter = (
         'created_at',
         'inactive',
-        'whats_new_seen',
-        'whats_new_email',
     )
     raw_id_fields = ('user',)
     date_hierarchy = 'created_at'

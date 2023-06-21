@@ -100,7 +100,7 @@ def sendSlackAlert(errorCode, msg):
 	icon = ':error:' if errorCode > 499 else ':warning:'
 	
 	payload = {
-		'username': 'Omnia',
+		'username': 'Alexandria',
 		'icon_emoji': icon,
 		'text': f'*A {errorCode} error just happened*\n{msg}',
 	}
@@ -186,7 +186,7 @@ def createNewUser(email):
 	)
 	
 	# Profile is automatically created via user.save() signal.
-	# Now create their profile via bluemix bluepages APIs.
+	# Now create their profile.
 	updateUserProfile(user)
 	
 	return user

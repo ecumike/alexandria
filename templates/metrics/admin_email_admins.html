@@ -5,7 +5,7 @@
 
 {% block browserTitle %}{{ block.super}} Admin - Email admins {% endblock %}
 
-{% block pageTitle %} Email all Omnia admins {% endblock %}
+{% block pageTitle %} Email all Alexandria admins {% endblock %}
 
 {% block pageSubtitle %} {% endblock %}
 
@@ -31,7 +31,7 @@
 			</div>
 			
 			<div class="w-100 w-40-ns mw7 lh-copy mb4">
-				<div class="mb2">The message you provide here will be sent to all <strong>{{ admins|length }}</strong> Omnia admins:</div>
+				<div class="mb2">The message you provide here will be sent to all <strong>{{ admins|length }}</strong> Alexandria admins:</div>
 				<ul class="{{ templateHelpers.classes.bulletlist }}">{% for admin in admins %}
 						<li>{{ admin }}</li>
 					{% endfor %}

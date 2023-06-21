@@ -41,7 +41,7 @@ class Method(models.Model):
 class Source(models.Model):
 	'''
 	Research sources
-	EX: By IBM, for IBM by 3rd party
+	EX: By NNG, by 3rd party
 	'''
 	created_by = models.ForeignKey(User, related_name='source_created_by', on_delete=models.PROTECT)
 	created_at = models.DateTimeField(auto_now_add=True, editable=False)
@@ -340,7 +340,7 @@ class Artifact(models.Model):
 	def notifyOwnerNewArtifact(self):
 		try:
 			sendEmail({
-				'subject': f'[Omnia Research] New research item entered for you',
+				'subject': f'[Alexandria Research] New research item entered for you',
 				'recipients': [self.owner.username],
 				'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>{self.created_by.profile.full_name} ({self.created_by.username}) just added a new research item "{self.name}" and marked you as the owner.<p><p>The research item detail page is here: <a href="https://REPLACE_ME/research/{self.id}/edit/">https://REPLACE_ME/research/{self.id}/edit/</a></p>',
 			})
@@ -351,7 +351,7 @@ class Artifact(models.Model):
 	def notifyBrokenLink(self, brokenUrl):
 		try:
 			sendEmail({
-				'subject': f'[Omnia Research] Broken link reported on your research item',
+				'subject': f'[Alexandria Research] Broken link reported on your research item',
 				'recipients': [self.owner.username],
 				'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>A broken link was just reported on your research item: <strong>{self.name}</strong>.<p><p>The URL that was reported as broken: {brokenUrl}.</p><p>The research item detail page is here: <a href="https://REPLACE_ME/research/{self.id}/edit/">https://REPLACE_ME/research/{self.id}/edit/</a></p>',
 			})
@@ -405,9 +405,6 @@ class Profile(models.Model):
 	full_name = models.CharField(max_length=255, blank=True)
 	image = models.TextField(null=True, blank=True)
 	inactive = models.BooleanField(default=False)
-	whats_new_count = models.PositiveIntegerField(default=0)
-	whats_new_seen = models.BooleanField(default=False)
-	whats_new_email = models.BooleanField(default=False)
 	research_count = models.PositiveIntegerField(default=0)
 	
 	class Meta:
@@ -427,17 +424,6 @@ class Profile(models.Model):
 			postedValue = post.get(field, None)
 			if postedValue:	
 				setattr(self, field, postedValue)
-	
-	
-	def seenWhatsNew(self):
-		self.whats_new_seen = True
-		self.whats_new_count = 0
-		self.save()
-	
-		
-	@staticmethod
-	def newWhatsNewForAll():
-		Profile.objects.update(whats_new_seen=False, whats_new_count=F('whats_new_count')+1)
 	
 	
 	@staticmethod

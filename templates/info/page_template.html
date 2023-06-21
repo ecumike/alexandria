@@ -2,7 +2,7 @@
 {% load static %}
 
 
-{% block browserTitle %}Omnia - {% endblock %}
+{% block browserTitle %}Alexandria - {% endblock %}
 	
 {% block extraFiles %} {% endblock %}
 
@@ -48,20 +48,7 @@
 
 {% block content %}
 	
-	<div class="flex-ns">
-		
-		<div class="lh-copy w-100 mw5-ns mt4 {{ templateHelpers.classes.grid }}">
-			<a href="{% url 'info:whatsnew_list' %}" class="{% if highlightLeftnavLink == 'whatsnew' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">What's new</a>
-			<a href="{% url 'info:faqs_list' %}" class="{% if highlightLeftnavLink == 'faqs' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">FAQs</a>
-			<a href="{% url 'info:release_notes' %}" class="{% if highlightLeftnavLink == 'releasenotes' %}custom-highlight{% endif %} {{ templateHelpers.classes.leftnavItem }}">Release notes</a>
-		</div>
-		
-		<div class="w-100">
-			{% block mainContent %}	{% endblock %}
-		</div>
-		
-		
-	</div>
-
+	{% block mainContent %}	{% endblock %}
+	
 {% endblock %}
 

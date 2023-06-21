@@ -51,7 +51,6 @@ urlpatterns = [
 	url(r'^admin/batchchanges/$', admin_batch_changes, name='admin_batch_changes'),
 	url(r'^admin/pageviews/$', admin_pageviews, name='admin_pageviews'),
 	url(r'^admin/users/$', admin_users, name='admin_users'),
-	url(r'^admin/users/noprofile/$', admin_users_noprofile, name='admin_users_noprofile'),
 	
 	## Taxonomy admin URLs:
 	url(r'^admin/method/$', admin_method_list, name='admin_method_list'),

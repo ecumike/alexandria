@@ -29,22 +29,6 @@ class FaqForm(ModelForm):
 		super().__init__(*args, **kwargs)
 
 
-class WhatsNewForm(ModelForm):
-	required_css_class = 'bo-field-required'
-	
-	class Meta:
-		model = WhatsNew
-		exclude = ['created_by', 'updated_by']
-		widgets = {
-			'date': DATE_PICKER,
-			'featured': forms.TextInput(attrs={'type':'hidden'}),
-			'emails_sent_count': forms.TextInput(attrs={'type':'hidden'}),	
-		}
-
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-
 class ReleaseNoteForm(ModelForm):
 	required_css_class = 'bo-field-required'
 	

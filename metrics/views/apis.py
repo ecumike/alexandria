@@ -173,18 +173,6 @@ def api_get_new_usabilla_responses(request):
 
 
 ##
-##	/metrics/api/getnewbeeheardresponses/
-##
-@login_exempt
-def api_get_new_beeheard_responses(request):
-	'''
-	Called by cron app to do pull of latest beeheard responses.
-	'''
-	helpers.runInBackground(fetchNewBeeHeardResponses)
-	return JsonResponse({'results': 'started' })
-
-
-##
 ##	/metrics/api/setresponsesgoal/
 ##
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
@@ -238,30 +226,6 @@ def api_deactivate_old_campaigns(request):
 
 
 ##
-##	/metrics/api/setuxspecialistassigned/
-##
-@login_exempt
-def api_set_ux_specialist_assigned(request):
-	'''
-	Called by cron app to do daily check and set any pre-dated ux specialist assigned flags.
-	'''
-	Project.updateAllUxSpecialistflags()
-	return JsonResponse({'results': 'done' })
-
-
-##
-##	/metrics/api/prunealerthistory/
-##
-@login_exempt
-def api_prune_alert_history(request):
-	'''
-	Called by cron app to trim alert history to 90 days back.
-	'''
-	Alert.objects.filter(date__lt=helpers.getDaysAgo(90)).delete()
-	return JsonResponse({'results': 'done' })
-
-
-##
 ##	/metrics/api/pruneactivitylog/
 ##
 @login_exempt
@@ -275,15 +239,6 @@ def api_prune_activity_log(request):
 	except:
 		pass
 	return JsonResponse({'results': 'done' })
-
-
-##
-##	/metrics/api/scheduledalerts/
-##
-@login_exempt
-def api_do_scheduled_alerts(request):
-	helpers.runInBackground(Alert.doScheduledAlerts)
-	return JsonResponse({'results': 'started' })
 
 
 ##
@@ -356,7 +311,7 @@ def api_projects_links(request):
 @login_exempt
 def api_active_usabilla_campaigns(request):
 	'''
-	Return a list of active Usabilla campaigns. BeeHeard hits this daily and imports any new ones.
+	Return a list of active Usabilla campaigns.
 	'''
 	campaigns = list(Campaign.objects.fromUsabilla().allActive().filter(project__isnull=False).order_by('project__name').values('uid','project__id', 'project__name', 'project__domain__id', 'project__domain__name').distinct())
 		
@@ -384,51 +339,6 @@ def api_survey_submit_raw_data(request):
 	
 	return JsonResponse({'message': 'done' })
 	
-
-##
-##	/metrics/api/addbeeheardcampaign
-##
-@login_exempt
-@csrf_exempt
-def api_add_beeheard_campaign(request):
-	'''
-	When BeeHeard saves a campaign, if the "feed to lux" box is checked, it hits this so we can create 
-	the campaign in LUX (if it doesn't exist already)
-	'''
-	requestJson = json.loads(request.body)
-	
-	scriptUser = getBeeHeardImportScriptUser()
-	
-	if not Campaign.objects.filter(uid=requestJson['uid']).exists():
-		try:
-			project = Project.objects.get(beeheard_id=requestJson['project']['id'])
-		except:
-			project, created = Project.objects.get_or_create(name = requestJson['project']['name'],
-				defaults = {
-					'created_by': scriptUser,
-					'updated_by': scriptUser,
-					'domain': None,
-				}
-			)
-			project.beeheard_id = requestJson['project']['id']
-			project.save()
-			
-		try:
-			campaign = Campaign.objects.create(
-				created_by = scriptUser,
-				updated_by = scriptUser,
-				uid=requestJson['uid'],
-				project = project,
-			)
-			newActivity = ActivityLog.objects.create(
-				user = scriptUser,
-				comments = f'Added campaign {campaign.uid} from BeeHeard because it was saved with "feed to lux" flag'
-			)
-		except Exception as ex:
-			print(f"Error: api_add_beeheard_campaign couldn't create campaign {requestJson['uid']}: {ex}")
-		
-	return JsonResponse({'results': 'done'}, status=200)
-
 
 ##
 ##	/metrics/api/deleteresponse/

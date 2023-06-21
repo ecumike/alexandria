@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UserRole, Role, Url, GoalCompleted, Browser, OperatingSystem, PrimaryGoal, DeviceType, Country, State, City, DataSource, ProjectKeyword, NpsScoreCategory, Domain, Project, ProjectEvent, Campaign, NpsLetterGrade, UmuxScoreCategory, GoalCompletedCategory, Response, VoteResponse, FeedbackResponseKeyword, FeedbackResponse, OtherResponse, ProjectSnapshot, ImportLog, ProjectYearSetting, DomainYearSnapshot, ActivityLog, Target, UxSpecialistAssigned, Alert, Task
+from .models import UserRole, Role, Url, GoalCompleted, Browser, OperatingSystem, PrimaryGoal, DeviceType, Country, State, City, DataSource, ProjectKeyword, NpsScoreCategory, Domain, Project, ProjectEvent, Campaign, NpsLetterGrade, UmuxScoreCategory, GoalCompletedCategory, Response, VoteResponse, FeedbackResponseKeyword, FeedbackResponse, OtherResponse, ProjectSnapshot, ImportLog, ProjectYearSetting, DomainYearSnapshot, ActivityLog, Target
 
 
 @admin.register(UserRole)
@@ -143,7 +143,6 @@ class DomainAdmin(admin.ModelAdmin):
 		'updated_by',
 		'name',
 		'lead',
-		'beeheard_id',
 	)
 	list_filter = (
 		'created_at',
@@ -174,7 +173,6 @@ class ProjectAdmin(admin.ModelAdmin):
 		'url',
 		'estimated_num_users',
 		'core_project',
-		'designer_assigned',
 		'vendor_app',
 		'comments',
 		'latest_valid_snapshot',
@@ -182,7 +180,6 @@ class ProjectAdmin(admin.ModelAdmin):
 		'currently_reporting_snapshot',
 		'latest_valid_currently_reporting_snapshot',
 		'current_year_settings',
-		'beeheard_id',
 		'api_key',
 	)
 	list_filter = (
@@ -596,8 +593,6 @@ class DomainYearSnapshotAdmin(admin.ModelAdmin):
 		'updated_by',
 		'domain',
 		'year',
-		'designer_assigned_count',
-		'designer_assigned_percent',
 		'all_projects_count',
 		'core_projects_count',
 		'core_projects_percent',
@@ -652,53 +647,3 @@ class TargetAdmin(admin.ModelAdmin):
 	list_filter = ('created_at', 'updated_at')
 	date_hierarchy = 'created_at'
 
-
-@admin.register(UxSpecialistAssigned)
-class UxSpecialistAssignedAdmin(admin.ModelAdmin):
-	list_display = (
-		'id',
-		'created_at',
-		'created_by',
-		'date',
-		'assigned',
-		'project',
-	)
-	list_filter = ('created_at', 'date', 'assigned')
-	date_hierarchy = 'created_at'
-
-
-@admin.register(Alert)
-class AlertAdmin(admin.ModelAdmin):
-	list_display = ('id', 'date', 'project', 'domain', 'type', 'comments')
-	list_filter = ('date',)
-	raw_id_fields = ('project', 'domain')
-
-
-@admin.register(Task)
-class TaskAdmin(admin.ModelAdmin):
-	list_display = (
-		'id',
-		'created_at',
-		'created_by',
-		'updated_at',
-		'updated_by',
-		'name',
-		'parent_task',
-		'frequency',
-		'score',
-		'score_category',
-		'ease',
-		'current_friction',
-		'target_friction',
-		'role',
-	)
-	list_filter = ('created_at', 'updated_at')
-	raw_id_fields = (
-		'created_by',
-		'updated_by',
-		'parent_task',
-		'score_category',
-		'role',
-	)
-	search_fields = ('name',)
-	date_hierarchy = 'created_at'

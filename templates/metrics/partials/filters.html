@@ -150,16 +150,6 @@
 			{% endfor %}
 		</div>
 		
-		<div class="mb4 lh-copy">
-			<div class="b mb2">Task</div>
-			<select name="task" data-width="resolve">
-				<option value="all" {% if tileFiltersData.selectedDomain == 'alldomains' %}selected{% endif %}>All tasks</option>
-				{% for task in tileFiltersData.tasks %}
-					<option value="{{ task.id}}" {% if tileFiltersData.selectedTask == task.id|stringformat:'i' %}selected{% endif %}>{{ task.name }}</option>
-				{% endfor %}
-			</select>
-		</div>
-		
 		<div class="mb3 pt2">
 			<button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.bluePriButton }}">Apply filters</button>
 		</div>

@@ -37,7 +37,6 @@
 
 				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Core projects' number=dataAudits.coreProjects %}
 				
-				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with UX specialist' number=dataAudits.projectsWithDesigners %}
 			</div>
 		</div>
 		
@@ -46,9 +45,6 @@
 		<div class="flex-ns flex-wrap-ns">			
 			<div class="w-100 w-50-m w-30-ns pr4 mb4">
 				<p class="b">Tagging and taxonomies</p>
-				
-				{% url 'research:admin_users_noprofile' as thisUrl %}
-				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Users without a full name' url=url number=dataAudits.usersNoProfile itemUrl=thisUrl %}
 				
 				{% url 'research:admin_artifacts_notags' as thisUrl %}
 				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Artifacts without tags' url=url number=dataAudits.notags itemUrl=thisUrl %}

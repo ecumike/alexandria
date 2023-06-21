@@ -8,7 +8,7 @@
 
 {% block metaDate %}{{ LATEST_RESPONSE_DATE }}{% endblock %}
 
-{% block pageTitle %} Priority 1-3 tools &amp; services {% endblock %}
+{% block pageTitle %} Priority tools &amp; services {% endblock %}
 
 {% block leadspace %}{% endblock %}
 
@@ -94,10 +94,6 @@
 		
 	</script>
 	
-	{% if request.GET.showwalkthru == 'y' %}
-		{% include 'metrics/partials/walkthru_home.inc' %}
-	{% endif %}
-	
 {% endblock %}
 
 
@@ -105,7 +101,7 @@
 		
 	<div class="{{ templateHelpers.classes.grid }} mt4">
 		<div class="flex flex-wrap justify-between">
-			<div class="f4 fw6 mb4 mr4">Priority 1-3 tools &amp services</div>
+			<div class="f4 fw6 mb4 mr4">Priority tools &amp services</div>
 			<div class="mb3"><button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.blueTertiaryButton }}" onclick="BO.showProjectJumplinksOverlay();">Jump to tool</button></div>
 		</div>
 	</div>
@@ -182,7 +178,7 @@
 									<div class="f6 br4 bg-blue white dib pv1 ph2 lh-copy">{{ domainSnapshot.vote_projects_count }} of {{ domainSnapshot.core_projects_count }}</div>
 									<div class="mt2 f6 textcolor">Active</div>
 								</div>
-								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools &amp; services with data in the past 180 days">{{ templateHelpers.html.icons.info|safe }}</div>
+								<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority tools &amp; services with data in the past 180 days">{{ templateHelpers.html.icons.info|safe }}</div>
 							</div>
 							<div class="w-100 relative flex items-center justify-center">
 								<div class="donut-chart relative w-100" id="custom-core-active-donut"></div>
@@ -225,7 +221,7 @@
 				<div class="w-25-l w-50-m ph3-ns mb4">
 					<div id="step-list-most-improved" class="bg-white pa3 h-100">
 						<div class="b">Most improved NPS</div>
-						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the largest increase over their baseline NPS">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority tools & services with the largest increase over their baseline NPS">{{ templateHelpers.html.icons.info|safe }}</div>
 						<div class="w-100 f6">
 							{% if mostImprovedProjects %}
 								{% for projectSnapshot in mostImprovedProjects %}
@@ -254,7 +250,7 @@
 				<div class="w-25-l w-50-m ph3-ns mb4">
 					<div id="step-list-worst-nps" class="bg-white pa3 h-100">
 						<div class="b">Worst NPS</div>
-						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the lowest NPS">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority tools & services with the lowest NPS">{{ templateHelpers.html.icons.info|safe }}</div>
 						<div class="w-100">
 							{% if worstNpsProjects %}
 								{% for projectSnapshot in worstNpsProjects %}
@@ -278,7 +274,7 @@
 				<div class="w-25-l w-50-m ph3-ns mb4">
 					<div id="step-list-best-goal" class="bg-white pa3 h-100">
 						<div class="b">Best goal completion rates</div>
-						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority 1-3 tools & services with the highest goal completion rates">{{ templateHelpers.html.icons.info|safe }}</div>
+						<div class="gray mt1 mb3  hint--top-right hint--medium smallicon" aria-label="Priority tools & services with the highest goal completion rates">{{ templateHelpers.html.icons.info|safe }}</div>
 						<div class="w-100">
 							{% if bestCompletionProjects %}
 								{% for projectSnapshot in bestCompletionProjects %}
@@ -318,7 +314,7 @@
 		</div>
 		
 	{% else %}
-		<div class="{{ templateHelpers.classes.grid }} mb4">This domain does not have any priority 1-3 tools & services to report on</div>
+		<div class="{{ templateHelpers.classes.grid }} mb4">This domain does not have any priority tools & services to report on</div>
 		
 	{% endif %}
 	
@@ -345,7 +341,7 @@
 	
 	<div class="ph0 ph4-ns">
 		<div class="flex-ns flex-wrap">
-			<div class="w-50-l pr3-l mb4">
+			<div class="w-100 mb4">
 				<div class="pv4 ph3 ph4-ns bg-white h-100 relative">
 					<div class="b mb3">Recent research items</div>
 					{% for item in researchItems %}
@@ -356,20 +352,6 @@
 						</div>
 					{% endfor %}
 					<div class="absolute mr4-ns mr3 pt4 top-0 right-0"><a href="{% url 'research:home' %}" class="{{ templateHelpers.classes.link }}">View all</a></div>
-				</div>
-			</div>
-
-			<div class="w-50-l pl3-l mb4">
-				<div class="pv4 ph3 ph4-ns bg-white h-100 relative">
-					<div class="b mb3">What's new</div>
-					{% for item in whatsnewItems %}
-					<div class="mb3 lh-copy">
-						<div class="f6 gray ">{{ item.date|date:'M d, Y' }}</div>
-						<div class="b">{{ item.heading }}</div>
-						<div class="f6">{{ item.description|safe }}</div>
-					</div>
-					{% endfor %}
-					<div class="absolute mr4-ns mr3 pt4 top-0 right-0"><a href="{% url 'info:whatsnew_list' %}" class="{{ templateHelpers.classes.link }}">View all</a></div>
 				</div>
 			</div>
 		</div>

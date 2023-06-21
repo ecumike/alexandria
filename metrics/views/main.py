@@ -25,7 +25,6 @@ from django.views.debug import ExceptionReporter
 from django.conf import settings
 from ..models import *
 from research.models import Artifact
-from info.models import WhatsNew
 import metrics.helpers as helpers
 import metrics.access_helpers as accessHelpers
 from metrics.forms import *
@@ -68,17 +67,6 @@ def redirect_project_comments(request):
 
 
 ############################################################
-
-
-##
-##	/feedback.js
-##
-##	Feedback js. Has to load from same server, can't do static on CDN.
-##
-##
-# def feedback_js(request):
-# 	response = render(request, 'feedback.js', {})
-# 	return HttpResponse(response, content_type='text/javascript')
 
 
 ##
@@ -158,7 +146,6 @@ def metrics_home(request):
 			'npsHistoryChartData': ProjectSnapshot.getHistoricalNpsCatCountChartData(),
 		},
 		'researchItems': Artifact.objects.exclude(archived=True).only('sort_date', 'name', 'abstract').order_by('-sort_date')[:3],
-		'whatsnewItems': WhatsNew.objects.all().only('date', 'heading', 'description')[:3],
 		'menunavItem': 'dashboard',
 		'projectKeywords': ProjectKeyword.objects.filter(project_keywords__isnull=False).distinct(),
 		'linkFilter': f'keyword={keyword.id}' if keyword else 'priority=1&priority=2&priority=3',
@@ -290,7 +277,6 @@ def projects_home(request):
 	tileFiltersData['npsCategories'] = NpsScoreCategory.objects.only('name')
 	tileFiltersData['umuxCategories'] = UmuxScoreCategory.objects.only('name')
 	tileFiltersData['goalCategories'] = GoalCompletedCategory.objects.only('name')
-	tileFiltersData['tasks'] = Task.objects.filter(parent_task__isnull=True).only('name')
 	
 	# Legacy value switch to latest NPS
 	if tileFiltersData['selectedShowData'] == 'health_score':
@@ -299,7 +285,7 @@ def projects_home(request):
 
 	# Get PROJECTS using project filters: domain, priority, keywords.
 	# We then get a filtered set from that, and ones that don't have snapshot get "nothing for period".
-	projects = Project.getFilteredSet(tileFiltersData, None).select_related('domain', 'latest_valid_currently_reporting_snapshot', 'latest_valid_currently_reporting_snapshot__nps_score_category', 'latest_valid_currently_reporting_snapshot__umux_score_category', 'latest_valid_currently_reporting_snapshot__goal_completed_category').prefetch_related('task_projects')
+	projects = Project.getFilteredSet(tileFiltersData, None).select_related('domain', 'latest_valid_currently_reporting_snapshot', 'latest_valid_currently_reporting_snapshot__nps_score_category', 'latest_valid_currently_reporting_snapshot__umux_score_category', 'latest_valid_currently_reporting_snapshot__goal_completed_category')
 	
 	# Get SNAPSHOTS for the projects using the report period and all the optional checkbox filters.
 	# Ones with no snapshots get listed as "nothing for period"
@@ -360,7 +346,7 @@ def projects_detail(request):
 	'''
 	try:
 		# Use filter for prefetching, and then [0] to force error/404 on non valid project.
-		project = Project.objects.filter(id=request.GET.get('project')).select_related('domain', 'current_year_settings', 'contact', 'contact__profile').prefetch_related('admins', 'editors', 'admins__profile', 'editors__profile', 'task_projects')[0]
+		project = Project.objects.filter(id=request.GET.get('project')).select_related('domain', 'current_year_settings', 'contact', 'contact__profile').prefetch_related('admins', 'editors', 'admins__profile', 'editors__profile')[0]
 	except Exception as ex:
 		print(ex)
 		return render(request, '404.html', {}, status=404)
@@ -707,75 +693,11 @@ def projects_feedback_responses_detail(request, uid):
 
 
 ##
-##	/metrics/claudeistheman/
-##
-def claude_temp(request):
-	response = render(request, 'metrics/claude_temp.html', {})
-	return response
-
-
-##
-##	/metrics/claudeistheman/
-##
-def claude_temp_dabby1(request):
-	response = render(request, 'metrics/claude_temp_dabby1.html', {})
-	return response
-
-
-##
-##	/metrics/claudeistheman/
-##
-def claude_temp_dabby2(request):
-	response = render(request, 'metrics/claude_temp_dabby2.html', {})
-	return response
-
-
-##
-##	/metrics/alerts/
-##
-def alerts(request):
-	'''
-	List of logged alerts for campaigns, projects and domains.
-	'''
-	alerts = Alert.objects.all().select_related('project')
-	selectedProjectIds = [int(i) for i in request.GET.getlist('project', None)]
-	selectedProjects = Project.objects.filter(id__in=selectedProjectIds)
-	selectedTypes = request.GET.getlist('type')
-	
-	if selectedProjectIds:
-		alerts = alerts.filter(project__id__in=selectedProjectIds)
-	
-	if selectedTypes:
-		alerts = alerts.filter(type__in=selectedTypes)
-	
-	displayMsg = ''
-	if not alerts:
-		displayMsg = 'No alerts found with the selected filters.'
-	if len(selectedTypes) == 1 and 'Poop' in selectedTypes:
-		displayMsg = 'Oops there\'s no poop.'
-		
-	context = {
-		'breadcrumbs': getBreadcrumbBase(),
-		'alerts': alerts,
-		'types': ['Info', 'Great', 'Good', 'Warning', 'Bad', 'Poop'],
-		'projects': Project.objects.filter(alert_project__isnull=False).order_by(Lower('name')).distinct().annotate(numAlerts=Count('alert_project')).only('name'),
-		'selectedProjectIds': selectedProjectIds,
-		'selectedProjects': selectedProjects,
-		'selectedTypes': selectedTypes,
-		'displayMsg': displayMsg
-	}
-		
-	response = render(request, 'metrics/alerts.html', context)
-	helpers.clearPageMessage(request)
-	return response
-
-
-##
-##	/metrics/alerts/
+##	/metrics/responsecounts/
 ##
 def response_counts(request):
 	'''
-	List of logged alerts for campaigns, projects and domains.
+	Show response counts for each campaign
 	'''
 	monthNames = []
 	monthNums = list(range(1, timezone.now().month + 1))
@@ -831,97 +753,6 @@ def response_counts(request):
 	}
 	
 	response = render(request, 'metrics/response_counts.html', context)
-	return response
-
-
-##
-##	/metrics/tasks/
-##
-def tasks_home(request):
-	tasks = Task.objects.filter(task_parent_task__isnull=False).order_by('-ease', 'name').select_related('role', 'score_category', 'parent_task').annotate(numSubtasks=Count('task_parent_task'))
-	
-	selectedScore = request.GET.get('score', None)
-	try:
-		scoreCat = UmuxScoreCategory.objects.get(id=selectedScore)
-		tasks = tasks.filter(score_category=scoreCat)
-	except:
-		scoreCat = None
-		
-	selectedRole = request.GET.get('role', None)
-	try:
-		roleObj = Role.objects.get(id=selectedRole)
-		tasks = tasks.filter(role=roleObj)
-	except:
-		pass
-		
-	context = {
-		'tasks': tasks,
-		'scores': UmuxScoreCategory.objects.filter(task_score_category__isnull=False).distinct(),
-		'roles': Role.objects.filter(task_role__isnull=False).distinct(),
-		'selectedScore': selectedScore,
-		'selectedRole': selectedRole,
-		'menunavItem': 'tasks',
-	}
-	
-	response = render(request, 'metrics/tasks_list.html', context)
-	return response
-
-
-##
-##	/metrics/tasks/id/
-##
-def tasks_detail(request, id):
-	try:
-		task = Task.objects.filter(id=id).select_related('role', 'score_category').prefetch_related('projects', 'task_parent_task')[0]
-		if not task:
-			return render(request, '404.html', {}, status=404)
-	except:
-		return render(request, '404.html', {}, status=404)
-	
-	goalCategory = GoalCompletedCategory.getCategory(task.score)
-	
-	
-	tileFiltersData = {}
-	tileFiltersData['selectedShowData'] = 'nps_score'
-	tileFiltersData['selectedReportPeriod'] = 'last90'
-
-	# Get PROJECTS using project filters: domain, priority, keywords.
-	# We then get a filtered set from that, and ones that don't have snapshot get "nothing for period".
-	projects = task.projects.select_related('domain', 'latest_valid_currently_reporting_snapshot', 'latest_valid_currently_reporting_snapshot__nps_score_category')
-	
-	# Get SNAPSHOTS for this tasks projects.
-	try:
-		snapshotArgsLast90 = {
-			'project_currently_reporting_snapshot__isnull': False,
-			'nps_score__isnull': False,
-			'project__in': projects
-		}
-		
-		try:
-			projectSnapshots = ProjectSnapshot.objects.filter(**snapshotArgsLast90).order_by(Lower('project__name')).select_related('project', 'project__current_year_settings', 'nps_score_category')
-		except:
-			projectSnapshots = None
-			
-		projectsWithScoresArr = projectSnapshots.values_list('project', flat=True)
-		projectsWithoutSnapshot = projects.exclude(id__in=projectsWithScoresArr)
-	except Exception as ex:
-		print(ex)
-		projectSnapshots = None
-		projectsWithoutSnapshot = None
-		
-	context = {
-		'breadcrumbs': [{ 'text': 'Tasks', 'url': reverse('metrics:tasks_home')}],
-		'task': task,
-		'tasks': Task.objects.all(),
-		'projects': task.projects.all(),
-		'researchItems': Artifact.objects.filter(Q(id__in=task.projects.values('artifact_projects')) | Q(id__in=task.research.values('id'))),
-		'menunavItem': 'tasks',
-		'goalCategory': goalCategory,
-		'projectSnapshots': projectSnapshots,
-		'projectsWithoutSnapshot': projectsWithoutSnapshot,
-	}
-	
-	response = render(request, 'metrics/tasks_detail.html', context)
 	return response
 
 

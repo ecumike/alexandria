@@ -1,4 +1,4 @@
-django>=3.2.10,<3.3.0
+django<4.0.0
 ipdb
 ipython
 psycopg2_binary
@@ -11,7 +11,6 @@ python-slugify
 pycco
 django-hijack==2.3.0
 django-hijack-admin
-usabilla-api
 user-agents
 pandas
 apscheduler
@@ -22,5 +21,5 @@ django-storages
 docutils
 django-request
 django-queryset-csv
-ibm-cos-sdk
 psutil
+usabilla-api

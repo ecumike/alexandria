@@ -25,7 +25,7 @@
 			<form class="w-100 mt4" action="{% url 'metrics:admin_campaign_delete' %}" method="post">
 				{% csrf_token %}
 				<input type="hidden" name="id" value="{{ campaign.id }}">
-				<div class="mt4 mw6 lh-copy">This will permanently delete this campaign and it's association to any project from OM.<br><strong class="red">This is IRREVERSIBLE</strong>.</div>
+				<div class="mt4 mw6 lh-copy">This will permanently delete this campaign and it's association to any project from AL.<br><strong class="red">This is IRREVERSIBLE</strong>.</div>
 				<div class="mt3"><button class="{{ templateHelpers.classes.button }} {{ templateHelpers.classes.redSecButton }} ">Delete campaign</button></div>
 			</form>
 		{% endif %}

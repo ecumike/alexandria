@@ -1,7 +1,7 @@
 ////////////////////////
 //	Core namespace util.
 ////////////////////////
-OM.namespace = function() {
+AL.namespace = function() {
 	var scope = arguments[0],
 		ln = arguments.length,
 		i, value, split, x, xln, parts, object;
@@ -58,7 +58,7 @@ OM.namespace = function() {
 			el.classList.add('bo-fadeout');
 		}, 1600);	
 	}
-	OM.flashMessage = flashMessage;
+	AL.flashMessage = flashMessage;
 	
 	
 	function enableHotlinkrows () {
@@ -66,7 +66,7 @@ OM.namespace = function() {
 			BO.hotlinkRows($("[data-widget='datatable']"));
 		}, 1000);
 	}
-	OM.enableHotlinkrows = enableHotlinkrows;
+	AL.enableHotlinkrows = enableHotlinkrows;
 	
 	
 	$(function () {

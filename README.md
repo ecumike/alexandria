@@ -1,4 +1,4 @@
-# Omnia
+# Alexandria
 SurveyKong and Usabilla metrics dashboard and user research library. 
 
 **Research library**: Host and catalog all your research findings, along with searchable and filterable meta data.
@@ -43,7 +43,7 @@ Activate that environment:
 
 Clone the repo:
 
-&nbsp; &nbsp; `git clone git@github.com:ibm/omnia.git`
+&nbsp; &nbsp; `git clone git@github.com:ecumike/alexandria.git`
 
 
 CD to the repo root wherever you just cloned it to and install the dependencies:
@@ -65,7 +65,7 @@ You only need to replace the two `___`s with your local Postgres DB user ID and 
     export DJANGO_FORCE_SCRIPT_NAME=
 ```
     
-Create a postgresql database called `omnia`
+Create a postgresql database called `alexandria`
 (Ensure your user account can write to the database)
 
 
@@ -110,7 +110,7 @@ For research file uploads, you need COS/S3 (Cloud Object Storage) setup and vars
 ### Pro tip
 Create a script alias to do all this for you. Add this line in your `.bash_profile` file:
 
-`alias startomnia'source /path/to/this-app-env/bin/activate && cd /some/path/to/repo/ && ./manage.py runserver'`
+`alias startalexandria'source /path/to/this-app-env/bin/activate && cd /some/path/to/repo/ && ./manage.py runserver'`
 
 
 ## Documentation

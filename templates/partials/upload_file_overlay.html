@@ -162,9 +162,9 @@
 					success: function (data) {
 						document.getElementById('custom-fileupload-overlay').classList.remove('uploading');
 						document.getElementById('overlay_file_attachment').value = '';
-						if (OM.uploadFileOverlayCallback) {
-							OM.uploadFileOverlayCallback(data);
-							OM.uploadFileOverlayCallback = null;
+						if (AL.uploadFileOverlayCallback) {
+							AL.uploadFileOverlayCallback(data);
+							AL.uploadFileOverlayCallback = null;
 						}						
 					},
 					error: function (data) {
@@ -177,7 +177,7 @@
 		
 		// Callback set by each caller.
 		function showUploadFileOverlay (callback) {
-			OM.uploadFileOverlayCallback = callback;
+			AL.uploadFileOverlayCallback = callback;
 			MicroModal.show('custom-fileupload-overlay');
 		}
 		

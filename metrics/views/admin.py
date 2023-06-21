@@ -22,7 +22,7 @@ from metrics.models import *
 from research.models import *
 from info.models import *
 from ..forms import *
-from metrics.response_data_helpers import createCsvFromData, createCsvAndEmailFile, fetchNewUsabillaResponses, fetchNewBeeHeardResponses
+from metrics.response_data_helpers import createCsvFromData, createCsvAndEmailFile, fetchNewUsabillaResponses
 import metrics.helpers as helpers
 import metrics.access_helpers as accessHelpers
 
@@ -226,7 +226,6 @@ def admin_home(request):
 			'users': estimateCount('User', app='auth'),
 		},
 		'lastUsabillaRun': ImportLog.objects.filter(import_type='usabilla').order_by('-date').only('date', 'user').first(),
-		'lastBeeHeardRun': ImportLog.objects.filter(import_type='beeheard').order_by('-date').only('date', 'user').first(),
 		'dataAudits': {
 			'archivedArtifacts': Artifact.objects.filter(archived=True).count(),
 			'artifactSearches': ArtifactSearch.objects.all().values('search_text', 'search_count')[:10],
@@ -246,7 +245,6 @@ def admin_home(request):
 			'projectsNoDomain': Project.objects.filter(domain__isnull=True).count(),
 			'projectsInactive': Project.objects.filter(inactive=True).count(),
 			'coreProjects': Project.objects.filter(core_project=True).count(),
-			'projectsWithDesigners': Project.objects.filter(designer_assigned='yes').count(),
 		},
 	}
 	
@@ -421,12 +419,6 @@ def admin_project_add(request):
 				content_object = post,
 				comments = 'Project record created'
 			)
-			alertEntry = Alert.objects.create(
-				project = post,
-				type = 'Info',
-				comments = f'A new project was just added: "{post.name}"'
-			)
-			
 			helpers.setPageMessage(request, 'success', 'Project was added successfully')
 			response = redirect(reverse('metrics:admin_project_list'))
 		
@@ -461,7 +453,6 @@ def admin_project_edit(request, id):
 			'breadcrumbs': breadcrumbs,
 			'project': project,
 			'form': form,
-			'uxSpecialistAssigneds': UxSpecialistAssigned.objects.filter(project=project)
 		}
 
 		response = render(request, 'metrics/admin_project_edit.html', context)
@@ -581,13 +572,6 @@ def admin_campaign_add(request):
 			post.updated_by = request.user
 			post.save()
 			
-			if post.project:
-				alertEntry = Alert.objects.create(
-					project = post.project,
-					type = 'Info',
-					comments = f'A new campaign ({post.key}) campaign was added to "{post.project.name}"'
-				)
-			
 			helpers.setPageMessage(request, 'success', 'Campaign was added successfully')
 			response = redirect(reverse('metrics:admin_campaign_list'))
 		
@@ -657,31 +641,12 @@ def admin_campaign_edit(request, id):
 				helpers.runInBackground(oldProject.recalculateSnapshotsBaselinesAndDomains)
 				helpers.runInBackground(newProject.recalculateSnapshotsBaselinesAndDomains)
 				
-				alertEntry = Alert.objects.create(
-					project = newProject,
-					domain = getattr(newProject, 'domain', None),
-					type = 'Info',
-					comments = f'"{post.key}" campaign was moved from "{oldProject.name}" to "{newProject.name}"'
-				)
 			elif newProject and not oldProject:
 				helpers.runInBackground(newProject.recalculateSnapshotsBaselinesAndDomains)
 				
-				alertEntry = Alert.objects.create(
-					project = newProject,
-					domain = getattr(newProject, 'domain', None),
-					type = 'Info',
-					comments = f'"{post.key}" campaign was added to "{newProject.name}"'
-				)
 			elif oldProject and not newProject:
 				helpers.runInBackground(oldProject.recalculateSnapshotsBaselinesAndDomains)
 				
-				alertEntry = Alert.objects.create(
-					project = newProject,
-					domain = getattr(newProject, 'domain', None),
-					type = 'Info',
-					comments = f'"{post.key}" campaign was removed from "{oldProject.name}"'
-				)
-
 			helpers.setPageMessage(request, 'success', 'Campaign was updated successfully')
 			response = redirect(reverse('metrics:admin_campaign_list'))
 		 
@@ -1349,18 +1314,7 @@ def admin_email_all_responses_as_csv(request):
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def admin_get_new_usabilla_responses(request):
 	helpers.runInBackground(fetchNewUsabillaResponses, {'user':request.user})
-	helpers.setPageMessage(request, 'success', 'Omnia is fetching all the latest Usabilla responses since the last fetch.<br>All reports will be updated with the latest data in a few minutes.')
-	response = redirect(reverse('metrics:admin_home'))	
-	return response
-
-
-##
-##	/metrics/admin/getnewbeeheardresponses/
-##
-@user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_get_new_beeheard_responses(request):
-	helpers.runInBackground(fetchNewBeeHeardResponses, {'user':request.user})
-	helpers.setPageMessage(request, 'success', 'Omnia is fetching all the latest BeeHeard responses since the last fetch.<br>All reports will be updated with the latest data in a few minutes.')
+	helpers.setPageMessage(request, 'success', 'Alexandria is fetching all the latest Usabilla responses since the last fetch.<br>All reports will be updated with the latest data in a few minutes.')
 	response = redirect(reverse('metrics:admin_home'))	
 	return response
 
@@ -1517,77 +1471,7 @@ def admin_target_edit(request, id):
 def admin_target_delete(request):
 	return doCommonDeleteView(request, Target)
 
-	
-##
-##	/metrics/admin/api/uxspecialistassigned/add/
-##
-@user_passes_test(accessHelpers.isAnyProjectAdmin_decorator)
-def admin_uxspecialistassigned_add(request):
-	try:
-		project = Project.objects.get(id=request.POST.get('project'))
-		
-		if not accessHelpers.isProjectAdmin(request.user, project):
-			return JsonResponse({'msg': 'Not authorized'}, status=403)
-	
-		UxSpecialistAssigned.objects.create(
-			created_by = request.user,
-			project = project,
-			date = request.POST.get('date'),
-			assigned = request.POST.get('assigned'),
-		)
-		
-		existingDA = project.designer_assigned
-		
-		# Now set this project's flag that it has one assigned or not.
-		project.setUxSpecialistFlag()
 
-		# Log the change.
-		changeEntry = ActivityLog.objects.create(
-			user = request.user,
-			content_object = project,
-			comments = f'Project UX specialist assigned changed from "{existingDA}" to "{project.designer_assigned}"'
-		)
-		
-		# Return the new list to display.
-		response = JsonResponse({
-			'uxSpecialistAssigneds': list(UxSpecialistAssigned.objects.filter(project=project).values_list('date', 'assigned', 'created_by__username', 'id')),
-		}, status=200)
-		
-	except Exception as ex:
-		response = JsonResponse({
-			'msg': str(ex)
-		}, status=404)
-	
-	return response
-	
-	
-##
-##	/metrics/admin/api/uxspecialistassigned/delete/<POST $ID>
-##
-@user_passes_test(accessHelpers.isAnyProjectAdmin_decorator)
-def admin_uxspecialistassigned_delete(request):
-	try:
-		project = Project.objects.get(id=request.POST.get('project'))	
-		uxSpecialist = UxSpecialistAssigned.objects.get(id=request.POST.get('id'))
-		
-		if not accessHelpers.isProjectAdmin(request.user, project):
-			return JsonResponse({'msg': 'Not authorized'}, status=403)
-		
-		uxSpecialist.delete()
-		
-		# Return the new list to display.
-		response = JsonResponse({
-			'uxSpecialistAssigneds': list(UxSpecialistAssigned.objects.filter(project=project).values_list('date', 'assigned', 'created_by__username', 'id')),
-		}, status=200)
-		
-	except Exception as ex:
-		response = JsonResponse({
-			'msg': str(ex)
-		}, status=404)
-	
-	return response	
-	
-	
 ##
 ##	/metrics/admin/pageviews/download/
 ##
@@ -1796,42 +1680,6 @@ def admin_role_edit(request, id):
 @user_passes_test(accessHelpers.hasAdminAccess_decorator)
 def admin_role_delete(request):
 	return doCommonDeleteView(request, Role)
-
-
-##
-##	/metrics/admin/task/
-##
-@user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_task_list(request):
-	thisModel = Task
-	listItems = thisModel.objects.all().select_related('parent_task').prefetch_related('projects', 'task_parent_task')
-	return doCommonListView(request, thisModel, listItems)
-
-
-##
-##	/metrics/admin/task/add/
-##
-@user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_task_add(request):
-	thisModel = Task
-	return doCommonAddItemView(request, thisModel)
-
-
-##
-##	/metrics/admin/task/edit/<id>
-##
-@user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_task_edit(request, id):
-	thisModel = Task
-	return doCommonEditItemView(request, thisModel, id, 'name', allowDelete=True)
-
-
-##
-##	/metrics/admin/task/delete/
-##
-@user_passes_test(accessHelpers.hasAdminAccess_decorator)
-def admin_task_delete(request):
-	return doCommonDeleteView(request, Task)
 
 
 

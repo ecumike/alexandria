@@ -65,7 +65,7 @@
 			<div class="bg-white relative z-1">
 				<nav class="shadow-2 flex flex-wrap justify-between bg-white custom-header pl3 pr4">
 					<div class="flex flex-wrap items-baseline">
-						<div><a class="fw8 underline-hover pa3 link f6 f5-ns fw5 dib relative hover-dark-blue textcolor" href="{% url 'info:home' %}">UXRA home</a></div>
+						<div><a class="fw8 underline-hover pa3 link f6 f5-ns fw5 dib relative hover-dark-blue textcolor" href="{% url 'info:home' %}">Alexandria</a></div>
 						<div class="flex flex-wrap custom-headerlinks">
 							<a class="{{ templateHelpers.classes.navItem }} {% block headerMetricsClass %}{% endblock %}" href="{% url 'metrics:home' %}">Metrics</a>
 							<a class="{{ templateHelpers.classes.navItem }} {% block headerResearchClass %}{% endblock %}" href="{% url 'research:home' %}">Research library</a> 
@@ -111,7 +111,6 @@
 		
 		<footer>
 			<div class="ph3 {% block footerClasses %}bg-white{% endblock %} flex flex-wrap items-center">
-				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:whatsnew_list' %}">What's new</a>
 				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:faqs_list' %}">FAQs</a> 
 				<a class="{{ templateHelpers.classes.navItem }}" href="{% url 'info:release_notes' %}">Release notes</a>
 				<a class="sitenav-help smallicon {{ templateHelpers.classes.navItem }}" href="#" style="transform:translate3d(0,2px,0);"><span class="hint--top-left" aria-label="Get help">{{ templateHelpers.html.icons.help|safe }}</span></a>
@@ -126,23 +125,13 @@
 						<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
 					</header>
 					
-					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'research:home' %}?method=2&showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the research list page to me</a></div>
-					
-					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'research:artifacts_add' %}?showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the research entry template to me</a></div>
-					
-					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:home' %}?showwalkthru=y">{{ templateHelpers.html.icons.chevronForward|safe }}Explain the metrics dashboard to me</a></div>
-					
 					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'info:faqs_list' %}">{{ templateHelpers.html.icons.chevronForward|safe }}FAQs</a></div>
 					
-					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="https://github.com/ibm/omnia/issues/new" target="_blank">{{ templateHelpers.html.icons.chevronForward|safe }}I've got a bug / feature request / feedback for you</a></div>
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIconFlexCenter }} animate" href="https://github.com/ecumike/alexandria/issues/new" target="_blank">{{ templateHelpers.html.icons.chevronForward|safe }}I've got a bug / feature request / feedback for you</a></div>
 					
 				</div>
 			</div>
 		</div>
-		
-		{% if not request.user.profile.whats_new_seen and request.user.profile.whats_new_count > 0 %}
-			{% include 'partials/whats_new_toaster_overlay.html' %}
-		{% endif %}
 		
 		<script>jQuery.ajax({url:'{% url 'research:api_page_view_tracker' %}'});</script>
 	</body>

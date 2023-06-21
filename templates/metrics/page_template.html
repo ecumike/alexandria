@@ -28,12 +28,6 @@
 				<a href="{% url 'metrics:projects_home' %}" class="{{ templateHelpers.classes.menunavLink }}">Tools/services</a>
 			{% endif %}
 			
-			{% if menunavItem == 'tasks' %}	
-				<div class="b {{ templateHelpers.classes.menunavText }}">Tasks</div>
-			{% else %}
-				<a href="{% url 'metrics:tasks_home' %}" class="{{ templateHelpers.classes.menunavLink }}">Tasks</a>
-			{% endif %}
-			
 		</div>
 	</div>
 {% endblock %}

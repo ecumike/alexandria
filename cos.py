@@ -1,7 +1,7 @@
 import time
-import ibm_boto3
+import boto3
 
-from ibm_botocore.client import Config, ClientError
+from botocore.client import Config, ClientError
 
 from django.conf import settings
 
@@ -13,10 +13,10 @@ def showMessage(msg):
 
 # Create the connection to our Cloud Object Storage (COS).
 try:
-	cos = ibm_boto3.resource('s3',
-		ibm_api_key_id = settings.COS_UPLOADS_API_KEY_ID,
-		ibm_service_instance_id = settings.COS_UPLOADS_RESOURCE_CRN,
-		ibm_auth_endpoint = settings.COS_AUTH_ENDPOINT,
+	cos = boto3.resource('s3',
+		api_key_id = settings.COS_UPLOADS_API_KEY_ID,
+		service_instance_id = settings.COS_UPLOADS_RESOURCE_CRN,
+		auth_endpoint = settings.COS_AUTH_ENDPOINT,
 		endpoint_url = settings.COS_ENDPOINT,
 		config = Config(signature_version='oauth')		
 	)
@@ -48,7 +48,7 @@ def uploadFile(fileToUpload, cosFileName):
 		file_threshold = 1024 * 1024 * 20
 
 		# Set the transfer threshold and chunk size
-		transfer_config = ibm_boto3.s3.transfer.TransferConfig(
+		transfer_config = boto3.s3.transfer.TransferConfig(
 			multipart_threshold=file_threshold,
 			multipart_chunksize=part_size
 		)

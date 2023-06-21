@@ -618,7 +618,6 @@ def createProjectTilesFiltersData(request):
 		'selectedMeetingUmuxTarget': request.GET.get('meetingumuxtarget', None),
 		'selectedExceedingNpsTarget': request.GET.get('exceedingnpstarget', None),
 		'selectedExceedingUmuxTarget': request.GET.get('exceedingumuxtarget', None),
-		'selectedTask': request.GET.get('task', None),
 		'showDataChoices': showDataChoices,
 		'allowedShowDataChoices': allowedShowDataChoices,
 		'reportPeriodChoices': createReportPeriodChoices((timezone.now() - timedelta(days=365*2)), timezone.now()),
@@ -627,7 +626,7 @@ def createProjectTilesFiltersData(request):
 
 def doWeeklyDigestAndEmail():
 	"""
-	Runs every Sunday via cron. Gathers stats from previous week and emails them to all Omnia admins.
+	Runs every Sunday via cron. Gathers stats from previous week and emails them to all Alexandria admins.
 	Return: null
 	"""
 	from metrics.models import ActivityLog, User, Group, VoteResponse, Campaign, Project
@@ -649,7 +648,6 @@ def doWeeklyDigestAndEmail():
 	campaignsWithoutProject = Campaign.objects.allActive().filter(project__isnull=True, response_campaign__isnull=False).distinct().count()
 	projectsWithoutDomains = Project.objects.allActive().filter(domain__isnull=True, campaign_project__response_campaign__isnull=False).order_by('name').distinct().count()
 	projectsExcellent = Project.objects.allActive().filter(latest_valid_currently_reporting_snapshot__nps_score_category__name='Excellent').count()
-	whatsNewSubscribers = Profile.objects.filter(whats_new_email=True).count()
 	projectsWithResponsesNoBaseline = Project.objects.filter(
 			project_year_setting_project__year=timezone.now().year,
 			campaign_project__response_campaign__isnull=False,
@@ -701,7 +699,6 @@ def doWeeklyDigestAndEmail():
 	msg += f"""
 		<tr><td>{projectsExcellent}</td><td>Projects with excellent NPS</td></tr>
 		<tr><td>{cellerDwellers}</td><td>Celler dwellers: NPS currently 10+ below their baseline</td></tr>
-		<tr><td>{whatsNewSubscribers}</td><td>Users subscibed to "What\'s new" email notifications</td></tr>
 		</table>"""
 	
 	quarterlyChangers = Project.getQuarterlyChangers()
@@ -740,9 +737,9 @@ def doWeeklyDigestAndEmail():
 	try:
 		admins = list(Group.objects.get(name='admins').user_set.all().values_list('username', flat=True))
 		sendEmail({
-			'subject': '[Omnia] Omniabot weekly digest',
+			'subject': '[Alexandria] Alexandriabot weekly digest',
 			'recipients': admins,
-			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;">{msg}<br><p style="font-size:12px;color:#777;">You\'re receiving this email because you\'re a Omnia admin. If you don\'t want to receive these, tough luck.</p></div>'
+			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;">{msg}<br><p style="font-size:12px;color:#777;">You\'re receiving this email because you\'re a Alexandria admin. If you don\'t want to receive these, tough luck.</p></div>'
 		})
 	except Exception as ex:
 		print(str(ex))
@@ -766,10 +763,10 @@ def emailAdmins(msgData):
 		admins = list(Group.objects.get(name='admins').user_set.all().values_list('username', flat=True))
 		
 		returnMessage, emailSent = sendEmail({
-			'subject': '[Omnia] Admins communication',
+			'subject': '[Alexandria] Admins communication',
 			'recipients': admins,
 			'fromEmail': msgData['fromEmail'],
-			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>Message from {msgData["sender"]} to all {len(admins)} Omnia admins:</p><p>{msgData["msg"]}</p></div>'
+			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p>Message from {msgData["sender"]} to all {len(admins)} Alexandria admins:</p><p>{msgData["msg"]}</p></div>'
 		})
 		
 		return (returnMessage, emailSent)

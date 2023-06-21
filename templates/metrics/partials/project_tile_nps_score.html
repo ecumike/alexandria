@@ -50,13 +50,7 @@
 			<div class="f4 mt3 linkcolor">{{ snapshot.project.name }}</div>
 		</div>
 		
-		<div class="w-100 {% if snapshot.project.designer_assigned == 'yes' %}mt2{% else %}mt4{% endif %}">
-			{% if snapshot.project.designer_assigned == 'yes' %}
-				<div class="h2 tl">
-					<div class="relative ml2" title="Project has a UX specialist assigned">{{ templateHelpers.html.icons.userRole|safe }}</div>
-				</div>
-			{% endif %}
-			
+		<div class="w-100 mt4">
 			{% if tileFiltersData.selectedReportPeriod == 'last90' %}
 				{% if snapshot.project.timePeriodSettings.nps_target %}
 					{% if snapshot.nps_meaningful_data %}

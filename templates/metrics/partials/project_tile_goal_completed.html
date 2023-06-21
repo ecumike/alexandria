@@ -20,9 +20,5 @@
 		<div class="f7 mb1">{{ snapshot.project.domain.name }}</div>
 		<div class="f7 mb1">{{ snapshot.project.contact.profile.full_name }}</div>
 		
-		{% if snapshot.project.designer_assigned == 'yes' %}
-			<div title="Project has a UX specialist assigned" class="absolute bottom-0 left-0 ml2 mb1">{{ templateHelpers.html.icons.userRole|safe }}</div>
-		{% endif %}
-
 	</div>
 </a>

@@ -44,7 +44,6 @@ class DomainForm(ModelForm):
 		exclude = ['created_by', 'updated_by']
 		widgets = {
 			'lead': forms.Select(attrs={'data-widget':'addnewuser'}),
-			'beeheard_id': forms.TextInput(attrs={'type':'hidden'}),
 		}
 
 	def __init__(self, *args, **kwargs):
@@ -118,7 +117,7 @@ class ProjectForm(ModelForm):
 	
 	class Meta:
 		model = Project
-		exclude = ['created_by', 'updated_by', 'designer_assigned']
+		exclude = ['created_by', 'updated_by']
 		widgets = {
 			'admins': forms.SelectMultiple(attrs={'data-widget':'addnewuser'}),
 			'api_key': forms.TextInput(attrs={'style':'width: 160px'}),
@@ -134,7 +133,6 @@ class ProjectForm(ModelForm):
 			'latest_valid_snapshot': forms.TextInput(attrs={'type':'hidden'}),
 			'priority': forms.Select(attrs={'data-width':'resolve','class':'w4'}),
 			'vendor_app': forms.Select(attrs={'data-width':'resolve','class':'w4'}),
-			'beeheard_id': forms.TextInput(attrs={'type':'hidden'}),
 		}
 
 	def __init__(self, *args, **kwargs):
@@ -234,17 +232,6 @@ class TargetForm(ModelForm):
 		super().__init__(*args, **kwargs)
 
 
-class UxSpecialistAssignedForm(ModelForm):
-	required_css_class = requiredCssClass
-	
-	class Meta:
-		model = UxSpecialistAssigned
-		exclude = ['created_by', 'project']
-
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
-
 class EmailAdminsForm(forms.Form):
 	required_css_class = requiredCssClass
 	
@@ -276,19 +263,4 @@ class RoleForm(ModelForm):
 
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-
-
-class TaskForm(ModelForm):
-	required_css_class = requiredCssClass
-	
-	class Meta:
-		model = Task
-		exclude = ['created_by', 'updated_by']
-		widgets = {
-			'score_category': forms.TextInput(attrs={'type':'hidden'}),
-		}
-
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-
 

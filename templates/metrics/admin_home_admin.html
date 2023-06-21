@@ -97,28 +97,10 @@
 					<br>{{ lastUsabillaRun.date|date:'M d, Y' }} - {{ lastUsabillaRun.date|time:'TIME_FORMAT' }}
 					<br>By {{ lastUsabillaRun.user.username|default:'nightly script' }}</div>
 					
-				{% url 'metrics:admin_get_new_beeheard_responses' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Fetch BeeHeard responses' description='' %}
-				<div class="f7 pl3 mb2"><strong>Last run:</strong>
-					<br>{{ lastBeeHeardRun.date|date:'M d, Y' }} - {{ lastBeeHeardRun.date|time:'TIME_FORMAT' }}
-					<br>By {{ lastBeeHeardRun.user.username|default:'nightly script' }}</div>
-	
 				{% url 'metrics:admin_import_log' as url %}
 				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Response import log' totalNum=lastUsabillaRun.date|date:'M d, Y' description='Import history, latest run:' %}
 				
 			</div>
-			
-			
-			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
-				<div class="b mb3">Tasks</div>
-	
-				{% url 'metrics:admin_task_list' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Tasks' totalNum=counts.tasks description='' %}
-	
-				{% url 'metrics:admin_role_list' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Roles' totalNum=counts.roles description='' %}
-			</div>
-			
 			
 			<div class="w5-ns w-100 custom-border-color ba pa3 mb4 mr4-ns">
 				<div class="b mb3">Scoring</div>
@@ -213,10 +195,7 @@
 				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Inactive projects' number=dataAudits.projectsInactive %}
 	
 				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Core projects' number=dataAudits.coreProjects %}
-				
-				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Projects with UX specialist' number=dataAudits.projectsWithDesigners %}
-			</div>
-	
+			</div>	
 		</div>
 	</div>
 </div>
@@ -268,9 +247,6 @@
 				{% url 'info:admin_faq_list' as url %}
 				{% include 'metrics/partials/admin_home_item2.html' with url=url title='FAQs' totalNum=counts.faqs description='Uhh, FAQs for FAQ page' %}
 	
-				{% url 'info:admin_whatsnew_list' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='What\'s new' description='News items and alerts' %}
-				
 				{% if request.user.is_superuser %}
 					{% url 'info:admin_releasenote_list' as url %}
 					{% include 'metrics/partials/admin_home_item2.html' with url=url title='Release notes' description='' %}
@@ -290,7 +266,7 @@
 				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Admins' totalNum=counts.admins description='' %}
 				
 				{% url 'metrics:admin_email_admins' as url %}
-				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Email all admins' description='Send a message to all Omnia admins' %}
+				{% include 'metrics/partials/admin_home_item2.html' with url=url title='Email all admins' description='Send a message to all Alexandria admins' %}
 	
 				
 			</div>
@@ -302,9 +278,6 @@
 		<div class="flex-ns flex-wrap">
 			<div class="w5-ns w-100 mr4-ns mb4">
 				<p class="b">Tagging and taxonomies</p>
-				
-				{% url 'research:admin_users_noprofile' as thisUrl %}
-				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Users without a full name' url=url number=dataAudits.usersNoProfile itemUrl=thisUrl %}
 				
 				{% url 'research:admin_artifacts_notags' as thisUrl %}
 				{% include 'metrics/partials/data_audit_stat_with_number.html' with name='Artifacts without tags' url=url number=dataAudits.notags itemUrl=thisUrl %}

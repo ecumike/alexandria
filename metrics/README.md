@@ -2,15 +2,15 @@
 
 For the most part, this entire site is automated: Every page/template in the metrics app site is fully automated and requires ZERO work from here on out unless you wanted to add features or change the layout/design/whatever. You could leave it alone and it would run itself for years.
 
-Domains, projects, and campaigns are added via the Admin Center. Once a campaign is added, LUX will start pulling responses for that campaign from Usabilla or BeeHeard and that project/campaign usually never needs to be touched again. Yearly, quarterly, and domain-level metrics are all automatic from that point.
+Domains, projects, and campaigns are added via the Admin Center. Once a survey campaign is added, you can create a cron job to start pulling responses for that campaign from the survey service you use (Qualtrics, Usabilla, SurveyMonkey, etc) and that project/campaign usually never needs to be touched again. Yearly, quarterly, and domain-level metrics are all automatic from that point.
 
 ## Domains and projects
-Domains are simply organizing tools and services (projects) into what group/VP/whatever is responsible for them. The key thing about domain is that there are roll-up metrics for a domain so you can see at a glance how a CIO domain is doing with their tools overall. These are calculated nightly after all responses are imported and project snapshots updated. They are stored in the `Domain year snapshot` in the Admin Center.
+Domains are a way to roll up and organize/group tools and services (projects) into what group/VP/whatever is responsible for them. The key thing about domain is that there are roll-up metrics for a domain so you can see at a glance how a domain is doing with their tools overall. These are calculated nightly after all responses are imported and project snapshots updated. They are stored in the `Domain year snapshot` in the Admin Center.
 
-A `project` is the site, tool, app, or service. Most projects belong to a domain. When they are in a domain they will affect the domain's overall metrics so don't just do it willy-nilly. A project does not have to be in a domain. It can simply be an orphaned project used for metrics reporting in LUX.
+A `project` is the site, tool, app, or service. Most projects belong to a domain. When they are in a domain they will affect the domain's overall metrics so don't just do it willy-nilly. A project does not have to be in a domain. It can simply be an orphaned project used for metrics reporting.
 
 ## Domains list page
-This is a simple output of a few fields from each domain's yearly snapshot. A few calcs are done in the view to determine the top-level overall CIO metrics. Basic stuff. Page is fully automated, even at new year.
+This is a simple output of a few fields from each domain's yearly snapshot. A few calcs are done in the view to determine the top-level overall metrics. Basic stuff. Page is fully automated, even at new year.
 
 ## Projects list page
 The project list page is exactly as named... a list of project based on selected filters. These are NOT contextual. The filters are based on two required selections: `Domain` and `report period`. After that, the filters are based on the snapshot for the project for that period. Ex: Scoring, NPS category, UMUX category.. those are based on the selected quarter snapshot for each project in the selected domain (including "all"). The filters are pretty simple basic since all those fields are stored in the quarter snapshot. That's why the site is so fast. I made it that way. Page is fully automated, even at new year.
@@ -20,7 +20,7 @@ The project detail page is mostly a report page for a selected quarter report pe
 
 ### Projects detail Time Machine
 Normal reporting period selections are by quarter. They product URL param: `reportperiod=<#>q<year>`
-URL example: https://lux…….&project=181&reportperiod=1q2022
+URL example: https://someDomain.com/...&project=181&reportperiod=1q2022
 
 Secretly, we also have them by month:
 So if `1q2022` means “1st quarter, 2022”…. you can probably guess how to do it by month :)  `<#>m<year>` so change the `reportperiod` in the URL to something like `reportperiod=10m2021` to see reporting for Oct 2021.
@@ -38,15 +38,15 @@ So to see your project detail page using data from Oct 14 to Oct 28, you would u
 
 
 ## Campaigns
-A `campaign` is the way a selected survey is setup and run for a selected project. Projects can have multiple campaigns; a feedback survey campaign, a VotE survey campaign, a survey campaign only for managers that gets mailed out once a quarter... whatever. Campaigns are the things that have "responses".
+A `campaign` is the way a selected survey is setup and run for a selected project. Projects can have multiple campaigns; a feedback survey campaign, a NPS survey campaign, employee sat survey campaign. Campaigns are your surveys, and they have have responses.
 
 ## Quarterly reporting
-NPS and UMUX rely on a certain amount of margin of error. Too high and you could be falsely reporting a score that could easily or drastically change with more responses. This mostly relies on the quantity of responses, the more the better. Therefore, we calculate and report scores on a quarterly basis (as opposed to monthly) to ensure we get as many "good enough" scores as possible. To do this, a `quarterly snapshot` is created automatically for every project, for every year, for every quarter that project has a response for. This is the meat-and-potatoes of this whole gig. Calculations are done nightly on a cron script after all new responses are imported and stored in the quarterly snapshots. Things like response counts, NPS scores, margin of errors, meaningful score dates, the whole deal, are stored in fields. This allows us to have a super fast site and not have to calculate all these numbers on the fly on every page view. That's super inefficient, and database-driven sites 101.
+NPS and UMUX rely on a certain amount of margin of error. Too high and you could be falsely reporting a score that could easily or drastically change with more responses. This mostly relies on the quantity of responses, the more the better. Therefore, we calculate and report scores on a quarterly basis (as opposed to monthly) to ensure we get as many "good enough" scores as possible. To do this, a `quarterly snapshot` is created automatically for every project, for every year, for every quarter that project has a response for. This is the meat-and-potatoes of this whole gig. Calculations can be done nightly on a cron script you setup after all new responses are imported and stored in the quarterly snapshots. Things like response counts, NPS scores, margin of errors, meaningful score dates, the whole deal, are stored in fields. This allows us to have a super fast site and not have to calculate all these numbers on the fly on every page view. That's super inefficient.
 
 ## Nightly response imports and quarterly report calculations
-There is a cron script in the Blackops cron repo that hits Usabilla and BeeHeard every nite at 8p and 9p and pulls responses for every campaign.
+You can automate fetching responses from your survey service by setting up a basic Flask app file using APscheduler as a cron that hits your survey service API every nite pulls responses for each of your "active" campaigns.
 
-During the import script, LUX keeps track of which projects and which quarters we got responses for. After all responses are imported, a series of calculation scripts are run:
+During the import script, Alexandria keeps track of which projects and which quarters we got responses for. After all responses are imported, a series of calculation scripts are run:
 
 For each project:
  - Update each quarter snapshot we just received a response for (`updateQuarterSnapshot`). This will do a series of date setting and stats calculations (`calculateStats`). It will calculate new NPS, UMUX, and goal completion stats for that quarter for that project

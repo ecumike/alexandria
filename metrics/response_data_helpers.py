@@ -48,16 +48,6 @@ def setSinceDate(date = None):
 	return int(date.timestamp() * 1000)
 
 
-def setBeeHeardCampaignSinceDate(date=None):
-	# Get responses since this date. In MILLISECONDS (datetime x 1000)
-	inception = datetime(2020, 1, 1)
-	
-	if not date:
-		date = inception
-	
-	return int(date.timestamp())
-
-
 def conectToUsabilla():
 	"""
 	Create an API client with access key and secret key.
@@ -920,14 +910,14 @@ def convertUsabillaResponseToCsvRow(r):
 
 ####
 ##  4 main actions from data source triangle: 
-##  [Usabilla API] -- [CSV to import] -- [Omnia Data models]
+##  [Usabilla API] -- [CSV to import] -- [Alexandria Data models]
 ####
 
 
 def importUsabillaFromApi(campaignsArr):
 	"""
 	Uses Usabilla API (https://developers.usabilla.com/#get-campaigns) to get campaign
-	responses, and inserts them into OM.
+	responses, and inserts them into AL.
 	
 	:param campaigns: An array of objects to fetch: 
 		id: <campaignid>,
@@ -1154,7 +1144,7 @@ def importUsabillaFromCsv(file = './campaign-mark.csv'):
 def createCsvFromUsabillaApi(campaignsArr):
 	"""
 	Uses Usabilla API (https://developers.usabilla.com/#get-campaigns) to get campaign
-	responses, and inserts them into OM.
+	responses, and inserts them into AL.
 	
 	:param campaigns: An array of objects to fetch: 
 		id: <campaignid>,
@@ -1286,9 +1276,9 @@ def fetchNewUsabillaResponses(user=None):
 		admins = list(Group.objects.get(name='admins').user_set.all().values_list('username', flat=True))
 		
 		sendEmail({
-			'subject': '[Omnia] Omniabot detected new Usabilla campaigns created',
+			'subject': '[Alexandria] Alexandriabot detected new Usabilla campaigns created',
 			'recipients': admins,
-			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p><strong>{newCampaignsCount}</strong> new campaigns were just created from the Usabilla import and are not associated with a project:<br>- {campaignList}</p><p>All campaigns without a project association can be seen in the the Omnia Admin Center data audits, for campaigns: https://REPLACE_ME/metrics/admin/campaignnoproject/</p><br><br><p style="font-size:12px;color:#777;">You\'re receiving this email because you\'re a Omnia admin. If you don\'t want to receive these, tough luck.</p></div>'
+			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p><strong>{newCampaignsCount}</strong> new campaigns were just created from the Usabilla import and are not associated with a project:<br>- {campaignList}</p><p>All campaigns without a project association can be seen in the the Alexandria Admin Center data audits, for campaigns: https://REPLACE_ME/metrics/admin/campaignnoproject/</p><br><br><p style="font-size:12px;color:#777;">You\'re receiving this email because you\'re a Alexandria admin. If you don\'t want to receive these, tough luck.</p></div>'
 		})
 	
 	if settings.DEBUG:
@@ -1309,7 +1299,7 @@ def createCsvAndEmailFile(user=None, campaigns=None, projects=None, startDate=No
 	)
 	
 	email = EmailMessage(
-		'[Omnia] Usabilla response CSV dump',
+		'[Alexandria] Usabilla response CSV dump',
 		'Attached is a CSV with the Usabilla response dump you requested.',
 		'do-not-reply@domain.com',
 		[user.username],
@@ -1482,226 +1472,6 @@ def setProjectYearBaselinesAndTargets():
 			project.setYearBaselinesAndTargets()
 
 
-def importBeeHeardFromApi(campaignsArr):
-	"""
-	Uses BeeHeard API to get campaign responses, and inserts them into Omnia.
-	
-	<campaignsArr>: An array of objects to fetch: 
-		id: <campaignid>,
-		date: <datetime object>
-	"""
-	t0 = time.time()
-	
-	try:
-		newActivity = ActivityLog.objects.create(
-			user = getBeeHeardImportScriptUser(),
-			comments = f'Import timer: Connecting to BeeHeard: {round(time.time()-t0,1)}s'
-		)
-	except Exception as ex:
-		print(f'Error: Import timer: BeeHeard connection logging ERROR: {str(ex)}')
-		
-	
-	# For each campaign object passed in, fetch the campaign results
-	# using the campaign object ID and the campaign object "since" date.
-	projectsTouched = []
-	voteProjectsTouched = []
-	voteProjectsTouchedData = {}
-	campaignIdsTouched = []
-	processedCount = 0
-	insertedCount = 0
-	t0 = time.time()
-	
-	if settings.DEBUG:
-		print(f'>> {campaignsArr}')
-	
-	# We don't skip duplicate instances of UIDs because each one has a different date, 
-	#  And it's a fast skip anyway when we already have a response.
-	for campaign in campaignsArr:
-		try:
-			sinceDate = setBeeHeardCampaignSinceDate(campaign['latest_response_date'])
-			
-			campaignResponses = requests.get(f"https://REPLACE_ME/survey/api/responses/?campaign={campaign['uid']}&since={sinceDate}", timeout=4).json()['responses']
-			i
-			#print(f">> Campaign UID: {campaign['uid']} - Using date: {sinceDate}")
-			
-			# For each user response/feedback item, convert data and add to DB.
-			for response in campaignResponses:
-				processedCount += 1
-				
-				if settings.DEBUG:
-					print(f'>> Processing response #{processedCount}')
-				
-				# Process and insert response based on the type of respose it is. 3 types.
-				responseType = response.get('surveyType', None)
-				try:
-					if responseType == 'vote':
-						if VoteResponse.objects.filter(uid=response['id']).exists():
-							if settings.DEBUG:
-								print(f'>> Have it already')
-							continue
-						responseData = convertVoteResponseToData(response)
-						savedResponse = VoteResponse.objects.create(**responseData)
-					elif responseType == 'feedback':
-						if FeedbackResponse.objects.filter(uid=response['id']).exists():
-							if settings.DEBUG:
-								print(f'>> Have it already')
-							continue
-						responseData = convertFeedbackResponseToData(response)
-						savedResponse = FeedbackResponse.objects.create(**responseData)
-					else:
-						if OtherResponse.objects.filter(uid=response['id']).exists():
-							if settings.DEBUG:
-								print(f'>> Have it already')
-							continue
-						responseData = convertOtherResponseToData(response)
-						savedResponse = OtherResponse.objects.create(**responseData)
-						
-				except Exception as ex:
-					if settings.DEBUG:
-						print(f'{ex}')
-					continue
-				
-				# If we made it here, we inserted one of the three types of responses.
-				insertedCount += 1
-				
-				if settings.DEBUG:
-					print(f'Inserted feedback #{insertedCount}')
-				
-				# Store the actual DB ID to make it easy.
-				campaignIdsTouched.append(savedResponse.campaign.id)
-				
-				project = responseData['campaign'].project
-				if project and project.id not in projectsTouched:
-					projectsTouched.append(project.id)
-				
-				# If it's vote response add touched campaign and project to arrays
-				#  so we can set the latest response date and recalculate project snapshots.
-				if responseType == 'vote':
-					project = responseData['campaign'].project
-					responseYearQuarter = (pd.Timestamp(responseData['date']).year,pd.Timestamp(responseData['date']).quarter)
-					responseYearMonth = (pd.Timestamp(responseData['date']).year,pd.Timestamp(responseData['date']).month)
-				
-					if project:
-						# If it's not in the array already, add it.
-						# Else, check if the month or quarter is there already and add that.
-						if project.id not in voteProjectsTouched:
-							voteProjectsTouched.append(project.id)
-							voteProjectsTouchedData[project.id] = {
-								'quarters': [responseYearQuarter],
-								'months': [responseYearMonth],
-							}
-						else:
-							if responseYearQuarter not in voteProjectsTouchedData[project.id]['quarters']:
-								voteProjectsTouchedData[project.id]['quarters'].append(responseYearQuarter)
-							
-							if responseYearMonth not in voteProjectsTouchedData[project.id]['months']:
-								voteProjectsTouchedData[project.id]['months'].append(responseYearMonth)
-								
-		except Exception as ex:
-			if settings.DEBUG:
-				print(f'{ex}')
-				
-			newActivity = ActivityLog.objects.create(
-				user = getUsabillaImportScriptUser(),
-				comments = f"Error trying BeeHeard campaign: {campaign['uid']}, using date: {ex}"
-			)
-			
-	try:
-		newActivity = ActivityLog.objects.create(
-			user = getBeeHeardImportScriptUser(),
-			comments = f'Import timer: Importing responses: {round(time.time()-t0,1)}'
-		)
-	except Exception as ex:
-		print(f'Error: Import timer: VoteResponse importing logging ERROR: {str(ex)}')
-	
-	setLatestBeeHeardResponseDate(campaignIdsTouched, getBeeHeardImportScriptUser())
-	setCampaignsResponseCount()
-	
-	# We only need to update snapshots and baseline/targets for projects 
-	#  touched that got VOTE responses.
-	if len(voteProjectsTouched) > 0:
-		updateProjectSnapshots(voteProjectsTouched, voteProjectsTouchedData)
-		updateDomainSnapshots(voteProjectsTouched)
-		setProjectYearBaselinesAndTargets()
-
-	# Cleanup and remove new Campaign placeholders we already fetched results for.
-	# If we don't have a real Campaign for it yet (usabillaID + role), then it stays as placeholder.
-	for campaignPlaceholder in Campaign.objects.filter(key__isnull=True):
-		if Campaign.objects.filter(uid=campaignPlaceholder.uid, key__isnull=False).exists():
-			campaignPlaceholder.delete()
-	
-	return {
-		'processedCount': processedCount,
-		'insertedCount': insertedCount,
-		'projectsTouchedCount': len(projectsTouched) 
-	}
-
-
-def fetchNewBeeHeardResponses(user=None):
-	"""
-	Gets all campaigns and latest response dates and fetches new responses for each campaign
-	since that date.
-	"""
-	t0 = time.time()
-	
-	campaignCountBefore = Campaign.objects.fromBeeHeard().count()
-	
-	uniqueIds = list(Campaign.objects.allActive().fromBeeHeard().values_list('uid', flat=True).order_by('uid').distinct())
-	
-	try:
-		beeHeardCampaigns = requests.get('https://REPLACE_ME/survey/api/campaigns/', timeout=4).json()['campaigns']
-		
-		for campaign in beeHeardCampaigns:
-			CAMPAIGNS_ID_NAME_MAP[campaign['uid']] = campaign['key']
-	except Exception as ex:
-		print(f'Error: {ex}')
-	
-	campaignDataArr = []
-	for uniqueId in uniqueIds:
-		try:
-			latestOne = Campaign.objects.filter(uid=uniqueId).order_by('-latest_response_date').first()
-			latestDate = latestOne.latest_response_date
-		except Exception as ex:
-			latestDate = ''
-		
-		campaignDataArr.append({
-			'uid': uniqueId,
-			'latest_response_date': latestDate,
-		})
-	
-	importStats = importBeeHeardFromApi(campaignDataArr)
-	
-	runTime = round(time.time()-t0,1)
-	
-	if not user:
-		user = getBeeHeardImportScriptUser()
-		
-	# Now log this API import.
-	logData = {
-		'responses_imported_count': importStats['insertedCount'],
-		'projects_affected_count': importStats['projectsTouchedCount'], 
-		'run_time_seconds': runTime,
-		'import_type': 'beeheard',
-		'user': user
-	}
-	logEntry = ImportLog.objects.create(**logData)
-	
-	newCampaignsCount = Campaign.objects.fromBeeHeard().count() - campaignCountBefore
-	if newCampaignsCount > 0:
-		newCampaigns = Campaign.objects.fromBeeHeard().order_by('-created_at')[:newCampaignsCount]
-		campaignList = '<br>- '.join(map(str, (list(newCampaigns.values_list('key', flat=True)))))
-		admins = list(Group.objects.get(name='admins').user_set.all().values_list('username', flat=True))
-		
-		sendEmail({
-			'subject': '[Omnia] Omniabot detected new BeeHeard campaigns created',
-			'recipients': admins,
-			'message': f'<div style="font-family:sans-serif;font-size:14px;line-height:20px;"><p><strong>{newCampaignsCount}</strong> new campaigns were just created from the BeeHeard import and are not associated with a project:<br>- {campaignList}</p><p>All campaigns without a project association can be seen in the the Omnia Admin Center data audits, for campaigns: https://REPLACE_ME/metrics/admin/campaignnoproject/</p><br><br><p style="font-size:12px;color:#777;">You\'re receiving this email because you\'re a Omnia admin. If you don\'t want to receive these, tough luck.</p></div>'
-		})
-		
-	if settings.DEBUG:
-		print('>> BeeHeard import done.')
-	
-
 def setLatestResponseDate(campaignUidsTouched, user):
 	# Loop thru unique campaigns touched and set the latest response date.
 	t0 = time.time()
@@ -1761,51 +1531,6 @@ def setLatestButtonResponseDate(buttonIdsTouched, user):
 	except Exception as ex:
 		print(f'Error: Import timer: Campaign latest date logging ERROR: {str(ex)}')
 
-
-def setLatestBeeHeardResponseDate(campaignIdsTouched, user):
-	# Loop thru unique campaigns touched and set the latest response date.
-	t0 = time.time()
-	
-	for campaignId in campaignIdsTouched:
-		# Each BeeHeard campaign can only have 1 type of response because each is unique,
-		#   so we use only the latest_response_date field for them.
-		# Just concat counts from each of the three because we don't know what type of 
-		#   responses the campaign has.
-		noDateDate = timezone.make_aware(datetime(2020,1,1))
-		latestDate = noDateDate
-		
-		try:
-			lastRespDate = Response.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
-			if lastRespDate > latestDate:
-				latestDate = lastRespDate 
-		except Exception as ex:
-			pass
-		
-		try:
-			lastRespDate = FeedbackResponse.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
-			if lastRespDate > latestDate:
-				latestDate = lastRespDate 
-		except Exception as ex:
-			pass
-		
-		try:
-			lastRespDate = OtherResponse.objects.filter(campaign=campaignId).order_by('-date').values('date')[0]['date']
-			if lastRespDate > latestDate:
-				latestDate = lastRespDate 
-		except Exception as ex:
-			pass
-		
-		if latestDate != noDateDate:
-			Campaign.objects.filter(id=campaignId).update(latest_response_date=latestDate)
-		
-	try:
-		newActivity = ActivityLog.objects.create(
-			user = user,
-			comments = f'Import timer: Set campaign latest date for {len(campaignIdsTouched)} UIDs: {round(time.time()-t0,1)}s'
-		)
-	except Exception as ex:
-		print(f'Error: Import timer: Campaign latest date logging ERROR: {str(ex)}')
-		
 
 def setCampaignsResponseCount():
 	for campaign in Campaign.objects.all():

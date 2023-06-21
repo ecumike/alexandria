@@ -3,7 +3,7 @@
 
 from django.contrib import admin
 
-from .models import FaqCategory, Faq, WhatsNew, ReleaseNote
+from .models import FaqCategory, Faq, ReleaseNote
 
 
 @admin.register(FaqCategory)
@@ -36,35 +36,6 @@ class FaqAdmin(admin.ModelAdmin):
     )
     list_filter = ('created_at', 'updated_at')
     raw_id_fields = ('categories',)
-    date_hierarchy = 'created_at'
-
-
-@admin.register(WhatsNew)
-class WhatsNewAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-        'date',
-        'heading',
-        'description',
-        'featured',
-        'include_in_feed',
-        'notify_users',
-        'emails_sent_count',
-    )
-    list_filter = (
-        'created_at',
-        'created_by',
-        'updated_at',
-        'updated_by',
-        'date',
-        'featured',
-        'include_in_feed',
-        'notify_users',
-    )
     date_hierarchy = 'created_at'
 
 

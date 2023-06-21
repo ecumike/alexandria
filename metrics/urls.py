@@ -29,15 +29,8 @@ urlpatterns = [
 			
 	
 	# API Crons: run daily or weekly.
-	url(r'^api/addbeeheardcampaign/$', api_add_beeheard_campaign, name='api_add_beeheard_campaign'),
-	url(r'^api/deactivateoldcampaigns/$', api_deactivate_old_campaigns, name='api_deactivate_old_campaigns'),
-	url(r'^api/getnewbeeheardresponses/$', api_get_new_beeheard_responses, name='api_get_new_beeheard_responses'),
-	url(r'^api/getnewusabillaresponses/$', api_get_new_usabilla_responses, name='api_get_new_usabilla_responses'),
 	url(r'^api/pruneactivitylog/$', api_prune_activity_log, name='api_prune_activity_log'),
-	url(r'^api/prunealerthistory/$', api_prune_alert_history, name='api_prune_alert_history'),
 	url(r'^api/removeoldemails/$', api_remove_old_emails, name='api_remove_old_emails'),
-	url(r'^api/scheduledalerts/$', api_do_scheduled_alerts, name='api_do_scheduled_alerts'),
-	url(r'^api/setuxspecialistassigned/$', api_set_ux_specialist_assigned, name='api_set_ux_specialist_assigned'),
 
 	# Redirects.
 	url(r'^domains/$', tiles_table_router, name='domains_home'),
@@ -58,20 +51,13 @@ urlpatterns = [
 	url(r'^projects/responses/feedback/csvdump/$', project_feedback_responses_csv_dump, name='project_feedback_responses_csv_dump'),
 	url(r'^projects/responses/vote/csvdump/$', project_vote_responses_csv_dump, name='project_vote_responses_csv_dump'),
 	url(r'^projects/responses/vote/timeperiodcsvdump/$', project_vote_responses_timeperiod_csv_dump, name='project_vote_responses_timeperiod_csv_dump'),
-	url(r'^alerts/$', alerts, name='alerts'),
 	url(r'^responsecounts/$', response_counts, name='response_counts'),
-	url(r'^tasks/$', tasks_home, name='tasks_home'),
-	url(r'^tasks/detail/(?P<id>[\w-]+)/$', tasks_detail, name='tasks_detail'),
-	
-	
-	
 	
 	## Admin pages:
 	url(r'^admin/$', admin_home, name='admin_home'),
 	
 	url(r'^admin/importdata/(?P<modelName>[\w-]+)/$', admin_import_data_list, name='admin_import_data_list'),
 	url(r'^admin/emailallresponsesascsv/$', admin_email_all_responses_as_csv, name='admin_email_all_responses_as_csv'),
-	url(r'^admin/getnewbeeheardresponses/$', admin_get_new_beeheard_responses, name='admin_get_new_beeheard_responses'),
 	url(r'^admin/getnewusabillaresponses/$', admin_get_new_usabilla_responses, name='admin_get_new_usabilla_responses'),
 	url(r'^admin/importlog/$', admin_import_log, name='admin_import_log'),
 	url(r'^admin/pageviews/$', admin_page_views, name='admin_page_views'),
@@ -149,9 +135,6 @@ urlpatterns = [
 	url(r'^admin/projectkeyword/edit/(?P<id>[\w-]+)/$', admin_projectkeyword_edit, name='admin_projectkeyword_edit'),
 	url(r'^admin/projectkeyword/delete/$', admin_projectkeyword_delete, name='admin_projectkeyword_delete'),
 
-	url(r'^admin/uxspecialistassigned/add/$', admin_uxspecialistassigned_add, name='admin_uxspecialistassigned_add'),
-	url(r'^admin/uxspecialistassigned/delete/$', admin_uxspecialistassigned_delete, name='admin_uxspecialistassigned_delete'),
-	
 	url(r'^admin/emailadmins/$', admin_email_admins, name='admin_email_admins'),
 	
 	url(r'^admin/onlineusers/$', admin_online_users, name='admin_online_users'),
@@ -165,20 +148,7 @@ urlpatterns = [
 	url(r'^admin/role/edit/(?P<id>[\w-]+)/$', admin_role_edit, name='admin_role_edit'),
 	url(r'^admin/role/delete/$', admin_role_delete, name='admin_role_delete'),
 	
-	url(r'^admin/task/$', admin_task_list, name='admin_task_list'),
-	url(r'^admin/task/add/$', admin_task_add, name='admin_task_add'),
-	url(r'^admin/task/edit/(?P<id>[\w-]+)/$', admin_task_edit, name='admin_task_edit'),
-	url(r'^admin/task/delete/$', admin_task_delete, name='admin_task_delete'),
-	
 	url(r'^admin/projectsnapshots/export/csv/$', admin_projectsnapshots_to_csv, name='admin_projectsnapshots_to_csv'),
-	
-	
-	# Misc
-	#url(r'^feedback.js$', feedback_js, name='feedback_js'),
-	url(r'^claudeistheman/$', claude_temp, name='claude_temp'),
-	url(r'^claudeistheman/dabby1/$', claude_temp_dabby1, name='claude_temp_dabby1'),
-	url(r'^claudeistheman/dabby2/$', claude_temp_dabby2, name='claude_temp_dabby2'),
-	
 	
 	
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -11,7 +11,7 @@
 {% block extraFiles %}
 
 	{% include 'partials/tablewidget_files.inc' %}
-	<script>OM.enableHotlinkrows();</script>
+	<script>AL.enableHotlinkrows();</script>
 	
 {% endblock %}
 
@@ -51,7 +51,6 @@
 						<td class=" tr">{{ project.campaign_project.count }}</td>
 						<td class=" tr">{{ project.voteResponseCount|intcomma }}</td>
 						<td class=" tc">{{ project.priority|default:'' }}</td>
-						<td class=" tc w3 mw3">{% if project.designer_assigned == 'yes' %}✅{% elif project.designer_assigned == 'no' %}<span class="red f6">❌</span>{% endif %}</td>
 						<td class=" tc">{% if project.vendor_app == 'yes' %}✅{% elif project.vendor_app == 'no' %}<span class="red g6">❌</span>{% endif %}</td>
 						<td class="w2 mw3 red tc f6">{% if project.inactive %}❌{% endif %}</td>
 						<!-- <td class="">{% for admin in project.admins.all %}<div>{{ admin.profile.full_name }}</div>{% endfor %}</td> -->
