@@ -113,10 +113,10 @@ def sendSlackNewArtifactNotification(user, artifact, url):
 	"""
 	Sends a notification to the "notifications" channel that a new research has been posted.
 	"""
-	slackUrl = settings.SLACK_OMNIA_NOTIFICATIONS_URL
+	slackUrl = settings.SLACK_NOTIFICATIONS_URL
 	
 	payload = {
-		'username': 'OMNIA research',
+		'username': 'Research',
 		'icon_emoji': ':new:',
 		'text': f'*{user.profile.full_name}* just posted a new research item:\n*Title*: {artifact.name}\n*Status*: {artifact.status.name}\nhttps://REPLACE_ME{url}',
 	}
@@ -129,10 +129,10 @@ def sendSlackCompletedArtifactNotification(user, artifact, url):
 	"""
 	Sends a notification to the "notifications" channel that a research item is now in 'completed' status.
 	"""
-	slackUrl = settings.SLACK_OMNIA_NOTIFICATIONS_URL
+	slackUrl = settings.SLACK_NOTIFICATIONS_URL
 	
 	payload = {
-		'username': 'OMNIA research',
+		'username': 'Research',
 		'icon_emoji': ':white_check_mark:',
 		'text': f'*{user.profile.full_name}* just marked a research item complete:\n*Title*: {artifact.name}\nhttps://REPLACE_ME{url}',
 	}
