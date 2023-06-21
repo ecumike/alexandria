@@ -1,29 +1,27 @@
 # Alexandria
-SurveyKong and Usabilla metrics dashboard and user research library. 
+Surveys metrics dashboard and user research library. 
 
 **Research library**: Host and catalog all your research findings, along with searchable and filterable meta data.
 
-**Metrics dashboard**:  Create projects and campaigns and import Usabilla and SurveyKong responses (or manually enter data) and get quarterly historical NPS scores and view all responses from your users.
+**Metrics dashboard**:  Create projects and campaigns and import survey responses and view monthly or quarterly quarterly historical NPS scores and all responses.
 
 
 ## Included/installed Features:
+- "Switch user" admin feature
+- Basic flexible page template
+- Custom error pages
+- Custom error handling, and email and slack room notifications
 - Debugging toolbar
 - Django extensions
-- "Switch user" admin feature
-- Custom 403, 404, 500 error pages
-- Custom error handling, including email and slack room hook notification features
 - Site-wide banner notifications
-- Basic flexible page template
-- UI framework using Tachyons, select2, tooltip and overlays
 - Template helpers for preset design components; buttons, icons, header, tabs, etc
-- COS (Cloud Object Storage) storing and CDN serving of static files
+- UI framework using Tachyons, select2, tooltip and overlays
 
 
 ## Install Requirements
 
-Python 3.8 ish +
-
-Postgres 11 ish +
+Python 3.7 ish +
+Postgres 14 ish +
 
 ## Install
 
@@ -31,32 +29,24 @@ Setup a virtual environment:
 
 &nbsp; &nbsp; `python3 -m venv /path/to/env/<name>`
 
-&nbsp; &nbsp; or
-
-&nbsp; &nbsp; `virtualenv -p python3 /path/to/python-env/<name>`
-
-
-Activate that environment:
+Activate the environment:
 
 &nbsp; &nbsp; `source /path/to/env/<name>/bin/activate`
-
 
 Clone the repo:
 
 &nbsp; &nbsp; `git clone git@github.com:ecumike/alexandria.git`
 
-
-CD to the repo root wherever you just cloned it to and install the dependencies:
+CD to the repo, wherever you just cloned it, and install the dependencies:
 
 &nbsp; &nbsp; `pip install -r requirements.txt`
 
 Setup some localhost variables:
-There are some local variables and settings needed for your implementation. They can either be set as environment variables, or you can add a `local_settings.py` file alongside the Django default `settings.py` file. 
-If you set them as environment variables you will only have to do this once and each of our Django app will use those same settings.
+They can be set as environment variables, or you can add a `local_settings.py` file alongside the Django default `settings.py` file. 
+If you set them as env variables you will only have to do this once and each of our Django app will use those same settings.
 
 You only need to replace the two `___`s with your local Postgres DB user ID and PW. 
 `SCRIPT_NAME` is intentionally blank.
-
 
 ```
     export DJANGO_DB_USER=____
@@ -65,7 +55,7 @@ You only need to replace the two `___`s with your local Postgres DB user ID and 
     export DJANGO_FORCE_SCRIPT_NAME=
 ```
     
-Create a postgresql database called `alexandria`
+Create a postgres DB called `alexandria`
 (Ensure your user account can write to the database)
 
 
@@ -73,59 +63,42 @@ Have Django setup the database according to the models. From the repo root:
 
 &nbsp; &nbsp; `./manage.py migrate`
 
-Create a superuser (follow the prompts, you can leave email blank):
+Create a superuser (follow the prompts):
 
 &nbsp; &nbsp; `./manage.py createsuperuser`
 
 ## Running and developing
 
-Every time you want to start the app, there are 3 steps:
-1. Ensure you are in your environment you created above.
-2. CD to the local repo root.
-3. Start up Django.
- 
-Steps in detail: 
-
-1. Ensure you have the environment activated:
+1. Activate your environment:
 
 &nbsp; &nbsp; `source /path/to/env/<name>/bin/activate`
 
-2. CD to the repo root:
+2. CD to the repo:
 
 &nbsp; &nbsp; `cd /some/path/to/repo`
 
-3. Start the Django app:
+3. Start Django:
 
 &nbsp; &nbsp; `./manage.py runserver`
 
-Now you can open your browser to http://localhost:8000/  and you should see it.
-
-Make your changes and simply reload your browser page to see them
+Go to http://localhost:8000/ and you should see it.
 
 
 ### Uploads
-For research file uploads, you need COS/S3 (Cloud Object Storage) setup and vars set in `settings.py`
+For file uploads, you need to setup S3 (Cloud Object Storage) via vars set in `settings.py`
 
 
 ### Pro tip
-Create a script alias to do all this for you. Add this line in your `.bash_profile` file:
+Create a script alias to do startup Alexandria all this for you:
 
 `alias startalexandria'source /path/to/this-app-env/bin/activate && cd /some/path/to/repo/ && ./manage.py runserver'`
 
 
-## Documentation
-We use `pydoctor` (https://pydoctor.readthedocs.io/en/latest/) for easy to read auto-generated documentation.
-You can generate easily for any installed app.
-1. Install pydoctor:  `pip install pydoctor`
-2. Run pydoctor to generate HTML files for whichever app you want. Example:  `pydoctor --make-html --html-output=docs/metrics metrics`
-3. Open the `docs/metrics/index.html` file in your browser and read away.
-
- 
 ## Coding style guidelines
  
 We follow the basic Django and Python coding principles and styles:  
-https://docs.djangoproject.com/en/3.2/misc/design-philosophies/  
-https://docs.djangoproject.com/en/3.2/internals/contributing/writing-code/coding-style/  
+https://docs.djangoproject.com/en/4.0/misc/design-philosophies/  
+https://docs.djangoproject.com/en/4.0/internals/contributing/writing-code/coding-style/  
 
  
   &nbsp;
