@@ -156,7 +156,7 @@ USE_TZ = True
 
 ADMINS = []
 MANAGERS = ADMINS
-SERVER_EMAIL = ' surveykong-error@somedomain.com'
+SERVER_EMAIL = ' alexandria@somedomain.com'
 # EMAIL_HOST = 'smtp.sendgrid.net'
 # EMAIL_HOST_USER = 'apikey'
 # EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY', '')
