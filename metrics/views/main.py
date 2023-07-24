@@ -416,14 +416,7 @@ def projects_detail(request):
 	# If they're not an editor, but are assigned some, show only those, 
 	#  else, not allowed access to feedback responses so set to 0 so tab doesn't show.
 	feedbackResponses = project.getFeedbackResponses().exclude(comments='').order_by('-date')[:10]
-	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
-	assigneeCount = FeedbackResponse.objects.filter(assignees=request.user).count()
-	if not isProjectEditor:
-		if assigneeCount > 0:
-			feedbackResponses = feedbackResponses.filter(assignees=request.user)
-		else:
-			feedbackResponses = None
-		
+	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)	
 	
 	
 	context = {
@@ -593,12 +586,6 @@ def projects_feedback_responses(request):
 	# If they're not an editor, but are assigned some, show only those, 
 	#  else, not allowed access to view feedback.
 	isProjectEditor = accessHelpers.isProjectEditor(request.user, project)
-	assigneeCount = FeedbackResponse.objects.filter(assignees=request.user).count()
-	if not isProjectEditor:
-		if assigneeCount > 0:
-			responses = responses.filter(assignees=request.user)
-		else:
-			return render(request, '403.html', {}, status=403)	
 		
 	breadcrumbs = [
 		{

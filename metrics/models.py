@@ -2680,7 +2680,10 @@ class ProjectSnapshot(models.Model):
 			quarterSnapshotsCount = quarterSnapshots.count()
 			
 			for cat in npsCategories:
-				quarterData[cat['name']] = round(quarterSnapshots.filter(nps_score_category=cat['id']).count() / quarterSnapshotsCount * 100)
+				try:
+					quarterData[cat['name']] = round(quarterSnapshots.filter(nps_score_category=cat['id']).count() / quarterSnapshotsCount * 100)
+				except:
+					quarterData[cat['name']] = 0
 				
 			npsCatData.append(quarterData)
 			
@@ -2915,8 +2918,8 @@ class ProjectYearSetting(models.Model):
 		'''
 		# If the baseline is already set, or it's after July 15: Stop and do nothing.
 		# Rule: No baseline allowed to be set after July 15.
-		if self.nps_baseline or timezone.now() > timezone.make_aware(datetime(timezone.now().year,7,15)):
-			return
+		#if self.nps_baseline or timezone.now() > timezone.make_aware(datetime(timezone.now().year,7,15)):
+		#	return
 		
 		# Fetch oldest to newest snapshots: Q4 $lastyear, Q1 & Q2 $thisyear, then last90.
 		# If there's snapshots found, use the oldest one found from criteria.
