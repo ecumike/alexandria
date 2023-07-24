@@ -128,10 +128,15 @@ def artifacts_detail(request, id):
 		}
 	]
 	
+	try:
+		canEdit = request.user.hasEditorAccess(artifact)
+	except:
+		canEdit = False
+		
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'artifact': artifact,
-		'canEditArtifact':  request.user.hasEditorAccess(artifact),
+		'canEditArtifact': canEdit,
 		'surveyQuestionsFiltered': surveyQuestionsFiltered,
 	}
 
