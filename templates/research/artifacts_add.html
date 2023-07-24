@@ -52,9 +52,9 @@
 			
 			
 			function showHideOnStatusChange () {
-				var v = $('[name="status"]:checked').val();
+				var statusLabel = $('[name="status"]:checked').data('label');
 				
-				if (v === '1') {
+				if (statusLabel === 'Completed') {
 					$('#research-completed-fields').show();
 				}
 				else {
@@ -155,7 +155,7 @@
 							<div class="w-100 bo-checkboxradio-pads">
 									{% for status in statuses %}
 									<div class="dib mr2 mb2 relative">
-										<input class="" type="radio" name="{{ form.status.name }}" value="{{ status.id }}" id="id_status_{{ status.id }}" {% ifequal form.status.value|stringformat:"s" status.id|stringformat:"s" %}checked{% endifequal %}>
+										<input class="" data-label="{{ status.name }}" type="radio" name="{{ form.status.name }}" value="{{ status.id }}" id="id_status_{{ status.id }}" {% ifequal form.status.value|stringformat:"s" status.id|stringformat:"s" %}checked{% endifequal %}>
 										<label class="" for="id_status_{{ status.id }}">{{ status.name }}</label>
 									</div>
 									{% endfor %}

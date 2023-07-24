@@ -20,26 +20,35 @@ Surveys metrics dashboard and user research library.
 
 ## Install Requirements
 
-Python 3.7 ish +
+Python 3.9 ish +
+
 Postgres 14 ish +
 
 ## Install
 
 Setup a virtual environment:
 
-&nbsp; &nbsp; `python3 -m venv /path/to/env/<name>`
+```
+python3 -m venv /path/to/env/<name>
+```
 
 Activate the environment:
 
-&nbsp; &nbsp; `source /path/to/env/<name>/bin/activate`
+```
+source /path/to/env/<name>/bin/activate
+```
 
 Clone the repo:
 
-&nbsp; &nbsp; `git clone git@github.com:ecumike/alexandria.git`
+```
+git clone git@github.com:ecumike/alexandria.git
+```
 
 CD to the repo, wherever you just cloned it, and install the dependencies:
 
-&nbsp; &nbsp; `pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 Setup some localhost variables:
 They can be set as environment variables, or you can add a `local_settings.py` file alongside the Django default `settings.py` file. 
@@ -49,10 +58,10 @@ You only need to replace the two `___`s with your local Postgres DB user ID and 
 `SCRIPT_NAME` is intentionally blank.
 
 ```
-    export DJANGO_DB_USER=____
-    export DJANGO_DB_PASSWORD=____
-    export DJANGO_DEBUG_FLAG=True
-    export DJANGO_FORCE_SCRIPT_NAME=
+  export DJANGO_DB_USER=____
+  export DJANGO_DB_PASSWORD=____
+  export DJANGO_DEBUG_FLAG=True
+  export DJANGO_FORCE_SCRIPT_NAME=
 ```
     
 Create a postgres DB called `alexandria`
@@ -61,27 +70,47 @@ Create a postgres DB called `alexandria`
 
 Have Django setup the database according to the models. From the repo root:
 
-&nbsp; &nbsp; `./manage.py migrate`
+```
+./manage.py migrate
+```
 
 Create a superuser (follow the prompts):
 
-&nbsp; &nbsp; `./manage.py createsuperuser`
+```
+./manage.py createsuperuser
+```
 
 ## Running and developing
 
 1. Activate your environment:
 
-&nbsp; &nbsp; `source /path/to/env/<name>/bin/activate`
+```
+source /path/to/env/<name>/bin/activate
+```
 
 2. CD to the repo:
 
-&nbsp; &nbsp; `cd /some/path/to/repo`
+```
+cd /some/path/to/repo
+```
 
 3. Start Django:
 
-&nbsp; &nbsp; `./manage.py runserver`
+```
+./manage.py runserver
+```
 
-Go to http://localhost:8000/ and you should see it.
+Go to http://127.0.0.1:8000/ and you should see it.
+
+
+## Creating sample data
+You can run a script that will generate random projects, responses, metrics, and research items. This takes a couple minutes to run.
+
+NOTE: This will remove any existing data every time you run it.
+
+```
+./manage.py generate_sample_data
+```
 
 
 ### Uploads
@@ -91,7 +120,9 @@ For file uploads, you need to setup S3 (Cloud Object Storage) via vars set in `s
 ### Pro tip
 Create a script alias to do startup Alexandria all this for you:
 
-`alias startalexandria'source /path/to/this-app-env/bin/activate && cd /some/path/to/repo/ && ./manage.py runserver'`
+```
+alias startalexandria'source /path/to/this-app-env/bin/activate && cd /some/path/to/repo/ && ./manage.py runserver'
+```
 
 
 ## Coding style guidelines

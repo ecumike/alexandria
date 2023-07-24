@@ -11,6 +11,7 @@ from django.utils.crypto import get_random_string
 from research.models import Artifact
 from metrics.models import getImportScriptUser, Campaign, Project, VoteResponse, GoalCompleted, DataSource, UmuxScoreCategory, NpsScoreCategory, NpsLetterGrade, Target, Domain
 
+
 fake = Faker()
 
 
@@ -247,7 +248,7 @@ def createDomains():
 		)
 		
 	
-def createProjects(deleteAll=False):
+def createProjects(deleteAll=True):
 	"""
 	Generate fake projects, with owners, scores, and feedback.
 	"""
@@ -271,6 +272,8 @@ def createProjects(deleteAll=False):
 	createTargets()
 	
 	# Create projects and add responses, then calculate snapshots.
+	print('>> Creating projects with responses and metrics.')
+	
 	for i, appName in enumerate(appNames, 1):
 		project = Project.objects.create(
 			name = appName,
@@ -292,7 +295,7 @@ def createProjects(deleteAll=False):
 		numResponses = random.randrange(300, 2000)
 		
 		appCount = len(appNames)
-		print(f'{i} of {appCount} : Creating {numResponses} for {project}')
+		print(f'{i} of {appCount} : Creating {numResponses} responses for {project}')
 		
 		for n in range(1, random.randrange(400, 4000)):
 			umuxPair = chooseRandomUmuxPair()
@@ -312,6 +315,9 @@ def createProjects(deleteAll=False):
 		project.storeLatestSnapshots()
 		project.setYearBaselinesAndTargets()
 		project.updateAllSnapshots()
-		
+	
+	print('>> Calculating domain metrics.')
+	
 	for domain in Domain.objects.all():
 		domain.updateDomainYearSnapshot()
+	
