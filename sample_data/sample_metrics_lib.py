@@ -59,10 +59,10 @@ def chooseRandomApp():
 	return random.choice(appNames)
 
 
-def chooseRandomUmuxPair():
+def chooseRandomUmuxPair(scoreRange):
 	return (
-		min(int(str(datetime.now().microsecond)[0]), 5) + min(int(str(datetime.now().microsecond)[0]), 2),
-		min(int(str(datetime.now().microsecond)[0]), 5) + min(int(str(datetime.now().microsecond)[0]), 2)
+		random.randint(scoreRange[0], scoreRange[1]),
+		random.randint(scoreRange[0], scoreRange[1])
 	)
 
 
@@ -70,10 +70,41 @@ def chooseGoalCompleted():
 	return GoalCompleted.objects.get_or_create(name = random.choice(['no', 'yes', 'partial']))[0]
 	
 	
-def chooseRandomNps():
-	return min(int(str(datetime.now().microsecond)[0]), 8) + min(int(str(datetime.now().microsecond)[0]), 2)
+def chooseRandomNps(scoreRange):
+	return random.randint(scoreRange[0], scoreRange[1])
 	
 
+def setScoreRanges(num):
+	npsScoreRanges = {
+		'low': (5,8),
+		'medium': (7,9),
+		'high': (8,9),
+		'excellent': (8,10),
+	}
+	
+	umuxScoreRanges = {
+		'low': (2,5),
+		'medium': (4,6),
+		'high': (5,6),
+		'excellent': (5,7),
+	}
+	
+	if num < 25:
+		npsRange = npsScoreRanges['low']
+		umuxRange = umuxScoreRanges['low']
+	elif num < 50:
+		npsRange = npsScoreRanges['medium']
+		umuxRange = umuxScoreRanges['medium']
+	elif num < 75:
+		npsRange = npsScoreRanges['high']
+		umuxRange = umuxScoreRanges['high']
+	else:
+		npsRange = npsScoreRanges['excellent']
+		umuxRange = umuxScoreRanges['excellent']
+	
+	return (npsRange, umuxRange)
+	
+	
 def addResearchArtifacts():
 	"""
 	Import research items from CSV
@@ -247,7 +278,7 @@ def createDomains():
 			updated_by = getImportScriptUser(),	
 		)
 		
-	
+
 def createProjects(deleteAll=True):
 	"""
 	Generate fake projects, with owners, scores, and feedback.
@@ -274,6 +305,16 @@ def createProjects(deleteAll=True):
 	# Create projects and add responses, then calculate snapshots.
 	print('>> Creating projects with responses and metrics.')
 	
+	
+	umuxScoreRanges = {
+		'low': (2,5),
+		'medium': (4,6),
+		'high': (5,6),
+		'excellent': (6,7),
+	}
+	
+	appCount = len(appNames)
+	
 	for i, appName in enumerate(appNames, 1):
 		project = Project.objects.create(
 			name = appName,
@@ -294,16 +335,17 @@ def createProjects(deleteAll=True):
 		# Choose random #, create that many responses with random date, feedback, scores.
 		numResponses = random.randrange(300, 2000)
 		
-		appCount = len(appNames)
 		print(f'{i} of {appCount} : Creating {numResponses} responses for {project}')
 		
+		npsRange, umuxRange = setScoreRanges((i/appCount)*100)
+		
 		for n in range(1, random.randrange(400, 4000)):
-			umuxPair = chooseRandomUmuxPair()
+			umuxPair = chooseRandomUmuxPair(umuxRange)
 			VoteResponse.objects.create(
 				campaign = campaign,
 				uid = get_random_string(),
 				date = chooseRandomDate(),
-				nps = chooseRandomNps(),
+				nps = chooseRandomNps(npsRange),
 				umux_capability = umuxPair[0],
 				umux_ease_of_use = umuxPair[1],
 				goal_completed = chooseGoalCompleted(),

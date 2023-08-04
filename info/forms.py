@@ -8,7 +8,7 @@ DATE_PICKER = forms.TextInput(attrs={'type':'date', 'style': 'width: 160px'})
 
 
 class FaqCategoryForm(ModelForm):
-	required_css_class = 'bo-field-required'
+	required_css_class = 'bl-field-required'
 	
 	class Meta:
 		model = FaqCategory
@@ -19,7 +19,7 @@ class FaqCategoryForm(ModelForm):
 
 
 class FaqForm(ModelForm):
-	required_css_class = 'bo-field-required'
+	required_css_class = 'bl-field-required'
 	
 	class Meta:
 		model = Faq
@@ -30,7 +30,7 @@ class FaqForm(ModelForm):
 
 
 class ReleaseNoteForm(ModelForm):
-	required_css_class = 'bo-field-required'
+	required_css_class = 'bl-field-required'
 	
 	class Meta:
 		model = ReleaseNote

@@ -152,7 +152,7 @@
 				});
 				
 				$('#projectselector-form').on('submit', function (evt) {
-					var tabid = $('[data-widget="dyntabs"]').find('.bo-active').data('id');
+					var tabid = $('[data-widget="dyntabs"]').find('.bl-active').data('id');
 					$(this).prepend('<input type="hidden" name="tab" value="' + tabid + '">');	
 				});
 			}
@@ -218,7 +218,7 @@
 		
 		<div class="mt3">
 			<div class="flex-ns custom-border-color bb" data-widget="dyntabs">
-				<button data-id="scorecard" class="{{ templateHelpers.classes.tab }} bo-active">Scorecard</button>
+				<button data-id="scorecard" class="{{ templateHelpers.classes.tab }} bl-active">Scorecard</button>
 				<button data-id="events" class="{{ templateHelpers.classes.tab }}">Events</button>
 				<button data-id="comments" class="{{ templateHelpers.classes.tab }}">VotE comments</button>
 				{% if feedbackResponses %}<button data-id="feedback" class="{{ templateHelpers.classes.tab }}">Feedback button</button>{% endif %}
@@ -229,7 +229,7 @@
 		
 	</div>
 	
-	<div id="scorecard" class="bo-tab-content bo-active"> 
+	<div id="scorecard" class="bl-tab-content bl-active"> 
 		{% if hasAnyData %}
 			<div class="mt3 tr {{ templateHelpers.classes.grid }}">
 				<div class="f6 smallicon dib">
@@ -254,11 +254,11 @@
 								{# Else if there's a score, show "not enough responses" and stats. #}
 								{# Else show "no responses". #}
 								{% if projectSnapshot.nps_meaningful_data %}
-									<div id="npschart" class="relative bo-fadein bo-fadeout">
+									<div id="npschart" class="relative bl-fadein bl-fadeout">
 										<div id="npschart-donut" class="absolute w-100"></div>
 										<div id="npschart-dial" class="absolute w-100"></div>
 									</div>
-									<div id="npschart-text" class="absolute w-100 relative bo-fadein bo-fadeout" style="top:136px;">
+									<div id="npschart-text" class="absolute w-100 relative bl-fadein bl-fadeout" style="top:136px;">
 										<div class="absolute bg-white br-100" style="z-index: 1;transform: translate3d(-40px,-16px,0);width: 80px;height: 80px;top: 0;left: 50%;"></div>
 										<div class="z-2 relative">
 											<div class="f3 tc mv2"><span class="dib bg-white br3 ph1">{{ projectSnapshot.nps_score|floatformat:1 }}</span></div>
@@ -291,7 +291,7 @@
 								{% if projectSnapshot.entry_type == 'manual' %}
 									{% include 'metrics/partials/responses_not_available.html' %}
 								{% elif npsHistogramData %}
-									<div id="nps-histogram-con" class="bo-fadein bo-fadeout"><div id="nps-histogram" class="histogram" style="transform: translate3d(0,-4px,0);"></div></div>
+									<div id="nps-histogram-con" class="bl-fadein bl-fadeout"><div id="nps-histogram" class="histogram" style="transform: translate3d(0,-4px,0);"></div></div>
 								{% else %}
 									{% include 'metrics/partials/no_data_for_period.html' %}
 								{% endif %}
@@ -305,7 +305,7 @@
 							
 							<div class="relative historical-con mt3 mb4 mb0-l">
 								{% if npsChartDataArr.actual %}
-									<div id="nps-historical-chart-con" class="bo-fadein bo-fadeout"><div style="left:-10px;" id="nps-historical-chart"></div></div>
+									<div id="nps-historical-chart-con" class="bl-fadein bl-fadeout"><div style="left:-10px;" id="nps-historical-chart"></div></div>
 								{% else %}
 									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
 								{% endif %}
@@ -321,11 +321,11 @@
 								{# Else if there's a score, show "not enough responses" and stats. #}
 								{# Else show "no responses". #}
 								{% if projectSnapshot.umux_meaningful_data %}
-									<div id="umuxchart" class="relative bo-fadein bo-fadeout">
+									<div id="umuxchart" class="relative bl-fadein bl-fadeout">
 										<div id="umuxchart-donut" class="absolute w-100"></div>
 										<div id="umuxchart-dial" class="absolute w-100"></div>
 									</div>
-									<div id="umuxchart-text" class="absolute w-100 bo-fadein bo-fadeout" style="top:100px;">
+									<div id="umuxchart-text" class="absolute w-100 bl-fadein bl-fadeout" style="top:100px;">
 										<div class="absolute bg-white br-100" style="z-index: 1;transform: translate3d(-60px,0px,0);width:120px; height:120px; top:0; left:50%;"></div>
 										<div class="z-2 relative">
 											<div class="mt2 f2 mb1">{{ projectSnapshot.umux_score_category.name }}</div>
@@ -359,7 +359,7 @@
 								{% if projectSnapshot.entry_type == 'manual' %}
 									{% include 'metrics/partials/responses_not_available.html' %}
 								{% elif projectSnapshot.umux_count > 0 %}
-									<div id="umux-histogram-charts" class="bo-fadein bo-fadeout">
+									<div id="umux-histogram-charts" class="bl-fadein bl-fadeout">
 										<div class="flex-ns">
 											<div class="w-50-ns f7">
 												<div>Capabilities</div>
@@ -397,7 +397,7 @@
 							
 							<div class="relative historical-con mt3 mb4 mb0-l">
 								{% if umuxChartDataArr.actual %}
-									<div id="umux-historical-chart-con" class="bo-fadein common bo-fadeout"><div style="left:-10px;" id="umux-historical-chart"></div></div>
+									<div id="umux-historical-chart-con" class="bl-fadein common bl-fadeout"><div style="left:-10px;" id="umux-historical-chart"></div></div>
 								{% else %}
 									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
 								{% endif %}
@@ -433,7 +433,7 @@
 								{% if projectSnapshot.entry_type == 'manual' %}
 									{% include 'metrics/partials/responses_not_available.html' %}
 								{% elif goalHistogramData %}
-									<div id="goal-completion-histogram-con" class="bo-fadein bo-fadeout">
+									<div id="goal-completion-histogram-con" class="bl-fadein bl-fadeout">
 										<div class="relative f6 flex justify-center">
 											<div class="f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.4.color_code }};"></div><div class="f7">No</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.3.color_code }};"></div><div class="f7">Partially</div><div class="ml3 f7 mr1" style="margin-top:1px; width:.75rem; height:.75rem; background:{{ npsScoreCategories.0.color_code }};"></div><div class="f7">Yes</div>
 										</div>
@@ -458,7 +458,7 @@
 							
 							<div class="relative historical-con mt3 mb4 mb0-l">
 								{% if goalCompletionChartDataArr.actual %}
-									<div id="goal-completion-historical-chart-con" class="bo-fadein bo-fadeout"><div style="left:-20px;" id="goal-completion-historical-chart"></div></div>
+									<div id="goal-completion-historical-chart-con" class="bl-fadein bl-fadeout"><div style="left:-20px;" id="goal-completion-historical-chart"></div></div>
 								{% else %}
 									{% include 'metrics/partials/no_responses_for_historical_chart.html' %}
 								{% endif %}
@@ -474,7 +474,7 @@
 		{% endif %}
 	</div>
 		
-	<div id="events" class="bo-tab-content mb4"> 
+	<div id="events" class="bl-tab-content mb4"> 
 		<div class="{{ templateHelpers.classes.grid }}">	
 			<div class="bg-white pa4 w-100 mw7">
 				<div><a id="project-event-add" data-url="{% url 'metrics:admin_projectevent_add' %}?iframe=yes&project={{ project.id }}" href="#" class="dib {{ templateHelpers.classes.link }}"><span class="flex items-center smallicon">{{ templateHelpers.html.icons.add|safe }}<span class="ml2">Add a new event</span></span></a></div>
@@ -507,7 +507,7 @@
 		</div>
 	</div>
 		
-	<div id="comments" class="bo-tab-content mb4"> 
+	<div id="comments" class="bl-tab-content mb4"> 
 		<div class="{{ templateHelpers.classes.grid }}">
 			<div class="bg-white pa4 w-100 mw7">
 				{% if not project.private_comments %}
@@ -556,7 +556,7 @@
 	</div>
 	
 	{% if feedbackResponses %}
-		<div id="feedback" class="bo-tab-content mb4"> 
+		<div id="feedback" class="bl-tab-content mb4"> 
 			<div class="{{ templateHelpers.classes.grid }}">
 				<div class="bg-white pa4 w-100 mw7">
 					<ul class="lh-copy">
@@ -571,7 +571,7 @@
 	{% endif %}
 	
 	
-	<div id="projectinfo" class="bo-tab-content mb4"> 
+	<div id="projectinfo" class="bl-tab-content mb4"> 
 		<div class="{{ templateHelpers.classes.grid }}">
 			<table class="bg-white pa4 pt3 w-100 mw7">
 				<thead></thead>
@@ -739,8 +739,8 @@
 			//////////////////////////////
 			document.getElementById('npschart-donut').appendChild(svg1.node());
 			document.getElementById('npschart-dial').appendChild(svg2.node());
-			document.getElementById('npschart').classList.remove('bo-fadeout');
-			document.getElementById('npschart-text').classList.remove('bo-fadeout');
+			document.getElementById('npschart').classList.remove('bl-fadeout');
+			document.getElementById('npschart-text').classList.remove('bl-fadeout');
 		}
 		createNpsDonut();
 			
@@ -854,8 +854,8 @@
 			//////////////////////////////
 			document.getElementById('umuxchart-donut').appendChild(svg1.node());
 			document.getElementById('umuxchart-dial').appendChild(svg2.node());
-			document.getElementById('umuxchart').classList.remove('bo-fadeout');
-			document.getElementById('umuxchart-text').classList.remove('bo-fadeout');
+			document.getElementById('umuxchart').classList.remove('bl-fadeout');
+			document.getElementById('umuxchart-text').classList.remove('bl-fadeout');
 		}
 		createUmuxDonut();
 			
@@ -961,7 +961,7 @@
 						}
 					}
 				});
-				document.getElementById('nps-histogram-con').classList.remove('bo-fadeout');
+				document.getElementById('nps-histogram-con').classList.remove('bl-fadeout');
 			}
 			
 			setTimeout(createNpsHistogram, timeOffset*4);
@@ -1106,7 +1106,7 @@
 						}
 					}
 				});
-				document.getElementById('umux-histogram-charts').classList.remove('bo-fadeout');
+				document.getElementById('umux-histogram-charts').classList.remove('bl-fadeout');
 			}
 			setTimeout(createUmuxEaseHistogram, timeOffset*5.1);
 		{% endif %}
@@ -1196,7 +1196,7 @@
 						}
 					}
 				});
-				document.getElementById('goal-completion-histogram-con').classList.remove('bo-fadeout');
+				document.getElementById('goal-completion-histogram-con').classList.remove('bl-fadeout');
 			}
 			setTimeout(createGoalHistogram, timeOffset*6);
 		{% endif %}
@@ -1271,7 +1271,7 @@
 						connectNull: true
 					},
 				});
-				document.getElementById('nps-historical-chart-con').classList.remove('bo-fadeout');
+				document.getElementById('nps-historical-chart-con').classList.remove('bl-fadeout');
 			}
 			setTimeout(createNpsHistoryChart, timeOffset*7);
 		{% endif %}	
@@ -1345,7 +1345,7 @@
 						connectNull: true
 					},
 				});
-				document.getElementById('umux-historical-chart-con').classList.remove('bo-fadeout');
+				document.getElementById('umux-historical-chart-con').classList.remove('bl-fadeout');
 			}
 			setTimeout(createUmuxHistoryChart, timeOffset*7);
 		{% endif %}		
@@ -1408,7 +1408,7 @@
 						connectNull: true
 					},
 				});
-				document.getElementById('goal-completion-historical-chart-con').classList.remove('bo-fadeout');
+				document.getElementById('goal-completion-historical-chart-con').classList.remove('bl-fadeout');
 			}
 			
 			if ({{ goalCompletionChartDataArr.actual|safe }}.filter(item => item !== 'null').length > 1) {
@@ -1419,9 +1419,9 @@
 	</script>
 	
 
-	<div class="common-modal" id="project-event-modal" aria-hidden="true">
-		<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
-			<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+	<div class="bl-modal" id="project-event-modal" aria-hidden="true">
+		<div class="bl-modal-overlay fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+			<div class="bl-modal-container w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
 				<header class="fr">
 					<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
 				</header>
@@ -1432,9 +1432,9 @@
 	
 	
 	{% if projectSnapshot.date_period == 'last90' %}
-		<div class="common-modal" id="project-targets-modal" aria-hidden="true">
-			<div class="z-3 fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
-				<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+		<div class="bl-modal" id="project-targets-modal" aria-hidden="true">
+			<div class="bl-modal-overlay z-3 fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+				<div class="bl-modal-container w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
 					<header class="fr">
 						<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
 					</header>

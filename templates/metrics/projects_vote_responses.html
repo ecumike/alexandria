@@ -11,7 +11,7 @@
 
 {% block extraFiles %}
 
-	{% include 'partials/tablewidget_files.inc' %}
+	
 
 	<script>
 	
@@ -195,7 +195,7 @@
 					<div class="mb2 mw6 lh-title">If you've deleted VotE responses, click this button to recalculate this project's snapshot (scores, counts, dates, etc) for this period</div>
 					<div class="mb4 flex">
 						<a href="#" id="custom-recalculate-snapshot" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Recalculate this time period snapshot scores</a>
-						<div id="custom-recalculate-processing" class="dn ml2 bo-spinner ba bw2 br-100 w2 h2"></div>
+						<div id="custom-recalculate-processing" class="dn ml2 bl-spinner ba bw2 br-100 w2 h2"></div>
 					</div>	
 				</div>
 				
@@ -203,7 +203,7 @@
 					<div class="mt4 mb3"><span class="b red">CAUTION:</span> This deletes <strong>ALL</strong> VotE responses for this project, <strong>not</strong> just this time period.<br>There is no "are you sure," once you click this, it's done.</div>
 					<div class="mb4 flex">
 						<a href="#" id="custom-delete-all-responses" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redPriButton }}">Permanently delete all feedback responses</a>
-						<div id="custom-delete-processing" class="dn ml2 bo-spinner ba bw2 br-100 w2 h2"></div>
+						<div id="custom-delete-processing" class="dn ml2 bl-spinner ba bw2 br-100 w2 h2"></div>
 					</div>
 				{% endif %}
 			{% endif %}

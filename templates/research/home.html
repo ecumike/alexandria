@@ -125,11 +125,11 @@
 			<form id="custom-listing-filter-form" method="get" action="">
 				
 				{% if tags %}
-					<div id="step-filter-tag" class="mb4 bo-word-break-all">
+					<div id="step-filter-tag" class="mb4 bl-word-break-all">
 						<div class="b mb3">Keyword</div>
 						<div class="overflow-auto" style="max-height:16rem;">
 							{% for item in tags %}
-								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_tag_{{ item.id }}" type="checkbox" name="tag" value="{{ item.id }}" {% if item in selectedTags %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_tag_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+								<div class="mb1 bl-checkboxradio f6"><input id="id_filter_tag_{{ item.id }}" type="checkbox" name="tag" value="{{ item.id }}" {% if item in selectedTags %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_tag_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
 							{% endfor %}
 						</div>
 					</div>
@@ -140,7 +140,7 @@
 						<div class="b mb3">Method</div>
 						<div class="overflow-auto" style="max-height:16rem;">
 							{% for item in methods %}
-								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_method_{{ item.id }}" type="checkbox" name="method" value="{{ item.id }}" {% if item in selectedMethods %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_method_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+								<div class="mb1 bl-checkboxradio f6"><input id="id_filter_method_{{ item.id }}" type="checkbox" name="method" value="{{ item.id }}" {% if item in selectedMethods %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_method_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
 							{% endfor %}
 						</div>
 					</div>
@@ -151,7 +151,7 @@
 						<div class="b mb3">Status</div>
 						<div class="overflow-auto" style="max-height:16rem;">
 							{% for item in statuses %}
-								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_status_{{ item.id }}" type="checkbox" name="status" value="{{ item.id }}" {% if item in selectedStatuses %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_status_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+								<div class="mb1 bl-checkboxradio f6"><input id="id_filter_status_{{ item.id }}" type="checkbox" name="status" value="{{ item.id }}" {% if item in selectedStatuses %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_status_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
 							{% endfor %}
 						</div>
 					</div>
@@ -162,7 +162,7 @@
 						<div class="b mb3">Tool/service</div>
 						<div class="overflow-auto" style="max-height:16rem;">
 							{% for item in projects %}
-								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_project_{{ item.id }}" type="checkbox" name="project" value="{{ item.id }}" {% if item in selectedProjects %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_project_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+								<div class="mb1 bl-checkboxradio f6"><input id="id_filter_project_{{ item.id }}" type="checkbox" name="project" value="{{ item.id }}" {% if item in selectedProjects %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_project_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
 							{% endfor %}
 						</div>
 					</div>
@@ -173,7 +173,7 @@
 						<div class="b mb3">Source</div>
 						<div class="overflow-auto" style="max-height:16rem;">
 							{% for item in sources %}
-								<div class="mb1 bo-checkboxradio f6"><input id="id_filter_source_{{ item.id }}" type="checkbox" name="source" value="{{ item.id }}" {% if item in selectedSources %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_source_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
+								<div class="mb1 bl-checkboxradio f6"><input id="id_filter_source_{{ item.id }}" type="checkbox" name="source" value="{{ item.id }}" {% if item in selectedSources %}checked="checked"{% endif %}><label class="pointer db" for="id_filter_source_{{ item.id }}">{{ item.name }}<span class="gray ml2">({{ item.numArtifacts }})</span></label></div>
 							{% endfor %}
 						</div>
 					</div>
@@ -220,7 +220,7 @@
 				{% endif %}
 			</div>
 			
-			<div id="custom-artifact-items" class="mt3 bo-word-break-all">
+			<div id="custom-artifact-items" class="mt3 bl-word-break-all">
 				{% include 'research/partials/artifacts_list_items.html' with artifacts=artifacts %}
 			</div>
 

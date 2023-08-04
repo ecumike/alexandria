@@ -6,7 +6,7 @@ from .models import *
 from research.models import Profile
 
 DATE_PICKER = forms.TextInput(attrs={'type':'date', 'style': 'width: 160px'})
-requiredCssClass = 'bo-field-required'
+requiredCssClass = 'bl-field-required'
 
 
 class CampaignForm(ModelForm):
@@ -121,7 +121,7 @@ class ProjectForm(ModelForm):
 		widgets = {
 			'admins': forms.SelectMultiple(attrs={'data-widget':'addnewuser'}),
 			'api_key': forms.TextInput(attrs={'style':'width: 160px'}),
-			'comments': forms.Textarea(attrs={'class': 'bo-common-autotextarea', 'rows': '3'}),
+			'comments': forms.Textarea(attrs={'class': 'bl-common-autotextarea', 'rows': '3'}),
 			'contact': forms.Select(attrs={'data-widget':'addnewuser'}),
 			'core_project': forms.TextInput(attrs={'type':'hidden'}),
 			'current_year_settings': forms.TextInput(attrs={'type':'hidden'}),
@@ -238,7 +238,7 @@ class EmailAdminsForm(forms.Form):
 	msg = forms.CharField(
 		label = 'Email message',
 		required = True,
-		widget = forms.Textarea(attrs={'class': 'bo-common-autotextarea', 'rows': '5'})
+		widget = forms.Textarea(attrs={'class': 'bl-common-autotextarea', 'rows': '5'})
 	)
 
 

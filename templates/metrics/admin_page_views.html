@@ -19,7 +19,7 @@
 		<p>Total page views since July 1, 2019: <strong>{{ totalPageViews.view_count__sum|intcomma }}</strong> </p>
 					
 		<div class="flex-ns flex-wrap">
-			<div class="w-100 pa4 bg-white mr4-ns mb4 w-100 mw7 bo-word-break-all lh-title">
+			<div class="w-100 pa4 bg-white mr4-ns mb4 w-100 mw7 bl-word-break-all lh-title">
 				<div class="b mb4">Top 25 page views by URL since inception</div>
 				{% for item in pageViews %}
 					<div class="flex hover-bg-light-gray">
@@ -30,7 +30,7 @@
 				<div class="mt3"><a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_page_views_download' %}?list=allpages">Download full list <span class="ml1">{{ templateHelpers.html.icons.chevronForward|safe }}{{ url|noprotocol }}</span></a></div>
 			</div>
 		
-			<div class="pa4 bg-white mr4-ns mb4 w-100 bo-word-break-all lh-title" style="max-width: 350px">
+			<div class="pa4 bg-white mr4-ns mb4 w-100 bl-word-break-all lh-title" style="max-width: 350px">
 				<div class="b mb4">Top 25 all page views by user </div>
 				{% for item in usersByPageviews %}
 					<div class="flex hover-bg-light-gray">
@@ -41,7 +41,7 @@
 				<div class="mt3"><a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_page_views_download' %}?list=usersallpages">Download full list <span class="ml1">{{ templateHelpers.html.icons.chevronForward|safe }}{{ url|noprotocol }}</span></a></div>
 			</div>
 		
-			<div class="pa4 bg-white mr4-ns mb4 w-100 bo-word-break-all lh-title" style="max-width: 350px">
+			<div class="pa4 bg-white mr4-ns mb4 w-100 bl-word-break-all lh-title" style="max-width: 350px">
 				<div class="b mb4">Top 25 metrics page views by user </div>
 				{% for item in usersByMetricsPageviews %}
 					<div class="flex hover-bg-light-gray">
@@ -52,7 +52,7 @@
 				<div class="mt3"><a class="{{ templateHelpers.classes.link }} {{ templateHelpers.classes.hasIconFlexCenter }} animate" href="{% url 'metrics:admin_page_views_download' %}?list=usersmetricspages">Download full list <span class="ml1">{{ templateHelpers.html.icons.chevronForward|safe }}{{ url|noprotocol }}</span></a></div>
 			</div>
 		
-			<div class="pa4 bg-white mr4-ns mb4 w-100 bo-word-break-all lh-title" style="max-width: 350px">
+			<div class="pa4 bg-white mr4-ns mb4 w-100 bl-word-break-all lh-title" style="max-width: 350px">
 				<div class="b mb4">Top 25 research page views by user </div>
 				{% for item in usersByResearchPageviews %}
 					<div class="flex hover-bg-light-gray">

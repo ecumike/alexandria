@@ -50,12 +50,12 @@ AL.namespace = function() {
 	
 	
 	function flashMessage (el) {
-		el.classList.add('bo-fadein');
+		el.classList.add('bl-fadein');
 		setTimeout(function () {
-			el.classList.remove('bo-fadeout');
+			el.classList.remove('bl-fadeout');
 		}, 10);
 		setTimeout(function () {
-			el.classList.add('bo-fadeout');
+			el.classList.add('bl-fadeout');
 		}, 1600);	
 	}
 	AL.flashMessage = flashMessage;

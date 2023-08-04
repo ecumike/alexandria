@@ -30,9 +30,9 @@
 </div>
 
 
-<div id="custom-whatsnew-overlay" class="common-modal" aria-hidden="true">
-	<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
-		<div class="w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+<div id="custom-whatsnew-overlay" class="bl-modal" aria-hidden="true">
+	<div class="bl-modal-overlay fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+		<div class="bl-modal-container w-90 mw7 {{ templateHelpers.classes.overlayContent }}" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
 			
 			<header class="fr ml3">
 				<button class="{{ templateHelpers.classes.overlayClose }}" aria-label="Close modal" data-micromodal-close></button>
@@ -40,8 +40,8 @@
 			
 			<div class="relative flex justify-between items-center">
 				<div class="f2 fw4">What’s new</div>
-				<div class="pr2 mt1 bo-checkboxradio"><input id="custom-overlay-whatsnew-email-subscription" type="checkbox" {% if request.user.profile.whats_new_email %}checked{% endif %} value="1" name="notify-whatsnew-email" class="relative mr2 pointer" style="top:2px;"><label class="pointer" for="custom-overlay-whatsnew-email-subscription">Notify me about updates via email</label></div>
-				<div id="custom-emailsub-msg" style="background-color: #fff7aa;right: 9px;top: 45px;" class="absolute ml2 mb4 bo-fadein bo-fadeout ph2 pv1">Your subscription has been updated</div>
+				<div class="pr2 mt1 bl-checkboxradio"><input id="custom-overlay-whatsnew-email-subscription" type="checkbox" {% if request.user.profile.whats_new_email %}checked{% endif %} value="1" name="notify-whatsnew-email" class="relative mr2 pointer" style="top:2px;"><label class="pointer" for="custom-overlay-whatsnew-email-subscription">Notify me about updates via email</label></div>
+				<div id="custom-emailsub-msg" style="background-color: #fff7aa;right: 9px;top: 45px;" class="absolute ml2 mb4 bl-fadein bl-fadeout ph2 pv1">Your subscription has been updated</div>
 			</div>
 			
 			<div class="custom-modal-content mt3 bg-white"></div>
@@ -124,9 +124,9 @@
 				url: '{% url 'info:api_whats_new_email_subscription' %}',
 				dataType: 'json',
 				success: function () {
-					document.getElementById('custom-emailsub-msg').classList.remove('bo-fadeout');
+					document.getElementById('custom-emailsub-msg').classList.remove('bl-fadeout');
 					setTimeout(function () {
-						document.getElementById('custom-emailsub-msg').classList.add('bo-fadeout');
+						document.getElementById('custom-emailsub-msg').classList.add('bl-fadeout');
 					}, 1500);
 				}
 			});
