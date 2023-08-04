@@ -212,10 +212,10 @@ a.animate:hover .icon {
 	border-bottom-right-radius: 0px;
 }
 
-.custom-tab.bo-active {
+.custom-tab.bl-active {
 	background: #fff;
 }
-.custom-tab.bo-active:after {
+.custom-tab.bl-active:after {
 	display: block;
 	content: '';
 	height: .25rem;
@@ -249,7 +249,7 @@ a.animate:hover .icon {
 **/
 
 /*  HEIGHT ADJUSTMENT
-This pretty much mimics what bo-common.css does.
+This pretty much mimics what bl-common.css does.
 Resize to smaller to match text fields.
 */
 
@@ -322,23 +322,23 @@ input[type="url"] {
 }
 
 /* Reverse BO default. w3ds is light default, hover/focus dark **/
-.bo-checkboxradio input:checked + label::before {
+.bl-checkboxradio input:checked + label::before {
 	background: var(--link-color);
 	border-color: var(--link-color);
 }
-.bo-checkboxradio input:checked:focus + label::before, 
-.bo-checkboxradio input:checked:hover + label::before {
+.bl-checkboxradio input:checked:focus + label::before, 
+.bl-checkboxradio input:checked:hover + label::before {
 	background: var(--dark-blue);
 	border-color: var(--dark-blue);
 }
 
 /* Radio has "after" as the main blue color to change. Opposite of checkbox. */
-.bo-checkboxradio input[type="radio"]:checked + label::after {
+.bl-checkboxradio input[type="radio"]:checked + label::after {
 	background: var(--link-color);
 	border-color: var(--link-color);
 }
-.bo-checkboxradio input[type="radio"]:checked:focus + label::after, 
-.bo-checkboxradio input[type="radio"]:checked:hover + label::after {
+.bl-checkboxradio input[type="radio"]:checked:focus + label::after, 
+.bl-checkboxradio input[type="radio"]:checked:hover + label::after {
 	background: var(--dark-blue);
 	border-color: var(--dark-blue);
 }
@@ -378,7 +378,7 @@ input[readonly] {
 	width: 4rem;
 }
 
-.common-modal [role="dialog"] {
+.bl-modal [role="dialog"] {
 	overflow: auto;
 	max-height: 100vh;
 }

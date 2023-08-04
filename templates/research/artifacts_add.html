@@ -152,7 +152,7 @@
 					<div class="pa4 pb2 mb4 bg-white">
 						<div class="mb4">
 							<div class="w-100 b mb2">{{ form.status.label_tag }}</div>
-							<div class="w-100 bo-checkboxradio-pads">
+							<div class="w-100 bl-checkboxradio-pads">
 									{% for status in statuses %}
 									<div class="dib mr2 mb2 relative">
 										<input class="" data-label="{{ status.name }}" type="radio" name="{{ form.status.name }}" value="{{ status.id }}" id="id_status_{{ status.id }}" {% ifequal form.status.value|stringformat:"s" status.id|stringformat:"s" %}checked{% endifequal %}>
@@ -170,7 +170,7 @@
 	
 						<div class="mb3">
 							<div class="w-100 b mb2">{{ form.source.label_tag }}</div>
-							<div class="w-100 bo-checkboxradio-pads">
+							<div class="w-100 bl-checkboxradio-pads">
 								{% for source in sources %}
 									<div class="dib mr2 mb2 relative">
 										<input class="pa0 ma0 ba0 absolute" style="opacity:0" type="radio" name="{{ form.source.name }}" value="{{ source.id }}" id="id_source_{{ source.id }}" {% ifequal form.source.value|stringformat:"s" source.id|stringformat:"s" %}checked{% endifequal %}>
@@ -189,7 +189,7 @@
 						
 							<div class="mb4">
 								 <div class="w-100 b mb2">{{ form.methods.label_tag }}</div>
-								 <div class="w-100 bo-checkboxradio-pads">
+								 <div class="w-100 bl-checkboxradio-pads">
 									{% for method in methods %}
 										<div class="dib mr2 mb2 relative">
 											<input class="pa0 ma0 ba0 absolute" style="opacity:0" type="checkbox" name="{{ form.methods.name }}" value="{{ method.id }}" id="id_method_{{ method.id }}" {% if method.id in form.methods.value %}checked{% endif %}>
@@ -322,7 +322,7 @@
 							
 							{% if not artifact.id %}
 								<div class="lh-copy mt3">
-									<div class="bo-checkboxradio f6">
+									<div class="bl-checkboxradio f6">
 										<input type="checkbox" name="notify_owner_new" value="yes" id="id_notify_owner_new">
 										<label class="db" for="id_notify_owner_new">Notify owner that research was entered on their behalf</label>
 									</div>

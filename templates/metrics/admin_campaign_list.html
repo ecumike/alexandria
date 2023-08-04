@@ -10,7 +10,7 @@
 
 {% block extraFiles %}
 
-	{% include 'partials/tablewidget_files.inc' %}
+	
 	<script>AL.enableHotlinkrows();</script>
 
 {% endblock %}
@@ -48,7 +48,7 @@
 			<tbody>
 				{% for campaign in campaigns %}
 					<tr tabindex="0" data-url="{% url 'metrics:admin_campaign_edit' id=campaign.id %}" class="hover-bg-lightest-blue pointer" title="Click to edit">
-						<td style="min-width:80px;" class="w5 pv2 pl2 pr3 bo-word-break-all">{{ campaign.key|default:'' }}</td>
+						<td style="min-width:80px;" class="w5 pv2 pl2 pr3 bl-word-break-all">{{ campaign.key|default:'' }}</td>
 						<td class="pv2 pl2 pr3">{{ campaign.uid }}</td>
 						<td class="w2 pv2 pl2 pr3">{{ campaign.usabilla_button_id|default:'' }}</td>
 						<td class="w2 pv2 pl2 pr3 tc">{% if campaign.inactive %}<span class="red f6">❌</span>{% endif %}</td>

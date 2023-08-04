@@ -84,7 +84,7 @@
 	
 					<div class="flex-ns mb4 custom-link-underline">
 						<div class="b w5 mb3">Description</div>
-						<div class="w-100 lh-copy bo-overflow-wrap-break-word">{{ artifact.description|striptags|linebreaksbr|urlize }}</div>
+						<div class="w-100 lh-copy bl-overflow-wrap-break-word">{{ artifact.description|striptags|linebreaksbr|urlize }}</div>
 					
 					</div>
 					
@@ -136,14 +136,14 @@
 							<div class="w-100 lh-copy">
 								{% for url in artifact.study_plan_urls %}
 									<div class="flex mb2 lh-copy">
-										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bl-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
 										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
 										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
 									</div>
 								{% endfor %}
 								{% for attachment in artifact.study_plan_files.all %}
 									<div class="flex mb2 lh-copy">
-										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bl-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
 										
 									</div>
 								{% endfor %}
@@ -162,21 +162,21 @@
 							<div class="w-100 lh-copy">
 								{% for url in artifact.final_report_urls %}
 									<div class="flex mb2 lh-copy">
-										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bl-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
 										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
 										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
 									</div>
 								{% endfor %}
 								{% for url in artifact.external_research_urls %}
 									<div class="flex mb2 lh-copy">
-										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bl-word-break-all" href="{{ url }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ url|noprotocol }}</a>
 										<a href="#" class="custom-report-link flex relative ml3 smallicon red hover-red"><span style="transform: translate3d(0,2px,0);" class="hint--top" aria-label="Report broken link">{{ templateHelpers.html.icons.flag|safe }}</span></a>
 										<span class="ml2 f6 textcolor {{ templateHelpers.classes.yellowMessage }}">Link has been reported</span>
 									</div>
 								{% endfor %}
 								{% for attachment in artifact.final_report_files.all %}
 									<div class="flex mb2 lh-copy">
-										<a class="hasicon {{ templateHelpers.classes.link }} animate bo-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
+										<a class="hasicon {{ templateHelpers.classes.link }} animate bl-word-break-all" href="{% url 'research:get_file' %}?filename={{ attachment.name }}" target="_blank"><span style="transform: translate3d(0,-4px,0);">{{ templateHelpers.html.icons.chevronForward|safe }}</span>{{ attachment.getFileName }}</a>
 										
 									</div>
 								{% endfor %}
@@ -196,8 +196,8 @@
 				<div class="mt4 pa4 bg-white f6">
 					
 					<div class="flex-l mb4">
-						<div class="mb3"><img class="custom-userimage bo-downsize br-100" data-email="{{ artifact.owner.username }}" width="60" height="60" alt="{{ artifact.owner.profile.full_name }}"></div>
-						<div class="w-70-l mb3 pl3-l bo-overflow-wrap-break-word">
+						<div class="mb3"><img class="custom-userimage bl-downsize br-100" data-email="{{ artifact.owner.username }}" width="60" height="60" alt="{{ artifact.owner.profile.full_name }}"></div>
+						<div class="w-70-l mb3 pl3-l bl-overflow-wrap-break-word">
 							<div class="mt2">{{ artifact.owner.profile.full_name }}</div>
 							<div class="mt1"><a aria-label="Email {{ artifact.owner.profile.full_name }}" class="{{ templateHelpers.classes.link }} hint--top-left" href="mailto:{{ artifact.owner.username }}">{{ artifact.owner.username }}</a></div>
 						</div>

@@ -1,6 +1,6 @@
 {% load humanize %}
 
-<a class="custom-hover-linkcolor-underline link bg-white mr4-ns mb4 w5-ns w-100 shadow-hover {{ snapshot.classes }}" href="{% url 'metrics:projects_detail' %}?project={{ snapshot.project.id }}&reportperiod={% if snapshot.date_quarter %}{{ snapshot.date_quarter }}q{{ snapshot.date.year }}{% else %}last90{% endif %}">
+<a class="no-underline custom-hover-linkcolor-underline link bg-white mr4-ns mb4 w5-ns w-100 shadow-hover {{ snapshot.classes }}" href="{% url 'metrics:projects_detail' %}?project={{ snapshot.project.id }}&reportperiod={% if snapshot.date_quarter %}{{ snapshot.date_quarter }}q{{ snapshot.date.year }}{% else %}last90{% endif %}">
 	<div class="flex flex-column justify-between ba custom-border-color hover-b--dark-blue h-100 textcolor">
 		<div class="ph2 pt2 tc relative overflow-hidden">
 			{% if snapshot.project.core_project %}
